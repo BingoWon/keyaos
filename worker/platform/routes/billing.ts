@@ -53,8 +53,8 @@ billing.post("/checkout", async (c) => {
 		customerId: wallet?.stripe_customer_id as string,
 		ownerId,
 		amountCents: amount,
-		successUrl: `${origin}/dashboard/billing?success=true`,
-		cancelUrl: `${origin}/dashboard/billing?canceled=true`,
+		successUrl: `${origin}/dashboard/credits?success=true`,
+		cancelUrl: `${origin}/dashboard/credits?canceled=true`,
 	});
 
 	await new PaymentsDao(c.env.DB).create({

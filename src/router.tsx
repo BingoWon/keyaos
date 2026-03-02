@@ -18,7 +18,7 @@ import { Dashboard } from "./pages/Dashboard";
 import { DesignSystem } from "./pages/DesignSystem";
 import AnthropicApiMdx from "./pages/docs/anthropic-api.mdx";
 import AuthenticationMdx from "./pages/docs/authentication.mdx";
-import BillingMdx from "./pages/docs/billing.mdx";
+import CreditsMdx from "./pages/docs/credits.mdx";
 import ContactMdx from "./pages/docs/contact.mdx";
 import CredentialsSharingMdx from "./pages/docs/credentials-sharing.mdx";
 import CreditsApiMdx from "./pages/docs/credits-api.mdx";
@@ -118,7 +118,7 @@ export const router = createBrowserRouter([
 				element: <MdxPage Component={CredentialsSharingMdx} />,
 			},
 			{ path: "pricing", element: <MdxPage Component={PricingMdx} /> },
-			{ path: "billing", element: <MdxPage Component={BillingMdx} /> },
+			{ path: "credits", element: <MdxPage Component={CreditsMdx} /> },
 			{
 				path: "authentication",
 				element: <MdxPage Component={AuthenticationMdx} />,

@@ -70,8 +70,8 @@ function buildFallbackIndex(t: (key: string) => string): DocEntry[] {
 			excerpt: "",
 		},
 		{
-			url: "/docs/billing",
-			title: t("docs.nav_billing"),
+			url: "/docs/credits",
+			title: t("docs.nav_credits"),
 			section: t("docs.section_user_guide"),
 			excerpt: "",
 		},

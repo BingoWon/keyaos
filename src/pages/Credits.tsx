@@ -350,7 +350,7 @@ export function Credits() {
 								<Input
 									type="number"
 									min="1"
-									step="1"
+									step="0.01"
 									placeholder={t("credits.custom_placeholder")}
 									value={customAmount}
 									onChange={(e) => setCustomAmount(e.target.value)}
@@ -446,19 +446,19 @@ export function Credits() {
 					) : (
 						<div className="mt-3 space-y-3">
 							<div className="flex flex-col gap-4 sm:flex-row sm:gap-0 sm:divide-x sm:divide-gray-200 sm:dark:divide-white/10">
-								<div className="sm:pr-4">
+								<div className="flex-1 sm:pr-4">
 									<span className="text-xs font-medium text-gray-500 dark:text-gray-400">
 										{t("credits.auto_topup_threshold")}
 									</span>
 									<div className="mt-1.5 flex flex-wrap items-center gap-2">
-										<div className="relative w-24">
+										<div className="relative flex-1 min-w-20">
 											<span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
 												$
 											</span>
 											<Input
 												type="number"
 												min="1"
-												step="1"
+												step="0.01"
 												value={autoThreshold}
 												onChange={(e) => setAutoThreshold(e.target.value)}
 												className="pl-7"
@@ -480,19 +480,19 @@ export function Credits() {
 										))}
 									</div>
 								</div>
-								<div className="sm:pl-4">
+								<div className="flex-1 sm:pl-4">
 									<span className="text-xs font-medium text-gray-500 dark:text-gray-400">
 										{t("credits.auto_topup_amount")}
 									</span>
 									<div className="mt-1.5 flex flex-wrap items-center gap-2">
-										<div className="relative w-24">
+										<div className="relative flex-1 min-w-20">
 											<span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
 												$
 											</span>
 											<Input
 												type="number"
 												min="5"
-												step="1"
+												step="0.01"
 												value={autoAmount}
 												onChange={(e) => setAutoAmount(e.target.value)}
 												className="pl-7"

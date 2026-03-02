@@ -101,32 +101,53 @@ function ModelCard({
 			<button
 				type="button"
 				onClick={() => setOpen(!open)}
-				className="w-full px-4 py-3.5 sm:px-5 flex items-start gap-3 hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer select-none text-left"
+				className="w-full px-4 py-3.5 sm:px-5 grid grid-cols-[1fr_auto_1fr] items-center gap-4 hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer select-none text-left"
 			>
-				<ChevronRightIcon
-					className={`mt-0.5 size-4 shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
-				/>
-				<div className="min-w-0 flex-1">
-					<h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
-						{group.displayName}
-					</h4>
-					<span className="flex items-center gap-1.5 mt-1">
-						<code className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
-							{group.id}
-						</code>
-						{/* biome-ignore lint/a11y/noStaticElementInteractions: isolates click from parent button */}
-						{/* biome-ignore lint/a11y/useKeyWithClickEvents: inner button handles keyboard */}
-						<span onClick={(e) => e.stopPropagation()}>
-							<CopyButton text={group.id} />
+				{/* Left: model info */}
+				<div className="flex items-start gap-2 min-w-0">
+					<ChevronRightIcon
+						className={`mt-0.5 size-4 shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+					/>
+					<div className="min-w-0">
+						<h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+							{group.displayName}
+						</h4>
+						<span className="flex items-center gap-1.5 mt-1">
+							<code className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
+								{group.id}
+							</code>
+							{/* biome-ignore lint/a11y/noStaticElementInteractions: isolates click from parent button */}
+							{/* biome-ignore lint/a11y/useKeyWithClickEvents: inner button handles keyboard */}
+							<span onClick={(e) => e.stopPropagation()}>
+								<CopyButton text={group.id} />
+							</span>
+							{group.createdAt > 0 && (
+								<Badge variant="warning">
+									{formatRelativeTime(group.createdAt)}
+								</Badge>
+							)}
 						</span>
-						{group.createdAt > 0 && (
-							<Badge variant="warning">
-								{formatRelativeTime(group.createdAt)}
-							</Badge>
-						)}
-					</span>
+					</div>
 				</div>
-				<div className="shrink-0 flex flex-col items-end gap-2">
+
+				{/* Center: sparkline + price range */}
+				<div className="hidden md:flex flex-col items-center gap-1.5">
+					{sparkInput ? (
+						<>
+							<Sparkline data={sparkInput} width={120} height={36} />
+							<PriceRange
+								data={sparkInput}
+								format={(v) => formatPrice(v * 100)}
+								width={140}
+							/>
+						</>
+					) : (
+						<div className="w-[140px]" />
+					)}
+				</div>
+
+				{/* Right: badges + pricing */}
+				<div className="flex flex-col items-end gap-2">
 					<div className="flex items-center gap-1.5">
 						<div className="hidden sm:flex items-center gap-1">
 							{group.providers.slice(0, 5).map((p) => {
@@ -143,17 +164,6 @@ function ModelCard({
 						</div>
 						<Badge variant="brand">{group.providers.length}</Badge>
 					</div>
-					{(sparkInput || sparkOutput) && (
-						<div className="hidden md:flex items-center gap-3">
-							{sparkInput && <Sparkline data={sparkInput} />}
-							{sparkInput && (
-								<PriceRange
-									data={sparkInput}
-									format={(v) => formatPrice(v * 100)}
-								/>
-							)}
-						</div>
-					)}
 					<div className="flex flex-wrap items-center justify-end gap-1.5">
 						<ModalityBadges
 							input={group.inputModalities}

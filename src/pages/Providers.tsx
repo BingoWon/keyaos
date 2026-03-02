@@ -49,34 +49,46 @@ function ProviderCard({
 			<button
 				type="button"
 				onClick={() => setOpen(!open)}
-				className="w-full px-4 py-3.5 sm:px-5 flex items-center gap-3 hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer select-none text-left"
+				className="w-full px-4 py-3.5 sm:px-5 grid grid-cols-[1fr_auto_1fr] items-center gap-4 hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer select-none text-left"
 			>
-				<ChevronRightIcon
-					className={`size-4 shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
-				/>
-				<ProviderLogo
-					src={group.provider.logoUrl}
-					name={group.provider.name}
-					size={24}
-				/>
-				<div className="min-w-0 flex-1">
-					<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-						{group.provider.name}
-					</h4>
-					<span className="text-xs text-gray-500 dark:text-gray-400">
-						{group.provider.id}
-					</span>
-				</div>
-				{spark && (
-					<div className="hidden md:flex items-center gap-3">
-						<Sparkline data={spark} />
-						<PriceRange
-							data={spark}
-							format={(v) => `×${v.toFixed(2)}`}
-						/>
+				{/* Left: provider info */}
+				<div className="flex items-center gap-2 min-w-0">
+					<ChevronRightIcon
+						className={`size-4 shrink-0 text-gray-400 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+					/>
+					<ProviderLogo
+						src={group.provider.logoUrl}
+						name={group.provider.name}
+						size={24}
+					/>
+					<div className="min-w-0">
+						<h4 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
+							{group.provider.name}
+						</h4>
+						<span className="text-xs text-gray-500 dark:text-gray-400">
+							{group.provider.id}
+						</span>
 					</div>
-				)}
-				<div className="shrink-0 flex items-center gap-1.5">
+				</div>
+
+				{/* Center: sparkline + price range */}
+				<div className="hidden md:flex flex-col items-center gap-1.5">
+					{spark ? (
+						<>
+							<Sparkline data={spark} width={120} height={36} />
+							<PriceRange
+								data={spark}
+								format={(v) => `×${v.toFixed(2)}`}
+								width={140}
+							/>
+						</>
+					) : (
+						<div className="w-[140px]" />
+					)}
+				</div>
+
+				{/* Right: badges */}
+				<div className="flex items-center justify-end gap-1.5">
 					{group.bestMultiplier != null && group.bestMultiplier < 1 && (
 						<Badge variant="success">×{group.bestMultiplier.toFixed(3)}</Badge>
 					)}

@@ -98,7 +98,7 @@ export function Models() {
 
 	return (
 		<div>
-			<div className="sm:flex sm:items-center">
+			<div className="sm:flex sm:items-end">
 				<div className="sm:flex-auto">
 					<h3 className="text-base font-semibold text-gray-900 dark:text-white">
 						{t("models.title")}
@@ -245,14 +245,14 @@ export function Models() {
 					</div>
 
 					<div className="mt-3 flex items-center justify-between">
-						<span className="text-xs text-gray-500 dark:text-gray-400">
-							{query
-								? t("models.result_count", {
-										count: filtered.length,
-										total: groups.length,
-									})
-								: `${filtered.length} ${t("models.title").toLowerCase()}`}
-						</span>
+					<span className="text-xs text-gray-500 dark:text-gray-400">
+						{query
+							? t("models.result_count", {
+									count: filtered.length,
+									total: groups.length,
+								})
+							: t("models.total_count", { count: filtered.length })}
+					</span>
 						<Pagination
 							page={safePage}
 							totalPages={totalPages}

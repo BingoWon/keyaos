@@ -1,5 +1,6 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/react/20/solid";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 
 function pageRange(current: number, total: number): (number | "...")[] {
 	if (total <= 7) return Array.from({ length: total }, (_, i) => i + 1);
@@ -31,6 +32,7 @@ export function Pagination({
 	pageSize?: number;
 	onPageSizeChange?: (size: number) => void;
 }) {
+	const { t } = useTranslation();
 	const [jumpInput, setJumpInput] = useState("");
 
 	if (totalPages <= 1 && !onPageSizeChange) return null;
@@ -60,7 +62,7 @@ export function Pagination({
 				>
 					{PAGE_SIZE_OPTIONS.map((s) => (
 						<option key={s} value={s}>
-							{s} / page
+							{t("pagination.per_page", { size: s })}
 						</option>
 					))}
 				</select>
@@ -122,7 +124,7 @@ export function Pagination({
 						onClick={handleJump}
 						className="h-8 rounded-md border border-gray-200 bg-white px-2 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10"
 					>
-						Go
+						{t("pagination.go")}
 					</button>
 				</span>
 			)}

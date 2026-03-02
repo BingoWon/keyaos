@@ -64,7 +64,7 @@ export function Providers() {
 
 	return (
 		<div>
-			<div className="sm:flex sm:items-center">
+			<div className="sm:flex sm:items-end">
 				<div className="sm:flex-auto">
 					<h3 className="text-base font-semibold text-gray-900 dark:text-white">
 						{t("providers.title")}

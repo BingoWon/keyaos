@@ -33,11 +33,9 @@ import {
 
 const LATEST_MODELS_LIMIT = 10;
 
-interface Stats {
-	total: number;
-	activeProviders: number;
-	dead: number;
-	totalQuota: number;
+interface PoolStats {
+	healthyCredentials: number;
+	earnings24h: number;
 }
 
 interface LogEntry {
@@ -54,14 +52,11 @@ interface LogEntry {
 export function Dashboard() {
 	const { t } = useTranslation();
 	const formatDateTime = useFormatDateTime();
-	const { data: stats, loading: statsLoading } =
-		useFetch<Stats>("/api/pool/stats");
+	const { data: poolStats, loading: statsLoading } =
+		useFetch<PoolStats>("/api/pool/stats");
 	const { data: balance } = useFetch<{ balance: number }>(
 		"/api/credits/balance",
 		{ skip: !isPlatform },
-	);
-	const { data: earnings } = useFetch<{ total: number }>(
-		"/api/logs/earnings-24h",
 	);
 	const { data: rawModels, loading: modelsLoading } =
 		useFetch<ModelEntry[]>("/api/models");
@@ -126,13 +121,13 @@ export function Dashboard() {
 			: []),
 		{
 			name: t("dashboard.healthy_credentials"),
-			stat: stats ? stats.total - stats.dead : "-",
+			stat: poolStats ? poolStats.healthyCredentials : "-",
 			icon: DocumentCheckIcon,
 			href: "/dashboard/byok",
 		},
 		{
 			name: t("dashboard.credits_earnings"),
-			stat: earnings ? formatUSD(earnings.total) : "-",
+			stat: poolStats ? formatUSD(poolStats.earnings24h) : "-",
 			icon: ArrowTrendingUpIcon,
 			href: "/dashboard/logs",
 		},
@@ -145,7 +140,7 @@ export function Dashboard() {
 			</h3>
 
 			{/* Stats Cards */}
-			<dl className="grid grid-cols-3 gap-4">
+			<dl className={`grid gap-4 ${statCards.length === 3 ? "grid-cols-3" : "grid-cols-2"}`}>
 				{statCards.map((item) => (
 					<Link
 						key={item.name}
@@ -176,12 +171,12 @@ export function Dashboard() {
 			{providerGroups.length > 0 && (
 				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
 					<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
-					<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-						{t("dashboard.providers_title")}
-						<span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">
-							{providerGroups.length}
-						</span>
-					</h4>
+						<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+							{t("dashboard.providers_title")}
+							<span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">
+								{providerGroups.length}
+							</span>
+						</h4>
 						<Link
 							to="/dashboard/providers"
 							className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
@@ -216,12 +211,12 @@ export function Dashboard() {
 			{latestModels.length > 0 && (
 				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
 					<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
-					<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-						{t("dashboard.latest_models")}
-						<span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">
-							{uniqueModelCount}
-						</span>
-					</h4>
+						<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+							{t("dashboard.latest_models")}
+							<span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">
+								{uniqueModelCount}
+							</span>
+						</h4>
 						<Link
 							to="/dashboard/models"
 							className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"

@@ -16,8 +16,15 @@ systemRouter.get("/me", (c) => {
 });
 
 systemRouter.get("/pool/stats", async (c) => {
-	const dao = new CredentialsDao(c.env.DB);
-	return c.json(await dao.getStats(c.get("owner_id")));
+	const userId = c.get("owner_id");
+	const [credStats, earnings24h] = await Promise.all([
+		new CredentialsDao(c.env.DB).getStats(userId),
+		new LogsDao(c.env.DB).getEarnings24h(userId),
+	]);
+	return c.json({
+		healthyCredentials: credStats.total - credStats.dead,
+		earnings24h,
+	});
 });
 
 systemRouter.get("/providers", edgeCache(), (c) => {
@@ -69,12 +76,6 @@ systemRouter.get("/logs", async (c) => {
 			};
 		}),
 	});
-});
-
-systemRouter.get("/logs/earnings-24h", async (c) => {
-	const userId = c.get("owner_id");
-	const total = await new LogsDao(c.env.DB).getEarnings24h(userId);
-	return c.json({ data: { total } });
 });
 
 /** Auto-select candle interval based on time range. */

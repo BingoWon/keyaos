@@ -136,7 +136,7 @@ describe("Dispatch: cross-provider effective cost", () => {
 });
 
 describe("Dispatch: billing correctness", () => {
-	test("Ledger entry matches selected credential", async () => {
+	test("Transaction entry matches selected credential", async () => {
 		const result = await chat("openai/gpt-4o-mini", "openrouter");
 		assert.strictEqual(result.status, 200, `Chat failed: ${result.body}`);
 		assert.ok(result.credentialId, "Missing x-credential-id header");

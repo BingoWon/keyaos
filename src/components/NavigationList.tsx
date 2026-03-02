@@ -36,7 +36,14 @@ export function NavigationList({ onNavigate }: NavigationListProps) {
 	const { t } = useTranslation();
 	const { isAdmin } = useAuth();
 
-	const navigation = [
+	const navigation: {
+		name: string;
+		href: string;
+		icon: typeof HomeIcon;
+		activeIcon: typeof HomeIconSolid;
+		end?: boolean;
+		external?: boolean;
+	}[] = [
 		{
 			name: t("nav.dashboard"),
 			href: "/dashboard",
@@ -89,6 +96,7 @@ export function NavigationList({ onNavigate }: NavigationListProps) {
 			href: "/docs",
 			icon: BookOpenIcon,
 			activeIcon: BookOpenIconSolid,
+			external: true,
 		},
 		...(isAdmin === true
 			? [
@@ -107,11 +115,28 @@ export function NavigationList({ onNavigate }: NavigationListProps) {
 			<ul className="flex flex-1 flex-col gap-y-7">
 				<li>
 					<ul className="-mx-2 space-y-1">
-						{navigation.map((item) => (
-							<li key={item.name}>
+					{navigation.map((item) => (
+						<li key={item.name}>
+							{item.external ? (
+								<a
+									href={item.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									className={classNames(
+										"text-gray-700 hover:bg-gray-50 hover:text-brand-600 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white",
+										"group flex gap-x-3 rounded-lg p-2 text-sm/6 font-semibold",
+									)}
+								>
+									<item.icon
+										aria-hidden="true"
+										className="text-gray-400 group-hover:text-brand-600 dark:group-hover:text-white size-6 shrink-0"
+									/>
+									{item.name}
+								</a>
+							) : (
 								<NavLink
 									to={item.href}
-									end={"end" in item ? item.end : undefined}
+									end={item.end}
 									onClick={onNavigate}
 									className={({ isActive }) =>
 										classNames(
@@ -123,7 +148,9 @@ export function NavigationList({ onNavigate }: NavigationListProps) {
 									}
 								>
 									{({ isActive }) => {
-										const Icon = isActive ? item.activeIcon : item.icon;
+										const Icon = isActive
+											? item.activeIcon
+											: item.icon;
 										return (
 											<>
 												<Icon
@@ -140,8 +167,9 @@ export function NavigationList({ onNavigate }: NavigationListProps) {
 										);
 									}}
 								</NavLink>
-							</li>
-						))}
+							)}
+						</li>
+					))}
 					</ul>
 				</li>
 				<li className="-mx-6 mt-auto">

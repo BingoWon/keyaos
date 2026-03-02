@@ -12,6 +12,9 @@ compatibility_flags = ["nodejs_compat"]
 [vars]
 CNY_USD_RATE = "7"
 
+[placement]
+mode = "smart"
+
 [assets]
 directory = "./dist"
 binding = "ASSETS"

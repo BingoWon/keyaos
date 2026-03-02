@@ -5,12 +5,13 @@ import {
 	CurrencyDollarIcon,
 	DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import type { Modality } from "../../worker/core/db/schema";
 import { isPlatform } from "../auth";
+import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
+import { ModelDetailModal } from "../components/ModelDetailModal";
 import { PageLoader } from "../components/PageLoader";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { Sparkline, type SparklineData } from "../components/Sparkline";
@@ -25,7 +26,9 @@ import {
 	formatSignedUSD,
 	formatUSD,
 } from "../utils/format";
-import { mergeModalities } from "../utils/modalities";
+import { type ModelGroup, aggregateModels } from "../utils/models";
+
+const LATEST_MODELS_LIMIT = 10;
 
 interface Stats {
 	total: number;
@@ -45,97 +48,9 @@ interface LogEntry {
 	createdAt: number;
 }
 
-interface ModelGroup {
-	id: string;
-	createdAt: number;
-	providerIds: string[];
-	bestInputPrice: number;
-	bestOutputPrice: number;
-	bestPlatformInputPrice?: number;
-	bestPlatformOutputPrice?: number;
-	maxContext: number;
-	inputModalities: Modality[];
-	outputModalities: Modality[];
-}
-
 interface ProviderGroup {
 	meta: ProviderMeta;
 	modelCount: number;
-}
-
-function aggregateTopModels(
-	entries: ModelEntry[],
-	limit: number,
-): ModelGroup[] {
-	const groups = new Map<
-		string,
-		{
-			createdAt: number;
-			providers: Set<string>;
-			bestInput: number;
-			bestOutput: number;
-			bestPlatformInput?: number;
-			bestPlatformOutput?: number;
-			maxContext: number;
-			inputModalities: Modality[];
-			outputModalities: Modality[];
-		}
-	>();
-	for (const e of entries) {
-		let g = groups.get(e.id);
-		if (!g) {
-			g = {
-				createdAt: e.created_at ?? 0,
-				providers: new Set(),
-				bestInput: e.input_price ?? 0,
-				bestOutput: e.output_price ?? 0,
-				bestPlatformInput: e.platform_input_price,
-				bestPlatformOutput: e.platform_output_price,
-				maxContext: e.context_length ?? 0,
-				inputModalities: e.input_modalities ?? ["text"],
-				outputModalities: e.output_modalities ?? ["text"],
-			};
-			groups.set(e.id, g);
-		}
-		g.providers.add(e.provider);
-		if (e.created_at && (!g.createdAt || e.created_at < g.createdAt)) {
-			g.createdAt = e.created_at;
-		}
-		const ip = e.input_price ?? 0;
-		const op = e.output_price ?? 0;
-		if (ip < g.bestInput) g.bestInput = ip;
-		if (op < g.bestOutput) g.bestOutput = op;
-		const pip = e.platform_input_price;
-		const pop = e.platform_output_price;
-		if (pip != null) {
-			g.bestPlatformInput =
-				g.bestPlatformInput != null ? Math.min(g.bestPlatformInput, pip) : pip;
-		}
-		if (pop != null) {
-			g.bestPlatformOutput =
-				g.bestPlatformOutput != null
-					? Math.min(g.bestPlatformOutput, pop)
-					: pop;
-		}
-		g.maxContext = Math.max(g.maxContext, e.context_length ?? 0);
-		// Merge modalities (union)
-		mergeModalities(g.inputModalities, e.input_modalities);
-		mergeModalities(g.outputModalities, e.output_modalities);
-	}
-	return [...groups.entries()]
-		.map(([id, g]) => ({
-			id,
-			createdAt: g.createdAt,
-			providerIds: [...g.providers],
-			bestInputPrice: g.bestInput,
-			bestOutputPrice: g.bestOutput,
-			bestPlatformInputPrice: g.bestPlatformInput,
-			bestPlatformOutputPrice: g.bestPlatformOutput,
-			maxContext: g.maxContext,
-			inputModalities: g.inputModalities,
-			outputModalities: g.outputModalities,
-		}))
-		.slice(0, limit);
 }
 
 function aggregateProviders(
@@ -180,10 +95,11 @@ export function Dashboard() {
 		return new Set(rawModels.map((m) => m.id)).size;
 	}, [rawModels]);
 
-	const topModels = useMemo(
-		() => aggregateTopModels(rawModels ?? [], 8),
+	const allGroups = useMemo(
+		() => aggregateModels(rawModels ?? []),
 		[rawModels],
 	);
+	const latestModels = allGroups.slice(0, LATEST_MODELS_LIMIT);
 
 	const providerGroups = useMemo(
 		() => aggregateProviders(rawModels ?? [], providersData ?? []),
@@ -194,6 +110,8 @@ export function Dashboard() {
 		() => new Map((providersData ?? []).map((m) => [m.id, m])),
 		[providersData],
 	);
+
+	const [selected, setSelected] = useState<ModelGroup | null>(null);
 
 	const loading = statsLoading || modelsLoading;
 
@@ -317,9 +235,9 @@ export function Dashboard() {
 				</div>
 			)}
 
-			{/* Top Models */}
-			{topModels.length > 0 && (
-				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
+			{/* Latest Models */}
+			{latestModels.length > 0 && (
+				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
 					<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
 						<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
 							{t("dashboard.latest_models")}
@@ -333,77 +251,85 @@ export function Dashboard() {
 					</div>
 					<table className="min-w-full">
 						<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-							{topModels.map((m) => (
-								<tr
-									key={m.id}
-									className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors"
-								>
-									<td className="py-3 pl-5 pr-2">
-										<Link to="/dashboard/models">
-											<code className="text-xs font-mono text-gray-500 dark:text-gray-400 truncate">
-												{m.id}
-											</code>
-										</Link>
-									</td>
-									<td className="px-2 py-3">
-										{m.createdAt > 0 && (
-											<Badge variant="warning">
-												{formatRelativeTime(m.createdAt)}
-											</Badge>
-										)}
-									</td>
-									<td className="px-2 py-3">
-										<span className="inline-flex items-center gap-1">
-											{m.providerIds.slice(0, 5).map((pid) => {
-												const meta = providerMap.get(pid);
-												return meta ? (
-													<ProviderLogo
-														key={pid}
-														src={meta.logoUrl}
-														name={meta.name}
-														size={18}
-													/>
-												) : null;
-											})}
-										</span>
-									</td>
-									<td className="hidden md:table-cell px-2 py-3">
-										{inputSparks?.[m.id] && (
-											<Sparkline data={inputSparks[m.id]} className="h-7" />
-										)}
-									</td>
-									<td className="px-2 py-3">
-										<ModalityBadges
-											input={m.inputModalities}
-											output={m.outputModalities}
-											size={14}
-										/>
-									</td>
-									<td className="px-2 py-3">
-										<span className="inline-flex items-center gap-1">
-											<Badge variant="success">
-												<DualPrice
-													original={m.bestInputPrice}
-													platform={m.bestPlatformInputPrice}
-												/>
-												in
-											</Badge>
-											<Badge variant="accent">
-												<DualPrice
-													original={m.bestOutputPrice}
-													platform={m.bestPlatformOutputPrice}
-												/>
-												out
-											</Badge>
-										</span>
-									</td>
-									<td className="py-3 pl-2 pr-5 text-right">
-										{m.maxContext > 0 && (
-											<Badge>{formatContext(m.maxContext)} ctx</Badge>
-										)}
-									</td>
-								</tr>
-							))}
+							{latestModels.map((g) => {
+								const best = g.providers[0];
+								const maxCtx = Math.max(
+									...g.providers.map((p) => p.contextLength),
+								);
+								const spark = inputSparks?.[g.id];
+								return (
+									<tr
+										key={g.id}
+										onClick={() => setSelected(g)}
+										className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+									>
+										<td className="py-2.5 pl-5 pr-2">
+											<div className="min-w-0">
+												<div className="text-sm font-semibold text-gray-900 dark:text-white">
+													{g.displayName}
+												</div>
+												<div className="flex items-center gap-1.5 mt-0.5">
+													<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
+														{g.id}
+													</code>
+													<span onClick={(e) => e.stopPropagation()}>
+														<CopyButton text={g.id} />
+													</span>
+													{g.createdAt > 0 && (
+														<Badge variant="warning">
+															{formatRelativeTime(g.createdAt)}
+														</Badge>
+													)}
+												</div>
+											</div>
+										</td>
+										<td className="px-2 py-2.5 hidden lg:table-cell">
+											<ModalityBadges
+												input={g.inputModalities}
+												output={g.outputModalities}
+											/>
+										</td>
+										<td className="px-2 py-2.5 hidden md:table-cell">
+											{spark && <Sparkline data={spark} className="h-7" />}
+										</td>
+										<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
+											<DualPrice
+												original={best.inputPrice}
+												platform={best.platformInputPrice}
+											/>
+										</td>
+										<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
+											<DualPrice
+												original={best.outputPrice}
+												platform={best.platformOutputPrice}
+											/>
+										</td>
+										<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell whitespace-nowrap">
+											{maxCtx > 0 ? formatContext(maxCtx) : "—"}
+										</td>
+										<td className="py-2.5 pl-2 pr-5">
+											<div className="flex items-center justify-end gap-1">
+												<span className="hidden sm:inline-flex items-center gap-0.5">
+													{g.providers.slice(0, 4).map((p) => {
+														const meta = providerMap.get(p.provider);
+														return meta ? (
+															<ProviderLogo
+																key={p.provider}
+																src={meta.logoUrl}
+																name={meta.name}
+																size={16}
+															/>
+														) : null;
+													})}
+												</span>
+												<Badge variant="brand">
+													{g.providers.length}
+												</Badge>
+											</div>
+										</td>
+									</tr>
+								);
+							})}
 						</tbody>
 					</table>
 				</div>
@@ -440,7 +366,7 @@ export function Dashboard() {
 									<td className="py-2.5 pl-5 pr-2 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
 										{formatDateTime(tx.createdAt)}
 									</td>
-									<td className="px-2 py-2.5 text-sm text-gray-900 dark:text-white truncate max-w-[200px]">
+									<td className="px-2 py-2.5 text-sm text-gray-900 dark:text-white">
 										{tx.model}
 									</td>
 									<td className="px-2 py-2.5 text-sm text-gray-500 dark:text-gray-400">
@@ -462,6 +388,14 @@ export function Dashboard() {
 						</tbody>
 					</table>
 				</div>
+			)}
+
+			{selected && (
+				<ModelDetailModal
+					group={selected}
+					providerMap={providerMap}
+					onClose={() => setSelected(null)}
+				/>
 			)}
 		</div>
 	);

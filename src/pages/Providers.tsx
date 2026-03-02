@@ -1,12 +1,9 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import type { Modality } from "../../worker/core/db/schema";
 import { CopyButton } from "../components/CopyButton";
-import { ModalityCell } from "../components/Modalities";
-import { Modal } from "../components/Modal";
 import { PageLoader } from "../components/PageLoader";
-import { PriceChart } from "../components/PriceChart";
+import { ProviderDetailModal } from "../components/ProviderDetailModal";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { SearchBar } from "../components/SearchBar";
 import {
@@ -14,104 +11,15 @@ import {
 	Sparkline,
 	type SparklineData,
 } from "../components/Sparkline";
-import { Badge, Button, DualPrice } from "../components/ui";
+import { Badge, Button } from "../components/ui";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
-import { formatContext, formatTimestamp } from "../utils/format";
+import { formatTimestamp } from "../utils/format";
+import { type ProviderGroup, aggregateProviders } from "../utils/providers";
 
 const fmtMultiplier = (v: number) => `×${v.toFixed(2)}`;
-
-interface ProviderModel {
-	id: string;
-	name: string;
-	inputPrice: number;
-	outputPrice: number;
-	platformInputPrice?: number;
-	platformOutputPrice?: number;
-	contextLength: number;
-	inputModalities: Modality[];
-	outputModalities: Modality[];
-}
-
-interface ProviderGroup {
-	provider: ProviderMeta;
-	models: ProviderModel[];
-	bestMultiplier?: number;
-}
-
-function ProviderDetailModal({
-	group,
-	onClose,
-}: {
-	group: ProviderGroup;
-	onClose: () => void;
-}) {
-	const { t } = useTranslation();
-	return (
-		<Modal
-			open
-			onClose={onClose}
-			title={group.provider.name}
-			size="4xl"
-		>
-			<PriceChart
-				dimension="provider"
-				value={group.provider.id}
-				title={t("chart.multiplier_trend")}
-				className="border-0 shadow-none -mx-1"
-			/>
-			<table className="mt-4 min-w-full divide-y divide-gray-100 dark:divide-white/5">
-				<thead>
-					<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500">
-						<th className="py-2 pr-2">{t("models.model")}</th>
-						<th className="px-2">In</th>
-						<th className="px-2">Out</th>
-						<th className="px-2 text-right">Input /1M</th>
-						<th className="px-2 text-right">Output /1M</th>
-						<th className="py-2 pl-2 text-right">Context</th>
-					</tr>
-				</thead>
-				<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-					{group.models.map((m) => (
-						<tr key={m.id}>
-							<td className="py-2.5 pr-2 text-sm text-gray-700 dark:text-gray-300">
-								<span className="inline-flex items-center gap-1">
-									<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
-										{m.id}
-									</code>
-									<CopyButton text={m.id} />
-								</span>
-							</td>
-							<td className="px-2 py-2.5">
-								<ModalityCell modalities={m.inputModalities} />
-							</td>
-							<td className="px-2 py-2.5">
-								<ModalityCell modalities={m.outputModalities} />
-							</td>
-							<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400">
-								<DualPrice
-									original={m.inputPrice}
-									platform={m.platformInputPrice}
-								/>
-							</td>
-							<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400">
-								<DualPrice
-									original={m.outputPrice}
-									platform={m.platformOutputPrice}
-								/>
-							</td>
-							<td className="py-2.5 pl-2 text-sm font-mono text-right text-gray-600 dark:text-gray-400">
-								{m.contextLength > 0 ? formatContext(m.contextLength) : "—"}
-							</td>
-						</tr>
-					))}
-				</tbody>
-			</table>
-		</Modal>
-	);
-}
 
 export function Providers() {
 	const { t } = useTranslation();
@@ -134,47 +42,10 @@ export function Providers() {
 
 	const lastUpdated = useAutoRefresh(refetch, models);
 
-	const groups = useMemo(() => {
-		if (!models || !providersData) return [];
-
-		const providerMap = new Map<string, ProviderMeta>();
-		for (const p of providersData) providerMap.set(p.id, p);
-
-		const byProvider = new Map<string, ProviderGroup>();
-		for (const m of models) {
-			const meta = providerMap.get(m.provider);
-			if (!meta) continue;
-			let group = byProvider.get(m.provider);
-			if (!group) {
-				group = { provider: meta, models: [] };
-				byProvider.set(m.provider, group);
-			}
-			group.models.push({
-				id: m.id,
-				name: m.name ?? m.id,
-				inputPrice: m.input_price ?? 0,
-				outputPrice: m.output_price ?? 0,
-				platformInputPrice: m.platform_input_price,
-				platformOutputPrice: m.platform_output_price,
-				contextLength: m.context_length ?? 0,
-				inputModalities: m.input_modalities ?? ["text"],
-				outputModalities: m.output_modalities ?? ["text"],
-			});
-		}
-
-		for (const g of byProvider.values()) {
-			const sample = g.models.find(
-				(m) => m.platformInputPrice != null && m.inputPrice > 0,
-			);
-			if (sample?.platformInputPrice != null) {
-				g.bestMultiplier = sample.platformInputPrice / sample.inputPrice;
-			}
-		}
-
-		return [...byProvider.values()].sort(
-			(a, b) => b.models.length - a.models.length,
-		);
-	}, [models, providersData]);
+	const groups = useMemo(
+		() => aggregateProviders(models ?? [], providersData ?? []),
+		[models, providersData],
+	);
 
 	const [query, setQuery] = useState("");
 	const [selected, setSelected] = useState<ProviderGroup | null>(null);

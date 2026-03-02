@@ -13,6 +13,7 @@ import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
 import { ModelDetailModal } from "../components/ModelDetailModal";
 import { PageLoader } from "../components/PageLoader";
+import { ProviderDetailModal } from "../components/ProviderDetailModal";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { Sparkline, type SparklineData } from "../components/Sparkline";
 import { Badge, DualPrice } from "../components/ui";
@@ -27,6 +28,10 @@ import {
 	formatUSD,
 } from "../utils/format";
 import { type ModelGroup, aggregateModels } from "../utils/models";
+import {
+	type ProviderGroup,
+	aggregateProviders,
+} from "../utils/providers";
 
 const LATEST_MODELS_LIMIT = 10;
 
@@ -46,29 +51,6 @@ interface LogEntry {
 	outputTokens: number;
 	netCredits: number;
 	createdAt: number;
-}
-
-interface ProviderGroup {
-	meta: ProviderMeta;
-	modelCount: number;
-}
-
-function aggregateProviders(
-	entries: ModelEntry[],
-	metas: ProviderMeta[],
-): ProviderGroup[] {
-	const counts = new Map<string, number>();
-	for (const e of entries) {
-		counts.set(e.provider, (counts.get(e.provider) ?? 0) + 1);
-	}
-	const metaMap = new Map(metas.map((m) => [m.id, m]));
-	return [...counts.entries()]
-		.map(([id, count]) => ({
-			meta: metaMap.get(id),
-			modelCount: count,
-		}))
-		.filter((g): g is ProviderGroup => !!g.meta)
-		.sort((a, b) => b.modelCount - a.modelCount);
 }
 
 export function Dashboard() {
@@ -111,7 +93,9 @@ export function Dashboard() {
 		[providersData],
 	);
 
-	const [selected, setSelected] = useState<ModelGroup | null>(null);
+	const [selectedModel, setSelectedModel] = useState<ModelGroup | null>(null);
+	const [selectedProvider, setSelectedProvider] =
+		useState<ProviderGroup | null>(null);
 
 	const loading = statsLoading || modelsLoading;
 
@@ -215,21 +199,22 @@ export function Dashboard() {
 					</div>
 					<div className="px-5 py-4 flex flex-wrap gap-2.5">
 						{providerGroups.map((g) => (
-							<Link
-								key={g.meta.id}
-								to="/dashboard/providers"
-								className="inline-flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2 dark:border-white/5 dark:bg-white/[0.02] hover:border-brand-200 dark:hover:border-brand-500/20 transition-colors"
+							<button
+								key={g.provider.id}
+								type="button"
+								onClick={() => setSelectedProvider(g)}
+								className="inline-flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2 dark:border-white/5 dark:bg-white/[0.02] hover:border-brand-200 dark:hover:border-brand-500/20 transition-colors cursor-pointer"
 							>
 								<ProviderLogo
-									src={g.meta.logoUrl}
-									name={g.meta.name}
+									src={g.provider.logoUrl}
+									name={g.provider.name}
 									size={18}
 								/>
 								<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-									{g.meta.name}
+									{g.provider.name}
 								</span>
-								<Badge variant="brand">{g.modelCount}</Badge>
-							</Link>
+								<Badge variant="brand">{g.models.length}</Badge>
+							</button>
 						))}
 					</div>
 				</div>
@@ -260,7 +245,7 @@ export function Dashboard() {
 								return (
 									<tr
 										key={g.id}
-										onClick={() => setSelected(g)}
+										onClick={() => setSelectedModel(g)}
 										className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
 									>
 										<td className="py-2.5 pl-5 pr-2">
@@ -390,11 +375,17 @@ export function Dashboard() {
 				</div>
 			)}
 
-			{selected && (
+			{selectedModel && (
 				<ModelDetailModal
-					group={selected}
+					group={selectedModel}
 					providerMap={providerMap}
-					onClose={() => setSelected(null)}
+					onClose={() => setSelectedModel(null)}
+				/>
+			)}
+			{selectedProvider && (
+				<ProviderDetailModal
+					group={selectedProvider}
+					onClose={() => setSelectedProvider(null)}
 				/>
 			)}
 		</div>

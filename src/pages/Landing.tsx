@@ -181,7 +181,7 @@ function Hero() {
 const LANDING_MODELS_LIMIT = 8;
 
 function PlatformShowcase() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const { isLoaded, isSignedIn } = useAuth();
 	const authed = isLoaded && isSignedIn;
 
@@ -261,7 +261,7 @@ function PlatformShowcase() {
 															<CopyButton text={g.id} />
 															{g.createdAt > 0 && (
 																<Badge variant="warning">
-																	{formatRelativeTime(g.createdAt)}
+																	{formatRelativeTime(g.createdAt, i18n.language)}
 																</Badge>
 															)}
 														</div>

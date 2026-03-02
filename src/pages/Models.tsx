@@ -26,10 +26,10 @@ import {
 } from "../utils/format";
 import { aggregateModels, type ModelGroup } from "../utils/models";
 
-const PAGE_SIZE = 30;
+const DEFAULT_PAGE_SIZE = 30;
 
 export function Models() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const {
 		data: raw,
 		loading,
@@ -58,6 +58,7 @@ export function Models() {
 
 	const [query, setQuery] = useState("");
 	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [selected, setSelected] = useState<ModelGroup | null>(null);
 
 	const filtered = useMemo(() => {
@@ -70,15 +71,20 @@ export function Models() {
 		);
 	}, [groups, query]);
 
-	const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+	const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
 	const safePage = Math.min(page, totalPages);
 	const paged = filtered.slice(
-		(safePage - 1) * PAGE_SIZE,
-		safePage * PAGE_SIZE,
+		(safePage - 1) * pageSize,
+		safePage * pageSize,
 	);
 
 	const handleSearch = (v: string) => {
 		setQuery(v);
+		setPage(1);
+	};
+
+	const handlePageSizeChange = (size: number) => {
+		setPageSize(size);
 		setPage(1);
 	};
 
@@ -178,7 +184,7 @@ export function Models() {
 														<CopyButton text={g.id} />
 														{g.createdAt > 0 && (
 															<Badge variant="warning">
-																{formatRelativeTime(g.createdAt)}
+																{formatRelativeTime(g.createdAt, i18n.language)}
 															</Badge>
 														)}
 													</div>
@@ -251,6 +257,8 @@ export function Models() {
 							page={safePage}
 							totalPages={totalPages}
 							onChange={setPage}
+							pageSize={pageSize}
+							onPageSizeChange={handlePageSizeChange}
 						/>
 					</div>
 				</>

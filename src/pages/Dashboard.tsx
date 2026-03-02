@@ -49,7 +49,7 @@ interface LogEntry {
 }
 
 export function Dashboard() {
-	const { t } = useTranslation();
+	const { t, i18n } = useTranslation();
 	const formatDateTime = useFormatDateTime();
 	const { data: poolStats, loading: statsLoading } =
 		useFetch<PoolStats>("/api/pool/stats");
@@ -238,7 +238,7 @@ export function Dashboard() {
 													<CopyButton text={g.id} />
 													{g.createdAt > 0 && (
 														<Badge variant="warning">
-															{formatRelativeTime(g.createdAt)}
+															{formatRelativeTime(g.createdAt, i18n.language)}
 														</Badge>
 													)}
 												</div>

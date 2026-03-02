@@ -42,9 +42,9 @@ export function formatContext(len: number): string {
 	return len.toString();
 }
 
-/** Compact date: "Jan 15, 2026" */
-function formatDate(ms: number): string {
-	return new Date(ms).toLocaleDateString("en-US", {
+/** Compact locale-aware date */
+function formatDate(ms: number, locale?: string): string {
+	return new Date(ms).toLocaleDateString(locale, {
 		month: "short",
 		day: "numeric",
 		year: "numeric",
@@ -62,25 +62,27 @@ export function formatTimestamp(date: Date): string {
 }
 
 /**
- * Context-aware relative time:
- *   < 1h  → "12m ago"
- *   < 1d  → "5h ago"
- *   < 30d → "3d ago"
- *   else  → "Jan 15, 2026"
+ * Locale-aware relative time using Intl.RelativeTimeFormat (narrow style).
+ *   < 1h  → "12m ago" / "12分钟前"
+ *   < 1d  → "5h ago"  / "5小时前"
+ *   < 30d → "3d ago"  / "3天前"
+ *   else  → locale-formatted date
  */
-export function formatRelativeTime(ms: number): string {
+export function formatRelativeTime(ms: number, locale?: string): string {
 	if (!ms) return "";
 	const diff = Date.now() - ms;
-	if (diff < 0) return formatDate(ms);
+	if (diff < 0) return formatDate(ms, locale);
+
+	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "narrow" });
 
 	const minutes = Math.floor(diff / 60_000);
-	if (minutes < 60) return `${Math.max(1, minutes)}m ago`;
+	if (minutes < 60) return rtf.format(-Math.max(1, minutes), "minute");
 
 	const hours = Math.floor(diff / 3_600_000);
-	if (hours < 24) return `${hours}h ago`;
+	if (hours < 24) return rtf.format(-hours, "hour");
 
 	const days = Math.floor(diff / 86_400_000);
-	if (days < 30) return `${days}d ago`;
+	if (days < 30) return rtf.format(-days, "day");
 
-	return formatDate(ms);
+	return formatDate(ms, locale);
 }

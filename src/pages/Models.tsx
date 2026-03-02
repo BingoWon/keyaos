@@ -89,6 +89,18 @@ function aggregateModels(entries: ModelEntry[]): ModelGroup[] {
 	return [...groups.values()];
 }
 
+function ProviderCell({ id, meta }: { id: string; meta?: ProviderMeta }) {
+	return (
+		<td className="py-2.5 pr-2 text-sm text-gray-700 dark:text-gray-300">
+			<span className="inline-flex items-center gap-1.5">
+				{meta && <ProviderLogo src={meta.logoUrl} name={meta.name} size={16} />}
+				{meta?.name ?? id}
+				<CopyButton text={id} />
+			</span>
+		</td>
+	);
+}
+
 function ModelDetailModal({
 	group,
 	providerMap,
@@ -124,24 +136,10 @@ function ModelDetailModal({
 									: undefined
 							}
 						>
-							<td className="py-2.5 pr-2 text-sm text-gray-700 dark:text-gray-300">
-								{(() => {
-									const meta = providerMap.get(p.provider);
-									return (
-										<span className="inline-flex items-center gap-1.5">
-											{meta && (
-												<ProviderLogo
-													src={meta.logoUrl}
-													name={meta.name}
-													size={16}
-												/>
-											)}
-											{meta?.name ?? p.provider}
-											<CopyButton text={p.provider} />
-										</span>
-									);
-								})()}
-							</td>
+							<ProviderCell
+								id={p.provider}
+								meta={providerMap.get(p.provider)}
+							/>
 							<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400">
 								<DualPrice
 									original={p.inputPrice}

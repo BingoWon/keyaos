@@ -367,7 +367,7 @@ export function Dashboard() {
 											})}
 										</span>
 									</td>
-									<td className="hidden md:table-cell px-2 py-3 w-24">
+									<td className="hidden md:table-cell px-2 py-3">
 										{inputSparks?.[m.id] && (
 											<Sparkline data={inputSparks[m.id]} className="h-7" />
 										)}

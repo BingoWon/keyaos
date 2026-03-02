@@ -21,6 +21,8 @@ import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
 import { formatContext, formatTimestamp } from "../utils/format";
 
+const fmtMultiplier = (v: number) => `×${v.toFixed(2)}`;
+
 interface ProviderModel {
 	id: string;
 	name: string;
@@ -284,7 +286,7 @@ export function Providers() {
 												{spark && (
 													<PriceRange
 														data={spark}
-														format={(v) => `×${v.toFixed(2)}`}
+														format={fmtMultiplier}
 													/>
 												)}
 											</td>

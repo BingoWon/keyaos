@@ -1,11 +1,12 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Modality } from "../../worker/core/db/schema";
 import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
 import { Modal } from "../components/Modal";
 import { PageLoader } from "../components/PageLoader";
+import { Pagination } from "../components/Pagination";
 import { PriceChart } from "../components/PriceChart";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { SearchBar } from "../components/SearchBar";
@@ -170,12 +171,19 @@ export function Models() {
 		data: raw,
 		loading,
 		error,
-		refetch,
+		refetch: refetchModels,
 	} = useFetch<ModelEntry[]>("/api/models");
 	const { data: providersData } = useFetch<ProviderMeta[]>("/api/providers");
-	const { data: inputSparks } = useFetch<Record<string, SparklineData>>(
-		"/api/sparklines/model:input",
-	);
+	const {
+		data: inputSparks,
+		refetch: refetchSparks,
+	} = useFetch<Record<string, SparklineData>>("/api/sparklines/model:input");
+
+	const refetch = useCallback(() => {
+		refetchModels();
+		refetchSparks();
+	}, [refetchModels, refetchSparks]);
+
 	const lastUpdated = useAutoRefresh(refetch, raw);
 
 	const providerMap = useMemo(() => {
@@ -271,8 +279,12 @@ export function Models() {
 										{t("models.model")}
 									</th>
 									<th className="px-2 hidden lg:table-cell">Modalities</th>
-									<th className="px-2 hidden md:table-cell">24h Chart</th>
-									<th className="px-2 hidden md:table-cell">24h Range</th>
+									<th className="px-2 hidden md:table-cell max-w-[100px]">
+										24h Chart
+									</th>
+									<th className="px-2 hidden md:table-cell max-w-[100px]">
+										24h Range
+									</th>
 									<th className="px-2 text-right">Input /1M</th>
 									<th className="px-2 text-right">Output /1M</th>
 									<th className="px-2 text-right hidden sm:table-cell">
@@ -319,14 +331,14 @@ export function Models() {
 													output={g.outputModalities}
 												/>
 											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell">
+											<td className="px-2 py-2.5 hidden md:table-cell max-w-[100px]">
 												{spark && <Sparkline data={spark} />}
 											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell">
+											<td className="px-2 py-2.5 hidden md:table-cell max-w-[100px]">
 												{spark && (
 													<PriceRange
 														data={spark}
-														format={(v) => formatPrice(v * 100)}
+														format={formatPrice}
 													/>
 												)}
 											</td>
@@ -372,9 +384,8 @@ export function Models() {
 						</table>
 					</div>
 
-					{/* Pagination */}
-					<div className="mt-3 flex items-center justify-between text-xs text-gray-500 dark:text-gray-400">
-						<span>
+					<div className="mt-3 flex items-center justify-between">
+						<span className="text-xs text-gray-500 dark:text-gray-400">
 							{query
 								? t("models.result_count", {
 										count: filtered.length,
@@ -382,29 +393,11 @@ export function Models() {
 									})
 								: `${filtered.length} ${t("models.title").toLowerCase()}`}
 						</span>
-						{totalPages > 1 && (
-							<div className="flex items-center gap-1">
-								<button
-									type="button"
-									disabled={safePage <= 1}
-									onClick={() => setPage(safePage - 1)}
-									className="px-2.5 py-1 rounded-md border border-gray-200 dark:border-white/10 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-								>
-									{t("admin.prev")}
-								</button>
-								<span className="px-2 tabular-nums">
-									{safePage} / {totalPages}
-								</span>
-								<button
-									type="button"
-									disabled={safePage >= totalPages}
-									onClick={() => setPage(safePage + 1)}
-									className="px-2.5 py-1 rounded-md border border-gray-200 dark:border-white/10 disabled:opacity-30 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
-								>
-									{t("admin.next")}
-								</button>
-							</div>
-						)}
+						<Pagination
+							page={safePage}
+							totalPages={totalPages}
+							onChange={setPage}
+						/>
 					</div>
 				</>
 			)}

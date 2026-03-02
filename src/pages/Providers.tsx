@@ -1,5 +1,5 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Modality } from "../../worker/core/db/schema";
 import { CopyButton } from "../components/CopyButton";
@@ -120,10 +120,17 @@ export function Providers() {
 	} = useFetch<ModelEntry[]>("/api/models");
 	const { data: providersData, loading: providersLoading } =
 		useFetch<ProviderMeta[]>("/api/providers");
-	const { data: providerSparks } = useFetch<Record<string, SparklineData>>(
-		"/api/sparklines/provider",
-	);
-	const lastUpdated = useAutoRefresh(refetchModels, models);
+	const {
+		data: providerSparks,
+		refetch: refetchSparks,
+	} = useFetch<Record<string, SparklineData>>("/api/sparklines/provider");
+
+	const refetch = useCallback(() => {
+		refetchModels();
+		refetchSparks();
+	}, [refetchModels, refetchSparks]);
+
+	const lastUpdated = useAutoRefresh(refetch, models);
 
 	const groups = useMemo(() => {
 		if (!models || !providersData) return [];
@@ -200,7 +207,7 @@ export function Providers() {
 							{t("common_updated_at", { time: formatTimestamp(lastUpdated) })}
 						</span>
 					)}
-					<Button onClick={refetchModels} className="shrink-0">
+					<Button onClick={refetch} className="shrink-0">
 						<ArrowPathIcon
 							className={`-ml-0.5 size-5 ${modelsLoading ? "animate-spin" : ""}`}
 						/>
@@ -233,8 +240,8 @@ export function Providers() {
 									<th className="py-2.5 pl-4 pr-2 sm:pl-5">
 										{t("models.provider")}
 									</th>
-									<th className="px-2 hidden md:table-cell">24h Chart</th>
-									<th className="px-2 hidden md:table-cell">24h Range</th>
+									<th className="px-2 hidden md:table-cell max-w-[100px]">24h Chart</th>
+									<th className="px-2 hidden md:table-cell max-w-[100px]">24h Range</th>
 									<th className="px-2 text-right">Multiplier</th>
 									<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
 										{t("providers.models_count")}
@@ -267,10 +274,10 @@ export function Providers() {
 													</span>
 												</span>
 											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell">
+											<td className="px-2 py-2.5 hidden md:table-cell max-w-[100px]">
 												{spark && <Sparkline data={spark} />}
 											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell">
+											<td className="px-2 py-2.5 hidden md:table-cell max-w-[100px]">
 												{spark && (
 													<PriceRange
 														data={spark}

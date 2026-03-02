@@ -9,8 +9,8 @@ export function DualPrice({ original, platform }: DualPriceProps) {
 	if (platform != null && platform < original) {
 		return (
 			<>
-				<span className="line-through opacity-40">{formatPrice(original)}</span>{" "}
-				<span className="font-semibold">{formatPrice(platform)}</span>
+				<span className="text-[0.7em] line-through opacity-35">{formatPrice(original)}</span>{" "}
+				{formatPrice(platform)}
 			</>
 		);
 	}

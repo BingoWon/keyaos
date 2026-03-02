@@ -27,7 +27,8 @@ export function formatSignedUSD(value: number): string {
 /** Format model pricing (input is cents-per-million-tokens) */
 export function formatPrice(price: number): string {
 	if (price === 0) return "Free";
-	return `$${(price / 100).toPrecision(2)}`;
+	const dollars = price / 100;
+	return `$${Number(dollars.toPrecision(2))}`;
 }
 
 export function formatContext(len: number): string {

@@ -321,6 +321,8 @@
 		"cta_dashboard": "进入控制台",
 		"cta_github": "在 GitHub 上 Star",
 		"providers_label": "路由接入领先 AI 供应商",
+		"models_label": "市场最新模型",
+		"models_explore": "浏览全部模型",
 		"how_title": "如何运作",
 		"how_subtitle": "三步开启更省钱的 AI 调用",
 		"step1_title": "导入你的密钥",

@@ -1,7 +1,7 @@
 import { ChevronUpDownIcon } from "@heroicons/react/20/solid";
 import { useEffect, useRef, useState } from "react";
 import type { ProviderMeta } from "../types/provider";
-import { ProviderLogo } from "./ProviderLogo";
+import { ProviderChip } from "./ProviderLogo";
 
 interface ProviderSelectProps {
 	id?: string;
@@ -35,12 +35,13 @@ export function ProviderSelect({
 				type="button"
 				id={id}
 				onClick={() => setOpen(!open)}
-				className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white py-2 pl-3 pr-8 text-sm text-gray-900 transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white"
+				className="flex w-full items-center gap-2 rounded-lg border border-gray-200 bg-white py-2 pl-2 pr-8 text-sm text-gray-900 transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white"
 			>
-				{selected && (
-					<ProviderLogo src={selected.logoUrl} name={selected.name} size={18} />
+				{selected ? (
+					<ProviderChip src={selected.logoUrl} name={selected.name} size={18} />
+				) : (
+					<span className="truncate">{value}</span>
 				)}
-				<span className="truncate">{selected?.name ?? value}</span>
 				<ChevronUpDownIcon className="pointer-events-none absolute right-2 size-4 text-gray-400" />
 			</button>
 
@@ -54,14 +55,13 @@ export function ProviderSelect({
 									onChange(p.id);
 									setOpen(false);
 								}}
-								className={`flex w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:bg-gray-50 dark:hover:bg-white/5 ${
+								className={`flex w-full items-center gap-2 px-2 py-1.5 text-left transition-colors hover:bg-gray-50 dark:hover:bg-white/5 ${
 									p.id === value
 										? "font-medium text-brand-600 dark:text-brand-400"
 										: "text-gray-700 dark:text-gray-300"
 								}`}
 							>
-								<ProviderLogo src={p.logoUrl} name={p.name} size={18} />
-								<span className="truncate">{p.name}</span>
+								<ProviderChip src={p.logoUrl} name={p.name} size={18} />
 							</button>
 						</li>
 					))}

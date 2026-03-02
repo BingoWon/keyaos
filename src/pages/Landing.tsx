@@ -11,30 +11,24 @@ import {
 	SignalIcon,
 	UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import type { ComponentType, SVGProps } from "react";
+import { type ComponentType, type SVGProps, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { isPlatform, useAuth } from "../auth";
+import { CopyButton } from "../components/CopyButton";
 import { LanguageSelector } from "../components/LanguageSelector";
 import { Logo } from "../components/Logo";
+import { ModelDetailModal } from "../components/ModelDetailModal";
+import { ProviderGrid } from "../components/ProviderGrid";
+import { ProviderLogo } from "../components/ProviderLogo";
 import { ThemeToggle } from "../components/ThemeToggle";
-
-const PROVIDERS = [
-	{
-		name: "OpenRouter",
-		logo: "https://api.iconify.design/simple-icons:openrouter.svg",
-	},
-	{ name: "OpenAI", logo: "https://openai.com/favicon.ico" },
-	{ name: "DeepSeek", logo: "https://cdn.deepseek.com/platform/favicon.png" },
-	{
-		name: "Google AI",
-		logo: "https://api.iconify.design/simple-icons:google.svg",
-	},
-	{ name: "DeepInfra", logo: "https://deepinfra.com/favicon.ico" },
-	{ name: "ZenMux", logo: "https://zenmux.ai/favicon.ico" },
-	{ name: "Qwen", logo: "https://qwenlm.github.io/favicon.png" },
-	{ name: "Antigravity", logo: "https://antigravity.google/favicon.ico" },
-];
+import { Badge, DualPrice } from "../components/ui";
+import { useFetch } from "../hooks/useFetch";
+import type { ModelEntry } from "../types/model";
+import type { ProviderMeta } from "../types/provider";
+import { formatContext, formatRelativeTime } from "../utils/format";
+import { aggregateModels, type ModelGroup } from "../utils/models";
+import { aggregateProviders } from "../utils/providers";
 
 const GITHUB_URL = "https://github.com/BingoWon/Keyaos";
 
@@ -183,32 +177,150 @@ function Hero() {
 	);
 }
 
-function ProviderStrip() {
+const LANDING_MODELS_LIMIT = 8;
+
+function MarketplaceShowcase() {
 	const { t } = useTranslation();
+	const { isLoaded, isSignedIn } = useAuth();
+	const authed = isLoaded && isSignedIn;
+
+	const { data: providers } = useFetch<ProviderMeta[]>("/api/providers", {
+		requireAuth: false,
+	});
+	const { data: models } = useFetch<ModelEntry[]>("/api/models", {
+		requireAuth: false,
+	});
+
+	const providerGroups = useMemo(
+		() => aggregateProviders(models ?? [], providers ?? []),
+		[models, providers],
+	);
+
+	const providerMap = useMemo(
+		() => new Map((providers ?? []).map((p) => [p.id, p])),
+		[providers],
+	);
+
+	const modelGroups = useMemo(
+		() => aggregateModels(models ?? []).slice(0, LANDING_MODELS_LIMIT),
+		[models],
+	);
+
+	const [selectedModel, setSelectedModel] = useState<ModelGroup | null>(null);
+
+	if (!providerGroups.length && !modelGroups.length) return null;
+
 	return (
-		<section className="border-y border-gray-200 bg-gray-50/50 py-10 dark:border-white/5 dark:bg-white/[0.02]">
-			<div className="mx-auto max-w-6xl px-6">
-				<p className="mb-6 text-center text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
-					{t("landing.providers_label")}
-				</p>
-				<div className="flex flex-wrap items-center justify-center gap-x-8 gap-y-4 sm:gap-x-12">
-					{PROVIDERS.map((p) => (
-						<div
-							key={p.name}
-							className="flex items-center gap-2 text-sm font-medium text-gray-500 dark:text-gray-400"
-						>
-							<img
-								src={p.logo}
-								alt={p.name}
-								className="size-5 rounded-full object-cover"
-								loading="lazy"
-							/>
-							{p.name}
-						</div>
-					))}
+		<>
+			{/* Providers */}
+			<section className="border-y border-gray-200 bg-gray-50/50 py-10 dark:border-white/5 dark:bg-white/[0.02]">
+				<div className="mx-auto max-w-6xl px-6">
+					<p className="mb-6 text-center text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+						{t("landing.providers_label")}
+					</p>
+					<ProviderGrid groups={providerGroups} center />
 				</div>
-			</div>
-		</section>
+			</section>
+
+			{/* Latest Models */}
+			{modelGroups.length > 0 && (
+				<section className="py-16 sm:py-20">
+					<div className="mx-auto max-w-6xl px-6">
+						<p className="mb-8 text-center text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
+							{t("landing.models_label")}
+						</p>
+						<div className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+							<table className="min-w-full">
+								<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+									{modelGroups.map((g) => {
+										const best = g.providers[0];
+										const maxCtx = Math.max(
+											...g.providers.map((p) => p.contextLength),
+										);
+										return (
+											<tr
+												key={g.id}
+												onClick={() => setSelectedModel(g)}
+												className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+											>
+												<td className="py-3 pl-5 pr-2">
+													<div className="min-w-0">
+														<div className="text-sm font-semibold text-gray-900 dark:text-white">
+															{g.displayName}
+														</div>
+														<div className="flex items-center gap-1.5 mt-0.5">
+															<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
+																{g.id}
+															</code>
+															<CopyButton text={g.id} />
+															{g.createdAt > 0 && (
+																<Badge variant="warning">
+																	{formatRelativeTime(g.createdAt)}
+																</Badge>
+															)}
+														</div>
+													</div>
+												</td>
+												<td className="px-2 py-3 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
+													<DualPrice
+														original={best.inputPrice}
+														platform={best.platformInputPrice}
+													/>
+												</td>
+												<td className="px-2 py-3 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
+													<DualPrice
+														original={best.outputPrice}
+														platform={best.platformOutputPrice}
+													/>
+												</td>
+												<td className="px-2 py-3 text-sm font-mono text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell whitespace-nowrap">
+													{maxCtx > 0 ? formatContext(maxCtx) : "—"}
+												</td>
+												<td className="py-3 pl-2 pr-5">
+													<div className="flex items-center justify-end gap-1">
+														<span className="hidden sm:inline-flex items-center gap-0.5">
+															{g.providers.slice(0, 4).map((p) => {
+																const meta = providerMap.get(p.provider);
+																return meta ? (
+																	<ProviderLogo
+																		key={p.provider}
+																		src={meta.logoUrl}
+																		name={meta.name}
+																		size={16}
+																	/>
+																) : null;
+															})}
+														</span>
+														<Badge variant="brand">{g.providers.length}</Badge>
+													</div>
+												</td>
+											</tr>
+										);
+									})}
+								</tbody>
+							</table>
+						</div>
+						<div className="mt-5 text-center">
+							<Link
+								to={authed ? "/dashboard/models" : "/login"}
+								className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
+							>
+								{t("landing.models_explore")}
+								<ArrowRightIcon className="size-3.5" />
+							</Link>
+						</div>
+					</div>
+				</section>
+			)}
+
+			{selectedModel && (
+				<ModelDetailModal
+					group={selectedModel}
+					providerMap={providerMap}
+					onClose={() => setSelectedModel(null)}
+				/>
+			)}
+		</>
 	);
 }
 
@@ -532,7 +644,7 @@ export function Landing() {
 			/>
 			<Navbar />
 			<Hero />
-			<ProviderStrip />
+			<MarketplaceShowcase />
 			<HowItWorks />
 			<Features />
 			<CodeExample />

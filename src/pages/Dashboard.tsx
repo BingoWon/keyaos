@@ -12,7 +12,7 @@ import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
 import { ModelDetailModal } from "../components/ModelDetailModal";
 import { PageLoader } from "../components/PageLoader";
-import { ProviderDetailModal } from "../components/ProviderDetailModal";
+import { ProviderGrid } from "../components/ProviderGrid";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { Sparkline, type SparklineData } from "../components/Sparkline";
 import { Badge, DualPrice } from "../components/ui";
@@ -27,7 +27,7 @@ import {
 	formatUSD,
 } from "../utils/format";
 import { aggregateModels, type ModelGroup } from "../utils/models";
-import { aggregateProviders, type ProviderGroup } from "../utils/providers";
+import { aggregateProviders } from "../utils/providers";
 
 const LATEST_MODELS_LIMIT = 8;
 
@@ -89,8 +89,6 @@ export function Dashboard() {
 	);
 
 	const [selectedModel, setSelectedModel] = useState<ModelGroup | null>(null);
-	const [selectedProvider, setSelectedProvider] =
-		useState<ProviderGroup | null>(null);
 
 	const loading = statsLoading || modelsLoading;
 
@@ -191,25 +189,8 @@ export function Dashboard() {
 							{t("dashboard.view_all")}
 						</Link>
 					</div>
-					<div className="px-5 py-4 flex flex-wrap gap-2.5">
-						{providerGroups.map((g) => (
-							<button
-								key={g.provider.id}
-								type="button"
-								onClick={() => setSelectedProvider(g)}
-								className="inline-flex items-center gap-2 rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2 dark:border-white/5 dark:bg-white/[0.02] hover:border-brand-200 dark:hover:border-brand-500/20 transition-colors cursor-pointer"
-							>
-								<ProviderLogo
-									src={g.provider.logoUrl}
-									name={g.provider.name}
-									size={18}
-								/>
-								<span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-									{g.provider.name}
-								</span>
-								<Badge variant="brand">{g.models.length}</Badge>
-							</button>
-						))}
+					<div className="px-5 py-4">
+						<ProviderGrid groups={providerGroups} />
 					</div>
 				</div>
 			)}
@@ -373,12 +354,6 @@ export function Dashboard() {
 					group={selectedModel}
 					providerMap={providerMap}
 					onClose={() => setSelectedModel(null)}
-				/>
-			)}
-			{selectedProvider && (
-				<ProviderDetailModal
-					group={selectedProvider}
-					onClose={() => setSelectedProvider(null)}
 				/>
 			)}
 		</div>

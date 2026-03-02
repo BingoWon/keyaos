@@ -222,7 +222,7 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 	{
 		id: "openrouter",
 		name: "OpenRouter",
-		logoUrl: "https://api.iconify.design/simple-icons:openrouter.svg",
+		logoUrl: "https://openrouter.ai/favicon.ico",
 		baseUrl: "https://openrouter.ai/api/v1",
 		currency: "USD",
 		supportsAutoCredits: true,
@@ -270,7 +270,7 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 	{
 		id: "deepseek",
 		name: "DeepSeek",
-		logoUrl: "https://cdn.deepseek.com/platform/favicon.png",
+		logoUrl: "https://www.deepseek.com/favicon.ico",
 		baseUrl: "https://api.deepseek.com",
 		currency: "USD",
 		supportsAutoCredits: true,
@@ -287,7 +287,7 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 	{
 		id: "google-ai-studio",
 		name: "Google AI Studio",
-		logoUrl: "https://api.iconify.design/simple-icons:google.svg",
+		logoUrl: "https://www.gstatic.com/aistudio/ai_studio_favicon_2_128x128.png",
 		baseUrl: "https://generativelanguage.googleapis.com/v1beta/openai",
 		currency: "USD",
 		supportsAutoCredits: false,
@@ -318,7 +318,7 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 	{
 		id: "openai",
 		name: "OpenAI",
-		logoUrl: "https://openai.com/favicon.ico",
+		logoUrl: "https://api.iconify.design/logos:openai-icon.svg",
 		baseUrl: "https://api.openai.com/v1",
 		currency: "USD",
 		supportsAutoCredits: false,

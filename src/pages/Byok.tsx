@@ -22,7 +22,7 @@ import { useAuth } from "../auth";
 import { HealthBadge, type HealthStatus } from "../components/HealthBadge";
 import { Modal } from "../components/Modal";
 import { PageLoader } from "../components/PageLoader";
-import { ProviderLogo } from "../components/ProviderLogo";
+import { ProviderChip } from "../components/ProviderLogo";
 import { ProviderSelect } from "../components/ProviderSelect";
 import { ToggleSwitch } from "../components/ToggleSwitch";
 import { Button, Input, PromoBanner } from "../components/ui";
@@ -624,16 +624,13 @@ export function Byok() {
 														const meta = providers.find(
 															(p) => p.id === cred.provider,
 														);
-														return (
-															<span className="inline-flex items-center gap-2">
-																{meta && (
-																	<ProviderLogo
-																		src={meta.logoUrl}
-																		name={meta.name}
-																	/>
-																)}
-																{meta?.name ?? cred.provider}
-															</span>
+														return meta ? (
+															<ProviderChip
+																src={meta.logoUrl}
+																name={meta.name}
+															/>
+														) : (
+															<span>{cred.provider}</span>
 														);
 													})()}
 												</td>

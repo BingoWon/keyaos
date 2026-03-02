@@ -63,6 +63,11 @@ app.get("/health", (c) => c.json({ status: "ok" }));
 // ─── Auth: Management API (/api/*) ─────────────────────
 app.use("/api/*", async (c, next) => {
 	if (c.req.path.startsWith("/api/webhooks/")) return next();
+	if (
+		c.req.method === "GET" &&
+		(c.req.path === "/api/providers" || c.req.path === "/api/models")
+	)
+		return next();
 
 	if (c.env.CLERK_SECRET_KEY) {
 		await clerkMiddleware()(c, async () => {});

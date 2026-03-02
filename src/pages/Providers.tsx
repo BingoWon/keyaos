@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import { CopyButton } from "../components/CopyButton";
 import { PageLoader } from "../components/PageLoader";
 import { ProviderDetailModal } from "../components/ProviderDetailModal";
-import { ProviderLogo } from "../components/ProviderLogo";
+import { ProviderChip } from "../components/ProviderLogo";
 import { SearchBar } from "../components/SearchBar";
 import {
 	PriceRange,
@@ -130,22 +130,17 @@ export function Providers() {
 											className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
 										>
 											<td className="py-2.5 pl-4 pr-2 sm:pl-5">
-												<span className="inline-flex items-center gap-2">
-													<ProviderLogo
+												<div className="flex items-center gap-2">
+													<ProviderChip
 														src={g.provider.logoUrl}
 														name={g.provider.name}
-														size={22}
+														size={20}
 													/>
-													<span>
-														<div className="text-sm font-semibold text-gray-900 dark:text-white">
-															{g.provider.name}
-														</div>
-														<div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
-															{g.provider.id}
-															<CopyButton text={g.provider.id} />
-														</div>
-													</span>
-												</span>
+													<div className="flex items-center gap-1 text-xs text-gray-500 dark:text-gray-400">
+														{g.provider.id}
+														<CopyButton text={g.provider.id} />
+													</div>
+												</div>
 											</td>
 											<td className="px-2 py-2.5 hidden md:table-cell">
 												{spark && <Sparkline data={spark} />}

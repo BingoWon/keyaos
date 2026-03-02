@@ -161,7 +161,7 @@ export function Dashboard() {
 	const { data: stats, loading: statsLoading } =
 		useFetch<Stats>("/api/pool/stats");
 	const { data: wallet } = useFetch<{ balance: number }>(
-		"/api/billing/balance",
+		"/api/credits/balance",
 		{ skip: !isPlatform },
 	);
 	const { data: rawModels, loading: modelsLoading } =

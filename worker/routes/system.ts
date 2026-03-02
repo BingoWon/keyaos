@@ -70,66 +70,6 @@ systemRouter.get("/logs", async (c) => {
 	});
 });
 
-/**
- * Unified ledger: all credit movements in chronological order.
- * Combines logs (API spend/earn), payments (top-ups), and admin adjustments.
- */
-systemRouter.get("/ledger", async (c) => {
-	const limit = Math.min(Number(c.req.query("limit")) || 100, 500);
-	const userId = c.get("owner_id");
-	const db = c.env.DB;
-
-	const res = await db
-		.prepare(
-			`SELECT * FROM (
-				SELECT
-					id, 'log' AS type,
-					CASE WHEN consumer_id = ? THEN 'api_spend' ELSE 'credential_earn' END AS category,
-					model AS description,
-					CASE WHEN consumer_id = ? THEN -consumer_charged ELSE provider_earned END AS amount,
-					created_at
-				FROM logs
-				WHERE (consumer_id = ? OR credential_owner_id = ?)
-					AND NOT (consumer_id = ? AND credential_owner_id = ?)
-
-				UNION ALL
-
-				SELECT
-					id, 'top_up' AS type,
-					CASE WHEN type = 'auto' THEN 'auto_topup' ELSE 'top_up' END AS category,
-					CASE WHEN type = 'auto' THEN 'Auto Top-Up' ELSE 'Stripe' END AS description,
-					credits AS amount,
-					created_at
-				FROM payments
-				WHERE owner_id = ? AND status = 'completed'
-
-				UNION ALL
-
-				SELECT
-					id, 'adjustment' AS type,
-					CASE WHEN amount >= 0 THEN 'grant' ELSE 'revoke' END AS category,
-					COALESCE(reason, '') AS description,
-					amount,
-					created_at
-				FROM credit_adjustments
-				WHERE owner_id = ?
-			) combined
-			ORDER BY created_at DESC
-			LIMIT ?`,
-		)
-		.bind(userId, userId, userId, userId, userId, userId, userId, userId, limit)
-		.all<{
-			id: string;
-			type: "log" | "top_up" | "adjustment";
-			category: string;
-			description: string;
-			amount: number;
-			created_at: number;
-		}>();
-
-	return c.json({ data: res.results || [] });
-});
-
 /** Auto-select candle interval based on time range. */
 function resolveIntervalMs(hours: number): number {
 	if (hours <= 6) return 120_000;

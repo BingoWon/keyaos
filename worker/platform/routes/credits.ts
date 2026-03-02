@@ -14,20 +14,20 @@ import {
 } from "../billing/stripe";
 import { WalletDao } from "../billing/wallet-dao";
 
-const billing = new Hono<AppEnv>();
+const credits = new Hono<AppEnv>();
 
 // ─── GET /balance ────────────────────────────────────────
-billing.get("/balance", async (c) => {
+credits.get("/balance", async (c) => {
 	const ownerId = c.get("owner_id");
 	const balance = await new WalletDao(c.env.DB).getBalance(ownerId);
 	return c.json({ balance });
 });
 
 // ─── POST /checkout ──────────────────────────────────────
-billing.post("/checkout", async (c) => {
+credits.post("/checkout", async (c) => {
 	if (!c.env.STRIPE_SECRET_KEY) {
 		return c.json(
-			{ error: { message: "Billing not configured", type: "server_error" } },
+			{ error: { message: "Payments not configured", type: "server_error" } },
 			503,
 		);
 	}
@@ -69,22 +69,79 @@ billing.post("/checkout", async (c) => {
 	return c.json({ url });
 });
 
-// ─── GET /history ────────────────────────────────────────
-billing.get("/history", async (c) => {
+// ─── GET /payments ───────────────────────────────────────
+credits.get("/payments", async (c) => {
 	const ownerId = c.get("owner_id");
 	const history = await new PaymentsDao(c.env.DB).getHistory(ownerId);
 	return c.json({ data: history });
 });
 
 // ─── POST /cancel-pending ────────────────────────────────
-billing.post("/cancel-pending", async (c) => {
+credits.post("/cancel-pending", async (c) => {
 	const ownerId = c.get("owner_id");
 	const canceled = await new PaymentsDao(c.env.DB).cancelUserPending(ownerId);
 	return c.json({ ok: true, canceled });
 });
 
+// ─── GET /transactions ───────────────────────────────────
+credits.get("/transactions", async (c) => {
+	const limit = Math.min(Number(c.req.query("limit")) || 100, 500);
+	const userId = c.get("owner_id");
+	const db = c.env.DB;
+
+	const res = await db
+		.prepare(
+			`SELECT * FROM (
+				SELECT
+					id, 'log' AS type,
+					CASE WHEN consumer_id = ? THEN 'api_spend' ELSE 'credential_earn' END AS category,
+					model AS description,
+					CASE WHEN consumer_id = ? THEN -consumer_charged ELSE provider_earned END AS amount,
+					created_at
+				FROM logs
+				WHERE (consumer_id = ? OR credential_owner_id = ?)
+					AND NOT (consumer_id = ? AND credential_owner_id = ?)
+
+				UNION ALL
+
+				SELECT
+					id, 'top_up' AS type,
+					CASE WHEN type = 'auto' THEN 'auto_topup' ELSE 'top_up' END AS category,
+					CASE WHEN type = 'auto' THEN 'Auto Top-Up' ELSE 'Stripe' END AS description,
+					credits AS amount,
+					created_at
+				FROM payments
+				WHERE owner_id = ? AND status = 'completed'
+
+				UNION ALL
+
+				SELECT
+					id, 'adjustment' AS type,
+					CASE WHEN amount >= 0 THEN 'grant' ELSE 'revoke' END AS category,
+					COALESCE(reason, '') AS description,
+					amount,
+					created_at
+				FROM credit_adjustments
+				WHERE owner_id = ?
+			) combined
+			ORDER BY created_at DESC
+			LIMIT ?`,
+		)
+		.bind(userId, userId, userId, userId, userId, userId, userId, userId, limit)
+		.all<{
+			id: string;
+			type: "log" | "top_up" | "adjustment";
+			category: string;
+			description: string;
+			amount: number;
+			created_at: number;
+		}>();
+
+	return c.json({ data: res.results || [] });
+});
+
 // ─── Auto Top-Up Config ─────────────────────────────────
-billing.get("/auto-topup", async (c) => {
+credits.get("/auto-topup", async (c) => {
 	const config = await new AutoTopUpDao(c.env.DB).getConfig(c.get("owner_id"));
 	if (!config) return c.json({ enabled: false, hasCard: false });
 	return c.json({
@@ -97,7 +154,7 @@ billing.get("/auto-topup", async (c) => {
 	});
 });
 
-billing.put("/auto-topup", async (c) => {
+credits.put("/auto-topup", async (c) => {
 	const ownerId = c.get("owner_id");
 	const body = await c.req.json<{
 		enabled: boolean;
@@ -129,7 +186,7 @@ billing.put("/auto-topup", async (c) => {
 	return c.json({ ok: true });
 });
 
-export default billing;
+export default credits;
 
 // ─── Stripe Webhook (separate, no auth middleware) ───────
 export const webhookRouter = new Hono<AppEnv>();
@@ -169,7 +226,6 @@ webhookRouter.post("/stripe", async (c) => {
 	if (await paymentsDao.transition(session.id, "completed")) {
 		await new WalletDao(c.env.DB).credit(owner_id, credits);
 
-		// Extract and save payment method for future auto top-up
 		if (c.env.STRIPE_SECRET_KEY && session.payment_intent) {
 			try {
 				const pi = await getPaymentIntent(

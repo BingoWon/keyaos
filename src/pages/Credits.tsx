@@ -40,7 +40,7 @@ interface PaymentEntry {
 	created_at: number;
 }
 
-interface LedgerEntry {
+interface TransactionEntry {
 	id: string;
 	type: "log" | "top_up" | "adjustment";
 	category: string;
@@ -49,9 +49,9 @@ interface LedgerEntry {
 	created_at: number;
 }
 
-type HistoryTab = "ledger" | "payments";
+type HistoryTab = "payments" | "transactions";
 
-/* ─── Category badges for ledger ─── */
+/* ─── Category badges for transactions ─── */
 
 const CATEGORY_CONFIG: Record<
 	string,
@@ -136,21 +136,21 @@ export function Credits() {
 		data: wallet,
 		loading: walletLoading,
 		refetch: refetchWallet,
-	} = useFetch<{ balance: number }>("/api/billing/balance");
+	} = useFetch<{ balance: number }>("/api/credits/balance");
 	const {
 		data: payments,
 		loading: paymentsLoading,
 		refetch: refetchPayments,
-	} = useFetch<PaymentEntry[]>("/api/billing/history");
+	} = useFetch<PaymentEntry[]>("/api/credits/payments");
 	const {
 		data: autoConfig,
 		loading: autoLoading,
 		refetch: refetchAuto,
-	} = useFetch<AutoTopUpConfig>("/api/billing/auto-topup");
+	} = useFetch<AutoTopUpConfig>("/api/credits/auto-topup");
 	const {
-		data: ledger,
-		loading: ledgerLoading,
-	} = useFetch<LedgerEntry[]>("/api/ledger?limit=200");
+		data: transactions,
+		loading: transactionsLoading,
+	} = useFetch<TransactionEntry[]>("/api/credits/transactions?limit=200");
 
 	const [loading, setLoading] = useState(false);
 	const [customAmount, setCustomAmount] = useState("");
@@ -182,7 +182,7 @@ export function Credits() {
 			toast(t("credits.canceled"), { icon: "↩" });
 			setSearchParams({}, { replace: true });
 			getToken().then((token) =>
-				fetch("/api/billing/cancel-pending", {
+				fetch("/api/credits/cancel-pending", {
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
 				}).then(() => refetchPayments()),
@@ -204,7 +204,7 @@ export function Credits() {
 			setLoading(true);
 			try {
 				const token = await getToken();
-				const res = await fetch("/api/billing/checkout", {
+				const res = await fetch("/api/credits/checkout", {
 					method: "POST",
 					headers: {
 						"Content-Type": "application/json",
@@ -230,7 +230,7 @@ export function Credits() {
 			setAutoSaving(true);
 			try {
 				const token = await getToken();
-				const res = await fetch("/api/billing/auto-topup", {
+				const res = await fetch("/api/credits/auto-topup", {
 					method: "PUT",
 					headers: {
 						"Content-Type": "application/json",
@@ -539,8 +539,8 @@ export function Credits() {
 					</button>
 					<button
 						type="button"
-						onClick={() => setTab("ledger")}
-						className={tabClass(tab === "ledger")}
+						onClick={() => setTab("transactions")}
+						className={tabClass(tab === "transactions")}
 					>
 						{t("credits.tab_transactions")}
 					</button>
@@ -553,26 +553,26 @@ export function Credits() {
 						formatDateTime={formatDateTime}
 					/>
 				)}
-				{tab === "ledger" && (
-					<LedgerTable
-						entries={ledger}
-						loading={ledgerLoading}
-						formatDateTime={formatDateTime}
-					/>
-				)}
+			{tab === "transactions" && (
+				<TransactionsTable
+					entries={transactions}
+					loading={transactionsLoading}
+					formatDateTime={formatDateTime}
+				/>
+			)}
 			</div>
 		</div>
 	);
 }
 
-/* ─── Ledger (transaction history) table ─── */
+/* ─── Transaction history table ─── */
 
-function LedgerTable({
+function TransactionsTable({
 	entries,
 	loading,
 	formatDateTime,
 }: {
-	entries: LedgerEntry[] | null;
+	entries: TransactionEntry[] | null;
 	loading: boolean;
 	formatDateTime: (ts: number) => string;
 }) {

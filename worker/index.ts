@@ -7,7 +7,7 @@ import { CandleDao } from "./core/db/candle-dao";
 import { syncAllModels, syncAutoCredits } from "./core/sync/sync-service";
 import { sweepAutoTopUp } from "./platform/billing/auto-topup-service";
 import adminRouter from "./platform/routes/admin";
-import billingRouter, { webhookRouter } from "./platform/routes/billing";
+import creditsRouter, { webhookRouter } from "./platform/routes/credits";
 import apiKeysRouter from "./routes/api-keys";
 import chatRouter from "./routes/chat";
 import credentialsRouter from "./routes/credentials";
@@ -134,10 +134,10 @@ const platformNotFound = (c: Context) =>
 		404,
 	);
 
-app.use("/api/billing/*", async (c, next) =>
+app.use("/api/credits/*", async (c, next) =>
 	c.env.CLERK_SECRET_KEY ? next() : platformNotFound(c),
 );
-app.route("/api/billing", billingRouter);
+app.route("/api/credits", creditsRouter);
 
 app.use("/api/admin/*", async (c, next) =>
 	c.env.PLATFORM_OWNER_ID ? next() : platformNotFound(c),

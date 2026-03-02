@@ -7,19 +7,28 @@ import {
 	TableCellsIcon,
 	UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { useCallback, useMemo, useState } from "react";
+import {
+	AreaSeries,
+	ColorType,
+	CrosshairMode,
+	createChart,
+	type IChartApi,
+	type ISeriesApi,
+	type Time,
+} from "lightweight-charts";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth";
 import { PageLoader } from "../../components/PageLoader";
 import { IconButton } from "../../components/ui";
 import { useFetch } from "../../hooks/useFetch";
+import { getThemeColors, isDarkMode, utcToLocal } from "../../utils/chart";
 import { formatUSD } from "../../utils/format";
 
 interface ActivityPoint {
 	time: number;
 	volume: number;
 	tokens: number;
-	records: number;
 }
 
 const RANGE_OPTIONS = [
@@ -28,7 +37,15 @@ const RANGE_OPTIONS = [
 	{ label: "7d", hours: 168 },
 ] as const;
 
-function MiniArea({
+const CHART_HEIGHT = 240;
+
+function fmtCompact(v: number): string {
+	if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+	if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
+	return Math.round(v).toLocaleString();
+}
+
+function ActivityAreaChart({
 	points,
 	accessor,
 	color,
@@ -39,48 +56,134 @@ function MiniArea({
 	color: string;
 	label: string;
 }) {
-	if (points.length < 2) return null;
+	const containerRef = useRef<HTMLDivElement>(null);
+	const chartRef = useRef<IChartApi | null>(null);
+	const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+	const [hoverValue, setHoverValue] = useState<number | null>(null);
 
-	const W = 320;
-	const H = 80;
-	const PAD = 1;
-	const values = points.map(accessor);
-	const max = Math.max(...values) || 1;
+	const total = useMemo(
+		() => points.reduce((sum, p) => sum + accessor(p), 0),
+		[points, accessor],
+	);
 
-	const coords = values.map((v, i) => ({
-		x: PAD + (i / (values.length - 1)) * (W - PAD * 2),
-		y: PAD + (H - PAD * 2) - (v / max) * (H - PAD * 2),
-	}));
+	useEffect(() => {
+		if (!containerRef.current) return;
 
-	const line = coords.map((c) => `${c.x.toFixed(1)},${c.y.toFixed(1)}`).join(" ");
-	const area = `${coords[0].x.toFixed(1)},${H} ${line} ${coords[coords.length - 1].x.toFixed(1)},${H}`;
+		const dark = isDarkMode();
+		const colors = getThemeColors(dark);
 
-	const total = values.reduce((a, b) => a + b, 0);
+		const chart = createChart(containerRef.current, {
+			width: containerRef.current.clientWidth,
+			height: CHART_HEIGHT,
+			layout: {
+				attributionLogo: false,
+				background: { type: ColorType.Solid, color: "transparent" },
+				textColor: colors.textColor,
+				fontSize: 11,
+			},
+			grid: {
+				vertLines: { color: colors.gridColor },
+				horzLines: { color: colors.gridColor },
+			},
+			crosshair: { mode: CrosshairMode.Normal },
+			rightPriceScale: {
+				borderColor: colors.borderColor,
+				scaleMargins: { top: 0.1, bottom: 0.05 },
+			},
+			timeScale: {
+				borderColor: colors.borderColor,
+				timeVisible: true,
+				secondsVisible: false,
+			},
+		});
+
+		const series = chart.addSeries(AreaSeries, {
+			lineColor: color,
+			topColor: `${color}30`,
+			bottomColor: `${color}05`,
+			lineWidth: 2,
+			priceFormat: {
+				type: "custom" as const,
+				formatter: fmtCompact,
+			},
+		});
+
+		chartRef.current = chart;
+		seriesRef.current = series;
+
+		chart.subscribeCrosshairMove((param) => {
+			if (!param.time || !param.seriesData.size) {
+				setHoverValue(null);
+				return;
+			}
+			const d = param.seriesData.get(series) as
+				| { value: number }
+				| undefined;
+			if (d) setHoverValue(d.value);
+		});
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			const entry = entries[0];
+			if (entry) chart.applyOptions({ width: entry.contentRect.width });
+		});
+		resizeObserver.observe(containerRef.current);
+
+		const themeObserver = new MutationObserver(() => {
+			const d = isDarkMode();
+			const c = getThemeColors(d);
+			chart.applyOptions({
+				layout: {
+					background: { type: ColorType.Solid, color: "transparent" },
+					textColor: c.textColor,
+				},
+				grid: {
+					vertLines: { color: c.gridColor },
+					horzLines: { color: c.gridColor },
+				},
+				rightPriceScale: { borderColor: c.borderColor },
+				timeScale: { borderColor: c.borderColor },
+			});
+		});
+		themeObserver.observe(document.documentElement, {
+			attributes: true,
+			attributeFilter: ["class"],
+		});
+
+		return () => {
+			themeObserver.disconnect();
+			resizeObserver.disconnect();
+			chart.remove();
+			chartRef.current = null;
+			seriesRef.current = null;
+		};
+	}, [color]);
+
+	useEffect(() => {
+		if (!seriesRef.current || points.length === 0) return;
+		const data = points.map((p) => ({
+			time: utcToLocal(p.time) as Time,
+			value: accessor(p),
+		}));
+		seriesRef.current.setData(data);
+		chartRef.current?.timeScale().fitContent();
+	}, [points, accessor]);
 
 	return (
-		<div className="rounded-xl border border-gray-200 bg-white p-4 dark:border-white/10 dark:bg-white/5">
-			<div className="flex items-baseline justify-between mb-2">
-				<span className="text-xs font-medium text-gray-500 dark:text-gray-400">
+		<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
+			<div className="flex items-baseline justify-between px-4 pt-4 pb-1">
+				<span className="text-sm font-medium text-gray-500 dark:text-gray-400">
 					{label}
 				</span>
 				<span className="text-lg font-semibold text-gray-900 dark:text-white tabular-nums">
-					{total.toLocaleString()}
+					{fmtCompact(hoverValue ?? total)}
+					{hoverValue === null && (
+						<span className="ml-1.5 text-xs font-normal text-gray-400 dark:text-gray-500">
+							total
+						</span>
+					)}
 				</span>
 			</div>
-			<svg
-				viewBox={`0 0 ${W} ${H}`}
-				className="w-full h-auto"
-				preserveAspectRatio="none"
-			>
-				<polygon points={area} fill={color} opacity={0.15} />
-				<polyline
-					points={line}
-					fill="none"
-					stroke={color}
-					strokeWidth={1.5}
-					strokeLinejoin="round"
-				/>
-			</svg>
+			<div ref={containerRef} className="px-1 pb-1" />
 		</div>
 	);
 }
@@ -140,6 +243,9 @@ function SyncButton({ label, endpoint }: { label: string; endpoint: string }) {
 		</button>
 	);
 }
+
+const volumeAccessor = (p: ActivityPoint) => p.volume;
+const tokensAccessor = (p: ActivityPoint) => p.tokens;
 
 export function Overview() {
 	const { t } = useTranslation();
@@ -229,8 +335,8 @@ export function Overview() {
 				</dl>
 			)}
 
-			<div>
-				<div className="flex items-center justify-between mb-3">
+			<div className="space-y-4">
+				<div className="flex items-center justify-between">
 					<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
 						{t("admin.activity")}
 					</h4>
@@ -251,26 +357,19 @@ export function Overview() {
 						))}
 					</div>
 				</div>
-				<div className="grid gap-4 sm:grid-cols-3">
-					<MiniArea
-						points={activityData}
-						accessor={(p) => p.volume}
-						color="#6366f1"
-						label={t("admin.chart_volume")}
-					/>
-					<MiniArea
-						points={activityData}
-						accessor={(p) => p.tokens}
-						color="#f59e0b"
-						label={t("admin.chart_tokens")}
-					/>
-					<MiniArea
-						points={activityData}
-						accessor={(p) => p.records}
-						color="#22c55e"
-						label={t("admin.chart_records")}
-					/>
-				</div>
+
+				<ActivityAreaChart
+					points={activityData}
+					accessor={volumeAccessor}
+					color="#6366f1"
+					label={t("admin.chart_volume")}
+				/>
+				<ActivityAreaChart
+					points={activityData}
+					accessor={tokensAccessor}
+					color="#f59e0b"
+					label={t("admin.chart_tokens")}
+				/>
 			</div>
 		</div>
 	);

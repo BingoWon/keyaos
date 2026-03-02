@@ -300,7 +300,6 @@
 		"activity": "Activity",
 		"chart_volume": "Volume",
 		"chart_tokens": "Total Tokens",
-		"chart_records": "Candle Records",
 		"data_explorer": "Data Explorer",
 		"no_data": "No rows in this table",
 		"showing": "{{from}}–{{to}} of {{total}}",

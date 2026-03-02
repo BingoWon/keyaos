@@ -297,7 +297,6 @@
 		"activity": "活动趋势",
 		"chart_volume": "成交量",
 		"chart_tokens": "Token 总量",
-		"chart_records": "K 线记录数",
 		"data_explorer": "数据浏览",
 		"no_data": "此表暂无数据",
 		"showing": "第 {{from}}–{{to}} 条，共 {{total}} 条",

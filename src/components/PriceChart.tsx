@@ -13,6 +13,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useFetch } from "../hooks/useFetch";
+import { getThemeColors, isDarkMode, utcToLocal } from "../utils/chart";
 import { formatTimestamp } from "../utils/format";
 
 interface Candle {
@@ -51,37 +52,12 @@ function formatHours(h: number): string {
 	return `${h / 24}d`;
 }
 
-function isDarkMode(): boolean {
-	return document.documentElement.classList.contains("dark");
-}
-
-function getThemeColors(dark: boolean) {
-	return {
-		textColor: dark ? "#9ca3af" : "#6b7280",
-		gridColor: dark ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
-		borderColor: dark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)",
-	};
-}
-
 function getCandleColors(lang: string) {
 	const zhStyle = lang.startsWith("zh");
 	return {
 		up: zhStyle ? "#ef4444" : "#22c55e",
 		down: zhStyle ? "#22c55e" : "#ef4444",
 	};
-}
-
-function utcToLocal(utcMs: number): number {
-	const d = new Date(utcMs);
-	return (
-		Date.UTC(
-			d.getFullYear(),
-			d.getMonth(),
-			d.getDate(),
-			d.getHours(),
-			d.getMinutes(),
-		) / 1000
-	);
 }
 
 function toCandlestickData(candles: Candle[]): CandlestickData<Time>[] {

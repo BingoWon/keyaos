@@ -82,13 +82,15 @@ function Navbar() {
 					>
 						<GitHubIcon className="size-5" />
 					</a>
-					<Link
-						to="/docs"
+					<a
+						href="/docs"
+						target="_blank"
+						rel="noopener noreferrer"
 						className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
 						aria-label="Docs"
 					>
 						<BookOpenIcon className="size-5" />
-					</Link>
+					</a>
 					{authed ? (
 						<>
 							<Link
@@ -627,9 +629,14 @@ function Footer() {
 					</span>
 				</div>
 				<div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-					<Link to="/docs" className="transition-colors hover:text-brand-500">
+					<a
+						href="/docs"
+						target="_blank"
+						rel="noopener noreferrer"
+						className="transition-colors hover:text-brand-500"
+					>
 						{t("landing.footer_docs")}
-					</Link>
+					</a>
 					<a
 						href={GITHUB_URL}
 						target="_blank"

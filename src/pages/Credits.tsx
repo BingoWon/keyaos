@@ -312,12 +312,16 @@ export function Credits() {
 					<div className="hidden sm:flex flex-col gap-1.5 text-right">
 						<a
 							href="/docs/credits#what-are-credits"
+							target="_blank"
+							rel="noopener noreferrer"
 							className="text-xs text-gray-400 hover:text-brand-500 transition-colors dark:text-gray-500 dark:hover:text-brand-400"
 						>
 							{t("credits.faq_what_are_credits", "What are Credits?")} →
 						</a>
 						<a
 							href="/docs/credits#what-happens-when-credits-run-out"
+							target="_blank"
+							rel="noopener noreferrer"
 							className="text-xs text-gray-400 hover:text-brand-500 transition-colors dark:text-gray-500 dark:hover:text-brand-400"
 						>
 							{t(
@@ -412,6 +416,8 @@ export function Credits() {
 									{t("credits.auto_topup")}
 									<a
 										href="/docs/credits#auto-top-up"
+										target="_blank"
+										rel="noopener noreferrer"
 										className="text-gray-300 hover:text-brand-500 transition-colors dark:text-gray-600 dark:hover:text-brand-400"
 										title="Documentation"
 									>

@@ -3,7 +3,6 @@ import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../auth";
-import { PageLoader } from "../../components/PageLoader";
 import { Button, IconButton } from "../../components/ui";
 import { useFetch } from "../../hooks/useFetch";
 import { formatUSD } from "../../utils/format";
@@ -71,9 +70,20 @@ export function Users() {
 				</IconButton>
 			</div>
 
-			{loading ? (
-				<PageLoader />
-			) : !users?.length ? (
+		{loading ? (
+			<div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
+				<div className="divide-y divide-gray-200 dark:divide-white/10">
+					{Array.from({ length: 5 }).map((_, i) => (
+						<div key={i} className="flex items-center gap-4 px-6 py-3.5">
+							<div className="h-4 w-44 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+						</div>
+					))}
+				</div>
+			</div>
+		) : !users?.length ? (
 				<p className="text-sm text-gray-500 dark:text-gray-400">
 					{t("admin.no_users")}
 				</p>

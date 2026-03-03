@@ -13,7 +13,6 @@ import toast from "react-hot-toast";
 import { Trans, useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth";
-import { PageLoader } from "../components/PageLoader";
 import { Badge, Button, Input, PromoBanner } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
@@ -132,6 +131,14 @@ export function Credits() {
 	const formatDateTime = useFormatDateTime();
 	const [searchParams, setSearchParams] = useSearchParams();
 
+	const [tab, setTab] = useState<HistoryTab>("payments");
+	const [loading, setLoading] = useState(false);
+	const [customAmount, setCustomAmount] = useState("");
+	const [autoEnabled, setAutoEnabled] = useState(false);
+	const [autoThreshold, setAutoThreshold] = useState("5");
+	const [autoAmount, setAutoAmount] = useState("10");
+	const [autoSaving, setAutoSaving] = useState(false);
+
 	const {
 		data: wallet,
 		loading: walletLoading,
@@ -149,17 +156,7 @@ export function Credits() {
 	} = useFetch<AutoTopUpConfig>("/api/credits/auto-topup");
 	const { data: transactions, loading: transactionsLoading } = useFetch<
 		TransactionEntry[]
-	>("/api/credits/transactions?limit=200");
-
-	const [loading, setLoading] = useState(false);
-	const [customAmount, setCustomAmount] = useState("");
-
-	const [autoEnabled, setAutoEnabled] = useState(false);
-	const [autoThreshold, setAutoThreshold] = useState("5");
-	const [autoAmount, setAutoAmount] = useState("10");
-	const [autoSaving, setAutoSaving] = useState(false);
-
-	const [tab, setTab] = useState<HistoryTab>("payments");
+	>("/api/credits/transactions?limit=200", { skip: tab !== "transactions" });
 
 	useEffect(() => {
 		if (autoConfig) {
@@ -434,11 +431,12 @@ export function Credits() {
 							</div>
 						)}
 
-					{autoLoading ? (
-						<div className="mt-4">
-							<PageLoader />
-						</div>
-					) : !autoConfig?.hasCard ? (
+				{autoLoading ? (
+					<div className="mt-4 space-y-3">
+						<div className="h-10 w-full rounded-lg bg-gray-200 dark:bg-white/10 animate-pulse" />
+						<div className="h-10 w-full rounded-lg bg-gray-100 dark:bg-white/5 animate-pulse" />
+					</div>
+				) : !autoConfig?.hasCard ? (
 						<div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
 							{t("credits.auto_topup_no_card")}
 						</div>
@@ -579,8 +577,16 @@ function TransactionsTable({
 
 	if (loading)
 		return (
-			<div className="mt-5">
-				<PageLoader />
+			<div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+				<div className="divide-y divide-gray-200 dark:divide-white/10">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<div key={i} className="flex items-center gap-4 px-6 py-3.5">
+							<div className="h-4 w-24 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+							<div className="h-4 w-32 rounded bg-gray-100 dark:bg-white/5 animate-pulse flex-1" />
+							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+						</div>
+					))}
+				</div>
 			</div>
 		);
 
@@ -659,8 +665,17 @@ function PaymentsTable({
 
 	if (loading)
 		return (
-			<div className="mt-5">
-				<PageLoader />
+			<div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+				<div className="divide-y divide-gray-200 dark:divide-white/10">
+					{Array.from({ length: 5 }).map((_, i) => (
+						<div key={i} className="flex items-center gap-4 px-6 py-3.5">
+							<div className="h-4 w-20 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+							<div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />
+							<div className="h-4 w-24 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+						</div>
+					))}
+				</div>
 			</div>
 		);
 

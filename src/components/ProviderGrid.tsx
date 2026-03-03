@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import type { ProviderGroup } from "../utils/providers";
-import { ProviderDetailModal } from "./ProviderDetailModal";
 import { ProviderChip } from "./ProviderLogo";
 import { Badge } from "./ui";
+
+const ProviderDetailModal = lazy(() =>
+	import("./ProviderDetailModal").then((m) => ({
+		default: m.ProviderDetailModal,
+	})),
+);
 
 interface ProviderGridProps {
 	groups: ProviderGroup[];
@@ -28,10 +33,12 @@ export function ProviderGrid({ groups, center }: ProviderGridProps) {
 				))}
 			</div>
 			{selected && (
-				<ProviderDetailModal
-					group={selected}
-					onClose={() => setSelected(null)}
-				/>
+				<Suspense fallback={null}>
+					<ProviderDetailModal
+						group={selected}
+						onClose={() => setSelected(null)}
+					/>
+				</Suspense>
 			)}
 		</>
 	);

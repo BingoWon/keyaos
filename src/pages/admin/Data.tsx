@@ -1,7 +1,6 @@
 import { ArrowPathIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { PageLoader } from "../../components/PageLoader";
 import { IconButton } from "../../components/ui";
 import { useFetch } from "../../hooks/useFetch";
 
@@ -68,9 +67,22 @@ export function Data() {
 				</div>
 			</div>
 
-			{loading ? (
-				<PageLoader />
-			) : rows.length === 0 ? (
+		{loading ? (
+			<div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
+				<div className="divide-y divide-gray-200 dark:divide-white/10">
+					{Array.from({ length: 8 }).map((_, i) => (
+						<div key={i} className="flex items-center gap-4 px-3 py-2.5">
+							{Array.from({ length: 5 }).map((_, j) => (
+								<div
+									key={j}
+									className="h-4 w-24 rounded bg-gray-200 dark:bg-white/10 animate-pulse"
+								/>
+							))}
+						</div>
+					))}
+				</div>
+			</div>
+		) : rows.length === 0 ? (
 				<p className="text-sm text-gray-500 dark:text-gray-400">
 					{t("admin.no_data")}
 				</p>

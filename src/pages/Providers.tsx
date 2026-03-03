@@ -1,9 +1,12 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { useCallback, useMemo, useState } from "react";
+import { Suspense, lazy, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CopyButton } from "../components/CopyButton";
-import { PageLoader } from "../components/PageLoader";
-import { ProviderDetailModal } from "../components/ProviderDetailModal";
+const ProviderDetailModal = lazy(() =>
+	import("../components/ProviderDetailModal").then((m) => ({
+		default: m.ProviderDetailModal,
+	})),
+);
 import { ProviderChip } from "../components/ProviderLogo";
 import { SearchBar } from "../components/SearchBar";
 import {
@@ -27,12 +30,12 @@ export function Providers() {
 		data: models,
 		loading: modelsLoading,
 		refetch: refetchModels,
-	} = useFetch<ModelEntry[]>("/api/models");
+	} = useFetch<ModelEntry[]>("/api/models", { requireAuth: false });
 	const { data: providersData, loading: providersLoading } =
-		useFetch<ProviderMeta[]>("/api/providers");
+		useFetch<ProviderMeta[]>("/api/providers", { requireAuth: false });
 	const { data: providerSparks, refetch: refetchSparks } = useFetch<
 		Record<string, SparklineData>
-	>("/api/sparklines/provider");
+	>("/api/sparklines/provider", { requireAuth: false });
 
 	const refetch = useCallback(() => {
 		refetchModels();
@@ -95,11 +98,22 @@ export function Providers() {
 				</div>
 			</div>
 
-			{initialLoading ? (
-				<div className="mt-5">
-					<PageLoader />
+		{initialLoading ? (
+			<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
+				<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<div key={i} className="flex items-center gap-4 px-5 py-3.5">
+							<div className="flex items-center gap-2 flex-1">
+								<div className="size-5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
+								<div className="h-4 w-28 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+							</div>
+							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+							<div className="h-5 w-8 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+						</div>
+					))}
 				</div>
-			) : groups.length === 0 ? (
+			</div>
+		) : groups.length === 0 ? (
 				<p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
 					{t("providers.no_data")}
 				</p>
@@ -185,12 +199,14 @@ export function Providers() {
 				</>
 			)}
 
-			{selected && (
+		{selected && (
+			<Suspense fallback={null}>
 				<ProviderDetailModal
 					group={selected}
 					onClose={() => setSelected(null)}
 				/>
-			)}
+			</Suspense>
+		)}
 		</div>
 	);
 }

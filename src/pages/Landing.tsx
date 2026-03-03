@@ -11,14 +11,25 @@ import {
 	SignalIcon,
 	UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { type ComponentType, type SVGProps, useMemo, useState } from "react";
+import {
+	Suspense,
+	type ComponentType,
+	type SVGProps,
+	lazy,
+	useMemo,
+	useState,
+} from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { isPlatform, useAuth } from "../auth";
 import { CopyButton } from "../components/CopyButton";
 import { LanguageSelector } from "../components/LanguageSelector";
 import { Logo } from "../components/Logo";
-import { ModelDetailModal } from "../components/ModelDetailModal";
+const ModelDetailModal = lazy(() =>
+	import("../components/ModelDetailModal").then((m) => ({
+		default: m.ModelDetailModal,
+	})),
+);
 import { ProviderGrid } from "../components/ProviderGrid";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { Sparkline, type SparklineData } from "../components/Sparkline";
@@ -325,13 +336,15 @@ function PlatformShowcase() {
 				</section>
 			)}
 
-			{selectedModel && (
+		{selectedModel && (
+			<Suspense fallback={null}>
 				<ModelDetailModal
 					group={selectedModel}
 					providerMap={providerMap}
 					onClose={() => setSelectedModel(null)}
 				/>
-			)}
+			</Suspense>
+		)}
 		</>
 	);
 }

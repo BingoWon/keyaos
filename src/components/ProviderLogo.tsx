@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 interface ProviderLogoProps {
 	src: string;
@@ -35,7 +35,7 @@ interface ProviderChipProps {
 	src: string;
 	name: string;
 	size?: number;
-	badge?: React.ReactNode;
+	badge?: ReactNode;
 	onClick?: () => void;
 	className?: string;
 }

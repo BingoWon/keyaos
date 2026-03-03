@@ -26,7 +26,7 @@ export function formatSignedUSD(value: number): string {
 
 /** Format model pricing (input is cents-per-million-tokens) */
 export function formatPrice(price: number): string {
-	if (price === 0) return "Free";
+	if (price === 0) return "$0.00";
 	const d = price / 100;
 	const raw = d >= 0.1 ? d.toFixed(2) : Number(d.toPrecision(3)).toString();
 	const [int, dec] = raw.split(".");
@@ -61,6 +61,18 @@ export function formatTimestamp(date: Date): string {
 	});
 }
 
+const rtfCache = new Map<string, Intl.RelativeTimeFormat>();
+
+function getRtf(locale?: string): Intl.RelativeTimeFormat {
+	const key = locale ?? "";
+	let rtf = rtfCache.get(key);
+	if (!rtf) {
+		rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "narrow" });
+		rtfCache.set(key, rtf);
+	}
+	return rtf;
+}
+
 /**
  * Locale-aware relative time using Intl.RelativeTimeFormat (narrow style).
  *   < 1h  → "12m ago" / "12分钟前"
@@ -73,7 +85,7 @@ export function formatRelativeTime(ms: number, locale?: string): string {
 	const diff = Date.now() - ms;
 	if (diff < 0) return formatDate(ms, locale);
 
-	const rtf = new Intl.RelativeTimeFormat(locale, { numeric: "always", style: "narrow" });
+	const rtf = getRtf(locale);
 
 	const minutes = Math.floor(diff / 60_000);
 	if (minutes < 60) return rtf.format(-Math.max(1, minutes), "minute");

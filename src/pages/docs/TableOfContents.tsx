@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { classNames } from "../../utils/classNames";
 
@@ -8,50 +8,56 @@ interface TocItem {
 	level: number;
 }
 
+const SCROLL_OFFSET = 80;
+
 export function TableOfContents() {
 	const [items, setItems] = useState<TocItem[]>([]);
 	const [activeId, setActiveId] = useState<string>("");
-	const observerRef = useRef<IntersectionObserver | null>(null);
+	const headingsRef = useRef<HTMLElement[]>([]);
+	const rafRef = useRef(0);
 	const { pathname } = useLocation();
+
+	const syncActive = useCallback(() => {
+		let current = "";
+		for (const h of headingsRef.current) {
+			if (h.getBoundingClientRect().top <= SCROLL_OFFSET) current = h.id;
+		}
+		setActiveId((prev) => {
+			const next = current || headingsRef.current[0]?.id || "";
+			return prev === next ? prev : next;
+		});
+	}, []);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: pathname triggers re-extraction on navigation
 	useEffect(() => {
-		// Small delay to let MDX content render into the DOM
 		const timer = setTimeout(() => {
-			const headings = document.querySelectorAll<HTMLElement>(
-				"[data-docs-content] h2[id], [data-docs-content] h3[id]",
+			const headings = Array.from(
+				document.querySelectorAll<HTMLElement>(
+					"[data-docs-content] h2[id], [data-docs-content] h3[id]",
+				),
 			);
-			const tocItems: TocItem[] = Array.from(headings).map((h) => ({
-				id: h.id,
-				text: h.textContent ?? "",
-				level: h.tagName === "H2" ? 2 : 3,
-			}));
-			setItems(tocItems);
-			setActiveId("");
+			headingsRef.current = headings;
 
-			// IntersectionObserver for scroll-active highlighting
-			observerRef.current?.disconnect();
-			observerRef.current = new IntersectionObserver(
-				(entries) => {
-					for (const entry of entries) {
-						if (entry.isIntersecting) {
-							setActiveId(entry.target.id);
-						}
-					}
-				},
-				{ rootMargin: "-80px 0px -60% 0px", threshold: 0.1 },
+			setItems(
+				headings.map((h) => ({
+					id: h.id,
+					text: h.textContent ?? "",
+					level: h.tagName === "H2" ? 2 : 3,
+				})),
 			);
 
-			for (const h of headings) {
-				observerRef.current.observe(h);
-			}
-		}, 100);
+			syncActive();
 
-		return () => {
-			clearTimeout(timer);
-			observerRef.current?.disconnect();
-		};
-	}, [pathname]);
+			const onScroll = () => {
+				cancelAnimationFrame(rafRef.current);
+				rafRef.current = requestAnimationFrame(syncActive);
+			};
+			window.addEventListener("scroll", onScroll, { passive: true });
+			return () => window.removeEventListener("scroll", onScroll);
+		}, 120);
+
+		return () => clearTimeout(timer);
+	}, [pathname, syncActive]);
 
 	if (items.length === 0) return null;
 
@@ -70,6 +76,7 @@ export function TableOfContents() {
 								document
 									.getElementById(item.id)
 									?.scrollIntoView({ behavior: "smooth" });
+								window.history.replaceState(null, "", `#${item.id}`);
 								setActiveId(item.id);
 							}}
 							className={classNames(

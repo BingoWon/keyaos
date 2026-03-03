@@ -40,7 +40,7 @@ function makeHeading(Tag: "h1" | "h2" | "h3" | "h4") {
 	return function Heading(props: ComponentPropsWithoutRef<typeof Tag>) {
 		const id = toSlug(props.children);
 		const [copied, setCopied] = useState(false);
-		const timerRef = useRef<ReturnType<typeof setTimeout>>();
+		const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
 		const handleCopy = useCallback(
 			(e: React.MouseEvent) => {
@@ -58,7 +58,7 @@ function makeHeading(Tag: "h1" | "h2" | "h3" | "h4") {
 		return (
 			<Tag
 				id={id}
-				className={`group relative scroll-mt-24 ${HEADING_STYLES[Tag]}`}
+				className={`group relative scroll-mt-10 ${HEADING_STYLES[Tag]}`}
 				{...props}
 			>
 				{props.children}
@@ -66,7 +66,7 @@ function makeHeading(Tag: "h1" | "h2" | "h3" | "h4") {
 					<a
 						href={`#${id}`}
 						onClick={handleCopy}
-						className="ml-2 inline-flex align-middle opacity-0 transition-opacity group-hover:opacity-100"
+						className={`ml-2 inline-flex align-middle transition-opacity ${copied ? "opacity-100" : "opacity-0 group-hover:opacity-100"}`}
 						aria-label={`Copy link to ${props.children}`}
 					>
 						{copied ? (

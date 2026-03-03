@@ -130,10 +130,10 @@ export function Providers() {
 										{t("models.provider")}
 									</th>
 									<th className="px-2">ID</th>
-									<th className="px-2 hidden md:table-cell max-w-[250px]">
+									<th className="px-2 hidden md:table-cell">
 										24h Chart
 									</th>
-									<th className="px-2 hidden md:table-cell max-w-[250px]">
+									<th className="px-2 hidden md:table-cell">
 										24h Range
 									</th>
 									<th className="px-2 text-right">Multiplier</th>
@@ -166,12 +166,18 @@ export function Providers() {
 													<CopyButton text={g.provider.id} />
 												</div>
 											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell max-w-[250px]">
-												{spark && <Sparkline data={spark} />}
-											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell max-w-[250px] whitespace-nowrap">
+											<td className="px-2 py-2.5 hidden md:table-cell">
 												{spark && (
-													<PriceRange data={spark} format={fmtMultiplier} />
+													<div className="max-w-[250px]">
+														<Sparkline data={spark} />
+													</div>
+												)}
+											</td>
+											<td className="px-2 py-2.5 hidden md:table-cell whitespace-nowrap">
+												{spark && (
+													<div className="max-w-[250px]">
+														<PriceRange data={spark} format={fmtMultiplier} />
+													</div>
 												)}
 											</td>
 											<td className="px-2 py-2.5 text-right whitespace-nowrap">

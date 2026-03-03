@@ -1,4 +1,5 @@
 import {
+	ArrowPathIcon,
 	CheckIcon,
 	ClipboardDocumentIcon,
 	EyeIcon,
@@ -45,6 +46,7 @@ export function ApiKeys() {
 	const [revealedKeys, setRevealedKeys] = useState<Map<string, string>>(
 		new Map(),
 	);
+	const [revealingId, setRevealingId] = useState<string | null>(null);
 	const [editingId, setEditingId] = useState<string | null>(null);
 	const [editName, setEditName] = useState("");
 
@@ -137,6 +139,7 @@ export function ApiKeys() {
 			});
 			return;
 		}
+		setRevealingId(id);
 		try {
 			const res = await fetch(`/api/api-keys/${id}/reveal`, {
 				headers: await getHeaders(),
@@ -149,6 +152,8 @@ export function ApiKeys() {
 			}
 		} catch {
 			toast.error(t("common.error"));
+		} finally {
+			setRevealingId(null);
 		}
 	};
 
@@ -377,11 +382,14 @@ export function ApiKeys() {
 														<span>{revealedKeys.get(k.id) ?? k.keyHint}</span>
 														<button
 															type="button"
+															disabled={revealingId === k.id}
 															onClick={() => toggleReveal(k.id)}
-															className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+															className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 disabled:opacity-50"
 															title={revealedKeys.has(k.id) ? "Hide" : "Reveal"}
 														>
-															{revealedKeys.has(k.id) ? (
+															{revealingId === k.id ? (
+																<ArrowPathIcon className="size-4 animate-spin" />
+															) : revealedKeys.has(k.id) ? (
 																<EyeSlashIcon className="size-4" />
 															) : (
 																<EyeIcon className="size-4" />

@@ -562,25 +562,25 @@ export function Byok() {
 											scope="col"
 											className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
 										>
-											{t("credentials.earnings")}
-										</th>
-										<th
-											scope="col"
-											className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
-										>
 											{t("credentials.price_multiplier")}
 										</th>
 										<th
 											scope="col"
 											className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
 										>
-											{t("credentials.health")}
+											{t("credentials.earnings")}
 										</th>
 										<th
 											scope="col"
 											className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
 										>
 											{t("credentials.added")}
+										</th>
+										<th
+											scope="col"
+											className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white"
+										>
+											{t("credentials.health")}
 										</th>
 										<th
 											scope="col"
@@ -722,10 +722,6 @@ export function Byok() {
 														</span>
 													)}
 												</td>
-												{/* Earnings */}
-												<td className="whitespace-nowrap px-3 py-4 text-sm font-mono text-gray-900 dark:text-white">
-													{formatUSD(cred.earnings)}
-												</td>
 												{/* Price Multiplier */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
 													{editingSettingsId === cred.id ? (
@@ -784,13 +780,17 @@ export function Byok() {
 														</div>
 													)}
 												</td>
-												{/* Health */}
-												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-													<HealthBadge status={cred.health} />
+												{/* Earnings */}
+												<td className="whitespace-nowrap px-3 py-4 text-sm font-mono text-gray-900 dark:text-white">
+													{formatUSD(cred.earnings)}
 												</td>
 												{/* Added */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
 													{formatDateTime(cred.addedAt)}
+												</td>
+												{/* Health */}
+												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+													<HealthBadge status={cred.health} />
 												</td>
 												{/* Enabled */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">

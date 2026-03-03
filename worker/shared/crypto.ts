@@ -56,8 +56,9 @@ export async function sha256(input: string): Promise<string> {
 	return btoa(String.fromCharCode(...new Uint8Array(hash)));
 }
 
-/** Mask a secret for safe display: first N chars + ••• + last M chars. */
+/** Mask a secret for safe display, preserving original length to prevent layout shift. */
 export function mask(secret: string, prefixLen = 10, suffixLen = 3): string {
 	if (secret.length <= prefixLen + suffixLen) return "•".repeat(secret.length);
-	return `${secret.slice(0, prefixLen)}•••${secret.slice(-suffixLen)}`;
+	const midLen = secret.length - prefixLen - suffixLen;
+	return `${secret.slice(0, prefixLen)}${"•".repeat(midLen)}${secret.slice(-suffixLen)}`;
 }

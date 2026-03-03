@@ -4,7 +4,7 @@ import {
 	CreditCardIcon,
 	DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import { Suspense, lazy, useMemo, useState } from "react";
+import { lazy, Suspense, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { isPlatform } from "../auth";
@@ -60,8 +60,10 @@ export function Dashboard() {
 		"/api/credits/balance",
 		{ skip: !isPlatform },
 	);
-	const { data: rawModels, loading: modelsLoading } =
-		useFetch<ModelEntry[]>("/api/models", { requireAuth: false });
+	const { data: rawModels, loading: modelsLoading } = useFetch<ModelEntry[]>(
+		"/api/models",
+		{ requireAuth: false },
+	);
 	const { data: providersData } = useFetch<ProviderMeta[]>("/api/providers", {
 		requireAuth: false,
 	});
@@ -199,6 +201,7 @@ export function Dashboard() {
 					</div>
 					<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 						{Array.from({ length: 4 }).map((_, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							<div key={i} className="flex items-center gap-4 px-5 py-3.5">
 								<div className="flex-1 space-y-1.5">
 									<div className="h-4 w-40 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
@@ -210,102 +213,104 @@ export function Dashboard() {
 						))}
 					</div>
 				</div>
-			) : latestModels.length > 0 && (
-				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
-					<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
-						<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-							{t("dashboard.latest_models")}
-							<span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">
-								{uniqueModelCount}
-							</span>
-						</h4>
-						<Link
-							to="/dashboard/models"
-							className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
-						>
-							{t("dashboard.view_all")}
-						</Link>
+			) : (
+				latestModels.length > 0 && (
+					<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
+						<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
+							<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+								{t("dashboard.latest_models")}
+								<span className="ml-2 text-xs font-normal text-gray-400 dark:text-gray-500">
+									{uniqueModelCount}
+								</span>
+							</h4>
+							<Link
+								to="/dashboard/models"
+								className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
+							>
+								{t("dashboard.view_all")}
+							</Link>
+						</div>
+						<table className="min-w-full">
+							<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+								{latestModels.map((g) => {
+									const best = g.providers[0];
+									const maxCtx = Math.max(
+										...g.providers.map((p) => p.contextLength),
+									);
+									const spark = inputSparks?.[g.id];
+									return (
+										<tr
+											key={g.id}
+											onClick={() => setSelectedModel(g)}
+											className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+										>
+											<td className="py-2.5 pl-5 pr-2">
+												<div className="min-w-0">
+													<div className="text-sm font-semibold text-gray-900 dark:text-white">
+														{g.displayName}
+													</div>
+													<div className="flex items-center gap-1.5 mt-0.5">
+														<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
+															{g.id}
+														</code>
+														<CopyButton text={g.id} />
+														{g.createdAt > 0 && (
+															<Badge variant="warning">
+																{formatRelativeTime(g.createdAt, i18n.language)}
+															</Badge>
+														)}
+													</div>
+												</div>
+											</td>
+											<td className="px-2 py-2.5 hidden lg:table-cell">
+												<ModalityBadges
+													input={g.inputModalities}
+													output={g.outputModalities}
+												/>
+											</td>
+											<td className="px-2 py-2.5 hidden md:table-cell">
+												{spark && <Sparkline data={spark} className="h-7" />}
+											</td>
+											<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
+												<DualPrice
+													original={best.inputPrice}
+													platform={best.platformInputPrice}
+												/>
+											</td>
+											<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
+												<DualPrice
+													original={best.outputPrice}
+													platform={best.platformOutputPrice}
+												/>
+											</td>
+											<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell whitespace-nowrap">
+												{maxCtx > 0 ? formatContext(maxCtx) : "—"}
+											</td>
+											<td className="py-2.5 pl-2 pr-5">
+												<div className="flex items-center justify-end gap-1">
+													<span className="hidden sm:inline-flex items-center gap-0.5">
+														{g.providers.slice(0, 4).map((p) => {
+															const meta = providerMap.get(p.provider);
+															return meta ? (
+																<ProviderLogo
+																	key={p.provider}
+																	src={meta.logoUrl}
+																	name={meta.name}
+																	size={16}
+																/>
+															) : null;
+														})}
+													</span>
+													<Badge variant="brand">{g.providers.length}</Badge>
+												</div>
+											</td>
+										</tr>
+									);
+								})}
+							</tbody>
+						</table>
 					</div>
-					<table className="min-w-full">
-						<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-							{latestModels.map((g) => {
-								const best = g.providers[0];
-								const maxCtx = Math.max(
-									...g.providers.map((p) => p.contextLength),
-								);
-								const spark = inputSparks?.[g.id];
-								return (
-									<tr
-										key={g.id}
-										onClick={() => setSelectedModel(g)}
-										className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
-									>
-										<td className="py-2.5 pl-5 pr-2">
-											<div className="min-w-0">
-												<div className="text-sm font-semibold text-gray-900 dark:text-white">
-													{g.displayName}
-												</div>
-												<div className="flex items-center gap-1.5 mt-0.5">
-													<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
-														{g.id}
-													</code>
-													<CopyButton text={g.id} />
-													{g.createdAt > 0 && (
-														<Badge variant="warning">
-															{formatRelativeTime(g.createdAt, i18n.language)}
-														</Badge>
-													)}
-												</div>
-											</div>
-										</td>
-										<td className="px-2 py-2.5 hidden lg:table-cell">
-											<ModalityBadges
-												input={g.inputModalities}
-												output={g.outputModalities}
-											/>
-										</td>
-										<td className="px-2 py-2.5 hidden md:table-cell">
-											{spark && <Sparkline data={spark} className="h-7" />}
-										</td>
-										<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
-											<DualPrice
-												original={best.inputPrice}
-												platform={best.platformInputPrice}
-											/>
-										</td>
-										<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 whitespace-nowrap">
-											<DualPrice
-												original={best.outputPrice}
-												platform={best.platformOutputPrice}
-											/>
-										</td>
-										<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400 hidden sm:table-cell whitespace-nowrap">
-											{maxCtx > 0 ? formatContext(maxCtx) : "—"}
-										</td>
-										<td className="py-2.5 pl-2 pr-5">
-											<div className="flex items-center justify-end gap-1">
-												<span className="hidden sm:inline-flex items-center gap-0.5">
-													{g.providers.slice(0, 4).map((p) => {
-														const meta = providerMap.get(p.provider);
-														return meta ? (
-															<ProviderLogo
-																key={p.provider}
-																src={meta.logoUrl}
-																name={meta.name}
-																size={16}
-															/>
-														) : null;
-													})}
-												</span>
-												<Badge variant="brand">{g.providers.length}</Badge>
-											</div>
-										</td>
-									</tr>
-								);
-							})}
-						</tbody>
-					</table>
-				</div>
+				)
 			)}
 
 			{/* Recent Activity (platform only) */}
@@ -363,15 +368,15 @@ export function Dashboard() {
 				</div>
 			)}
 
-		{selectedModel && (
-			<Suspense fallback={null}>
-				<ModelDetailModal
-					group={selectedModel}
-					providerMap={providerMap}
-					onClose={() => setSelectedModel(null)}
-				/>
-			</Suspense>
-		)}
+			{selectedModel && (
+				<Suspense fallback={null}>
+					<ModelDetailModal
+						group={selectedModel}
+						providerMap={providerMap}
+						onClose={() => setSelectedModel(null)}
+					/>
+				</Suspense>
+			)}
 		</div>
 	);
 }

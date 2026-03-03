@@ -1,5 +1,5 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { Suspense, lazy, useCallback, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CopyButton } from "../components/CopyButton";
 import { ProviderChip } from "../components/ProviderLogo";
@@ -32,8 +32,9 @@ export function Providers() {
 		loading: modelsLoading,
 		refetch: refetchModels,
 	} = useFetch<ModelEntry[]>("/api/models", { requireAuth: false });
-	const { data: providersData, loading: providersLoading } =
-		useFetch<ProviderMeta[]>("/api/providers", { requireAuth: false });
+	const { data: providersData, loading: providersLoading } = useFetch<
+		ProviderMeta[]
+	>("/api/providers", { requireAuth: false });
 	const { data: providerSparks, refetch: refetchSparks } = useFetch<
 		Record<string, SparklineData>
 	>("/api/sparklines/provider", { requireAuth: false });
@@ -103,6 +104,7 @@ export function Providers() {
 				<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
 					<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 						{Array.from({ length: 6 }).map((_, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							<div key={i} className="flex items-center gap-4 px-5 py-3.5">
 								<div className="flex items-center gap-2 flex-1">
 									<div className="size-5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />

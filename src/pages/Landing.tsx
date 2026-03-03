@@ -12,10 +12,10 @@ import {
 	UserGroupIcon,
 } from "@heroicons/react/24/outline";
 import {
-	Suspense,
 	type ComponentType,
-	type SVGProps,
 	lazy,
+	Suspense,
+	type SVGProps,
 	useMemo,
 	useState,
 } from "react";
@@ -337,15 +337,15 @@ function PlatformShowcase() {
 				</section>
 			)}
 
-		{selectedModel && (
-			<Suspense fallback={null}>
-				<ModelDetailModal
-					group={selectedModel}
-					providerMap={providerMap}
-					onClose={() => setSelectedModel(null)}
-				/>
-			</Suspense>
-		)}
+			{selectedModel && (
+				<Suspense fallback={null}>
+					<ModelDetailModal
+						group={selectedModel}
+						providerMap={providerMap}
+						onClose={() => setSelectedModel(null)}
+					/>
+				</Suspense>
+			)}
 		</>
 	);
 }

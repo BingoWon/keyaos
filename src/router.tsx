@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import {
 	createBrowserRouter,
 	Navigate,
@@ -7,10 +7,11 @@ import {
 } from "react-router-dom";
 import { AuthGuard, isPlatform, useAuth } from "./auth";
 import { PageLoader } from "./components/PageLoader";
+import { RouteError } from "./components/RouteError";
 import { SidebarLayout } from "./components/SidebarLayout";
+import { MdxPage } from "./pages/docs/MdxPage";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
-import { MdxPage } from "./pages/docs/MdxPage";
 import { NotFound } from "./pages/NotFound";
 
 // ─── Lazy-loaded page components ─────────────────────────
@@ -64,25 +65,19 @@ const DocsLayout = lazy(() =>
 );
 const IntroductionMdx = lazy(() => import("./pages/docs/introduction.mdx"));
 const QuickstartMdx = lazy(() => import("./pages/docs/quickstart.mdx"));
-const ModelsRoutingMdx = lazy(
-	() => import("./pages/docs/models-routing.mdx"),
-);
+const ModelsRoutingMdx = lazy(() => import("./pages/docs/models-routing.mdx"));
 const CredentialsSharingMdx = lazy(
 	() => import("./pages/docs/credentials-sharing.mdx"),
 );
 const PricingMdx = lazy(() => import("./pages/docs/pricing.mdx"));
 const CreditsMdx = lazy(() => import("./pages/docs/credits.mdx"));
-const AuthenticationMdx = lazy(
-	() => import("./pages/docs/authentication.mdx"),
-);
+const AuthenticationMdx = lazy(() => import("./pages/docs/authentication.mdx"));
 const OpenaiApiMdx = lazy(() => import("./pages/docs/openai-api.mdx"));
 const AnthropicApiMdx = lazy(() => import("./pages/docs/anthropic-api.mdx"));
 const ModelsApiMdx = lazy(() => import("./pages/docs/models-api.mdx"));
 const CreditsApiMdx = lazy(() => import("./pages/docs/credits-api.mdx"));
 const ErrorCodesMdx = lazy(() => import("./pages/docs/error-codes.mdx"));
-const PrivacyPolicyMdx = lazy(
-	() => import("./pages/docs/privacy-policy.mdx"),
-);
+const PrivacyPolicyMdx = lazy(() => import("./pages/docs/privacy-policy.mdx"));
 const TermsOfServiceMdx = lazy(
 	() => import("./pages/docs/terms-of-service.mdx"),
 );
@@ -116,7 +111,7 @@ function LoginRoute() {
 
 export const router = createBrowserRouter([
 	{ path: "/login/*", element: <LoginRoute /> },
-	{ path: "/", element: <Landing /> },
+	{ path: "/", element: <Landing />, errorElement: <RouteError /> },
 	{
 		path: "/dashboard",
 		element: (
@@ -124,6 +119,7 @@ export const router = createBrowserRouter([
 				<SidebarLayout />
 			</AuthGuard>
 		),
+		errorElement: <RouteError />,
 		children: dashboardChildren,
 	},
 	...(isPlatform
@@ -137,6 +133,7 @@ export const router = createBrowserRouter([
 							</Suspense>
 						</AuthGuard>
 					),
+					errorElement: <RouteError />,
 					children: [
 						{ index: true, element: <Overview /> },
 						{ path: "users", element: <Users /> },
@@ -160,6 +157,7 @@ export const router = createBrowserRouter([
 				<DocsLayout />
 			</Suspense>
 		),
+		errorElement: <RouteError />,
 		children: [
 			{ index: true, element: <Navigate to="/docs/introduction" replace /> },
 			{

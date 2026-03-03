@@ -41,9 +41,9 @@ export class LogsDao {
 		const res = await this.db
 			.prepare(
 				`SELECT * FROM (
-					SELECT * FROM logs WHERE consumer_id = ?1 ORDER BY created_at DESC LIMIT ?2
+					SELECT * FROM (SELECT * FROM logs WHERE consumer_id = ?1 ORDER BY created_at DESC LIMIT ?2)
 					UNION
-					SELECT * FROM logs WHERE credential_owner_id = ?1 ORDER BY created_at DESC LIMIT ?2
+					SELECT * FROM (SELECT * FROM logs WHERE credential_owner_id = ?1 ORDER BY created_at DESC LIMIT ?2)
 				 ) ORDER BY created_at DESC LIMIT ?2`,
 			)
 			.bind(userId, limit)

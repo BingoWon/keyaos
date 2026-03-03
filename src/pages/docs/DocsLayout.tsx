@@ -47,10 +47,10 @@ import { Suspense, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet } from "react-router-dom";
 import { LanguageSelector } from "../../components/LanguageSelector";
+import { PageLoader } from "../../components/PageLoader";
 import { ThemeToggle } from "../../components/ThemeToggle";
 import { classNames } from "../../utils/classNames";
 import { TableOfContents } from "./TableOfContents";
-import { PageLoader } from "../../components/PageLoader";
 
 type HeroIcon = ComponentType<SVGProps<SVGSVGElement>>;
 
@@ -390,11 +390,11 @@ export function DocsLayout() {
 								<PageCopyButton />
 							</div>
 							{/* MDX content */}
-						<div data-docs-content>
-							<Suspense fallback={<PageLoader />}>
-								<Outlet />
-							</Suspense>
-						</div>
+							<div data-docs-content>
+								<Suspense fallback={<PageLoader />}>
+									<Outlet />
+								</Suspense>
+							</div>
 						</div>
 						{/* TOC */}
 						<aside className="hidden lg:block">

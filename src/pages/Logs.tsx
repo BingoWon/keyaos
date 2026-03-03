@@ -97,6 +97,7 @@ export function Logs() {
 				<div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
 					<div className="divide-y divide-gray-200 dark:divide-white/10">
 						{Array.from({ length: 8 }).map((_, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							<div key={i} className="flex items-center gap-4 px-6 py-4">
 								<div className="h-4 w-28 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
 								<div className="h-5 w-16 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />

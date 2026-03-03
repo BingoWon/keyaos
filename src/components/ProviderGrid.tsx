@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from "react";
+import { lazy, Suspense, useState } from "react";
 import type { ProviderGroup } from "../utils/providers";
 import { ProviderChip } from "./ProviderLogo";
 import { Badge } from "./ui";

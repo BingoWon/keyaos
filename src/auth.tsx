@@ -193,6 +193,7 @@ function AuthSkeleton() {
 					<nav className="flex flex-1 flex-col gap-y-3">
 						{Array.from({ length: 6 }).map((_, i) => (
 							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 								key={i}
 								className="h-9 rounded-lg bg-gray-100 dark:bg-white/5 animate-pulse"
 							/>
@@ -206,6 +207,7 @@ function AuthSkeleton() {
 					<div className="mt-6 grid grid-cols-3 gap-4">
 						{Array.from({ length: 3 }).map((_, i) => (
 							<div
+								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 								key={i}
 								className="h-24 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 animate-pulse"
 							/>

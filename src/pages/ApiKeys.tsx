@@ -308,25 +308,26 @@ export function ApiKeys() {
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-gray-200 bg-white dark:divide-white/10 dark:bg-gray-900">
-								{loading ? (
-									Array.from({ length: 3 }).map((_, i) => (
-										<tr key={i}>
-											<td className="py-4 pl-4 pr-3 sm:pl-6">
-												<div className="h-4 w-24 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
-											</td>
-											<td className="px-3 py-4">
-												<div className="h-4 w-48 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-											</td>
-											<td className="px-3 py-4">
-												<div className="h-4 w-28 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-											</td>
-											<td className="px-3 py-4">
-												<div className="h-5 w-9 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />
-											</td>
-											<td className="py-4 pl-3 pr-4 sm:pr-6" />
-										</tr>
-									))
-								) : !apiKeys?.length ? (
+									{loading ? (
+										Array.from({ length: 3 }).map((_, i) => (
+											// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+											<tr key={i}>
+												<td className="py-4 pl-4 pr-3 sm:pl-6">
+													<div className="h-4 w-24 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+												</td>
+												<td className="px-3 py-4">
+													<div className="h-4 w-48 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+												</td>
+												<td className="px-3 py-4">
+													<div className="h-4 w-28 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+												</td>
+												<td className="px-3 py-4">
+													<div className="h-5 w-9 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />
+												</td>
+												<td className="py-4 pl-3 pr-4 sm:pr-6" />
+											</tr>
+										))
+									) : !apiKeys?.length ? (
 										<tr>
 											<td
 												colSpan={5}

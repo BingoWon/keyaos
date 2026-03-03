@@ -71,9 +71,11 @@ export function Data() {
 				<div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
 					<div className="divide-y divide-gray-200 dark:divide-white/10">
 						{Array.from({ length: 8 }).map((_, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							<div key={i} className="flex items-center gap-4 px-3 py-2.5">
 								{Array.from({ length: 5 }).map((_, j) => (
 									<div
+										// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 										key={j}
 										className="h-4 w-24 rounded bg-gray-200 dark:bg-white/10 animate-pulse"
 									/>

@@ -315,6 +315,7 @@ export function Overview() {
 				<dl className="grid grid-cols-6 gap-4">
 					{Array.from({ length: 6 }).map((_, i) => (
 						<div
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							key={i}
 							className="rounded-xl border border-gray-200 bg-white px-4 py-5 dark:border-white/10 dark:bg-white/5 animate-pulse"
 						>

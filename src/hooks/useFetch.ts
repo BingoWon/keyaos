@@ -82,9 +82,7 @@ export function useFetch<T>(url: string, options: FetchOptions = {}) {
 				setData(result as T);
 			} catch (err: unknown) {
 				if ((err as Error).name !== "AbortError") {
-					setError(
-						err instanceof Error ? err : new Error("Unknown Error"),
-					);
+					setError(err instanceof Error ? err : new Error("Unknown Error"));
 				}
 			} finally {
 				setLoading(false);

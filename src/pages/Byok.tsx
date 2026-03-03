@@ -598,32 +598,33 @@ export function Byok() {
 									</tr>
 								</thead>
 								<tbody className="divide-y divide-gray-200 bg-white dark:divide-white/10 dark:bg-gray-900">
-								{loading ? (
-									Array.from({ length: 4 }).map((_, i) => (
-										<tr key={i}>
-											<td className="py-4 pl-4 sm:pl-6">
-												<div className="flex items-center gap-2">
-													<div className="size-5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
-													<div className="h-4 w-20 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
-												</div>
-											</td>
-											<td className="px-3 py-4">
-												<div className="h-4 w-36 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-											</td>
-											<td className="px-3 py-4">
-												<div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />
-											</td>
-											<td className="px-3 py-4">
-												<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-											</td>
-											<td className="px-3 py-4 hidden sm:table-cell" />
-											<td className="px-3 py-4 hidden sm:table-cell" />
-											<td className="px-3 py-4 hidden lg:table-cell" />
-											<td className="px-3 py-4" />
-											<td className="py-4 pl-3 pr-4 sm:pr-6" />
-										</tr>
-									))
-								) : credentials.length === 0 ? (
+									{loading ? (
+										Array.from({ length: 4 }).map((_, i) => (
+											// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+											<tr key={i}>
+												<td className="py-4 pl-4 sm:pl-6">
+													<div className="flex items-center gap-2">
+														<div className="size-5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
+														<div className="h-4 w-20 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+													</div>
+												</td>
+												<td className="px-3 py-4">
+													<div className="h-4 w-36 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+												</td>
+												<td className="px-3 py-4">
+													<div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />
+												</td>
+												<td className="px-3 py-4">
+													<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+												</td>
+												<td className="px-3 py-4 hidden sm:table-cell" />
+												<td className="px-3 py-4 hidden sm:table-cell" />
+												<td className="px-3 py-4 hidden lg:table-cell" />
+												<td className="px-3 py-4" />
+												<td className="py-4 pl-3 pr-4 sm:pr-6" />
+											</tr>
+										))
+									) : credentials.length === 0 ? (
 										<tr>
 											<td
 												colSpan={9}

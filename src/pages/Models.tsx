@@ -1,5 +1,5 @@
 import { ArrowPathIcon } from "@heroicons/react/20/solid";
-import { Suspense, lazy, useCallback, useMemo, useState } from "react";
+import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
@@ -136,6 +136,7 @@ export function Models() {
 				<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
 					<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 						{Array.from({ length: 8 }).map((_, i) => (
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							<div key={i} className="flex items-center gap-4 px-5 py-3.5">
 								<div className="flex-1 space-y-1.5">
 									<div className="h-4 w-40 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />

@@ -2,7 +2,7 @@ import { ArrowPathIcon } from "@heroicons/react/20/solid";
 import { lazy, Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CopyButton } from "../components/CopyButton";
-import { ProviderLogo } from "../components/ProviderLogo";
+import { ProviderChip } from "../components/ProviderLogo";
 import { SearchBar } from "../components/SearchBar";
 import {
 	PriceRange,
@@ -129,8 +129,13 @@ export function Providers() {
 									<th className="py-2.5 pl-4 pr-2 sm:pl-5">
 										{t("models.provider")}
 									</th>
-									<th className="px-2 hidden md:table-cell">24h Chart</th>
-									<th className="px-2 hidden md:table-cell">24h Range</th>
+									<th className="px-2">ID</th>
+									<th className="px-2 hidden md:table-cell max-w-[250px]">
+										24h Chart
+									</th>
+									<th className="px-2 hidden md:table-cell max-w-[250px]">
+										24h Range
+									</th>
 									<th className="px-2 text-right">Multiplier</th>
 									<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
 										{t("providers.models_count")}
@@ -147,29 +152,24 @@ export function Providers() {
 											className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
 										>
 											<td className="py-2.5 pl-4 pr-2 sm:pl-5 whitespace-nowrap">
-												<div className="flex items-center gap-2.5">
-													<ProviderLogo
-														src={g.provider.logoUrl}
-														name={g.provider.name}
-														size={20}
-													/>
-													<div className="min-w-0">
-														<div className="text-sm font-semibold text-gray-900 dark:text-white">
-															{g.provider.name}
-														</div>
-														<div className="flex items-center gap-1 mt-0.5">
-															<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
-																{g.provider.id}
-															</code>
-															<CopyButton text={g.provider.id} />
-														</div>
-													</div>
+												<ProviderChip
+													src={g.provider.logoUrl}
+													name={g.provider.name}
+													size={20}
+												/>
+											</td>
+											<td className="px-2 py-2.5 whitespace-nowrap">
+												<div className="flex items-center gap-1">
+													<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
+														{g.provider.id}
+													</code>
+													<CopyButton text={g.provider.id} />
 												</div>
 											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell">
+											<td className="px-2 py-2.5 hidden md:table-cell max-w-[250px]">
 												{spark && <Sparkline data={spark} />}
 											</td>
-											<td className="px-2 py-2.5 hidden md:table-cell whitespace-nowrap">
+											<td className="px-2 py-2.5 hidden md:table-cell max-w-[250px] whitespace-nowrap">
 												{spark && (
 													<PriceRange data={spark} format={fmtMultiplier} />
 												)}

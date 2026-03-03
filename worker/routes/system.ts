@@ -99,8 +99,17 @@ systemRouter.get("/sparklines/:dimension", edgeCache(), async (c) => {
 			400,
 		);
 	}
+	const sampleParam = Number(c.req.query("sample"));
+	const sampleMs =
+		sampleParam > 0
+			? Math.max(60_000, Math.min(sampleParam, 3_600_000))
+			: undefined;
+
 	const dao = new CandleDao(c.env.DB);
-	const data = await dao.getSparklines(dimension as CandleDimension);
+	const data = await dao.getSparklines(
+		dimension as CandleDimension,
+		sampleMs,
+	);
 	return c.json({ data });
 });
 

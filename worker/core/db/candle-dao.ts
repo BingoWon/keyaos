@@ -280,9 +280,12 @@ export class CandleDao {
 
 	/**
 	 * Bulk sparkline data for all items in a dimension over the last 24h.
-	 * Returns close prices sampled at 30-min intervals + 24h high/low/first/last.
+	 * Returns close prices sampled at `sampleMs` intervals + 24h high/low/first/last.
 	 */
-	async getSparklines(dimension: CandleDimension): Promise<
+	async getSparklines(
+		dimension: CandleDimension,
+		sampleMs = 30 * 60 * 1000,
+	): Promise<
 		Record<
 			string,
 			{
@@ -311,7 +314,7 @@ export class CandleDao {
 				low_price: number;
 			}>();
 
-		const SAMPLE_MS = 30 * 60 * 1000;
+		const SAMPLE_MS = sampleMs;
 		const groups = new Map<
 			string,
 			{ closes: Map<number, number>; low: number; high: number }

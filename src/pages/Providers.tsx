@@ -37,7 +37,7 @@ export function Providers() {
 	>("/api/providers", { requireAuth: false });
 	const { data: providerSparks, refetch: refetchSparks } = useFetch<
 		Record<string, SparklineData>
-	>("/api/sparklines/provider", { requireAuth: false });
+	>("/api/sparklines/provider?sample=900000", { requireAuth: false });
 
 	const refetch = useCallback(() => {
 		refetchModels();

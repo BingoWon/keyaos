@@ -56,9 +56,17 @@ export async function sha256(input: string): Promise<string> {
 	return btoa(String.fromCharCode(...new Uint8Array(hash)));
 }
 
-/** Mask a secret for safe display, preserving original length to prevent layout shift. */
-export function mask(secret: string, prefixLen = 10, suffixLen = 3): string {
+/** Mask an API key for display, preserving original length to prevent layout shift on reveal toggle. */
+export function mask(secret: string, prefixLen = 10, suffixLen = 4): string {
 	if (secret.length <= prefixLen + suffixLen) return "•".repeat(secret.length);
 	const midLen = secret.length - prefixLen - suffixLen;
 	return `${secret.slice(0, prefixLen)}${"•".repeat(midLen)}${secret.slice(-suffixLen)}`;
+}
+
+/** Short fixed-length hint for credentials that can never be revealed. */
+export function briefHint(secret: string): string {
+	const s = secret.trim();
+	if (s.startsWith("{")) return "{…}";
+	if (s.length <= 12) return "•".repeat(s.length);
+	return `${s.slice(0, 8)}…${s.slice(-4)}`;
 }

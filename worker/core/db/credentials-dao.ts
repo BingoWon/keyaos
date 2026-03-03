@@ -1,4 +1,4 @@
-import { decrypt, encrypt, mask, sha256 } from "../../shared/crypto";
+import { briefHint, decrypt, encrypt, sha256 } from "../../shared/crypto";
 import type { DbCredential } from "./schema";
 
 /** Subscription-based credentials use a 5-hour cooldown before auto-recovery */
@@ -26,7 +26,7 @@ export class CredentialsDao {
 			encrypt(params.secret, this.encryptionKey),
 			sha256(params.secret),
 		]);
-		const secretHint = mask(params.secret);
+		const secretHint = briefHint(params.secret);
 
 		await this.db
 			.prepare(

@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { CandleDao } from "../../core/db/candle-dao";
 import { syncAllModels, syncAutoCredits } from "../../core/sync/sync-service";
-import { decrypt, mask } from "../../shared/crypto";
+import { briefHint, decrypt, mask } from "../../shared/crypto";
 import { BadRequestError } from "../../shared/errors";
 import type { AppEnv } from "../../shared/types";
 import { AdminDao } from "../billing/admin-dao";
@@ -102,7 +102,7 @@ admin.post("/remask", async (c) => {
 		.all<{ id: string; encrypted_secret: string }>();
 	for (const row of creds.results ?? []) {
 		const plain = await decrypt(row.encrypted_secret, ek);
-		const hint = mask(plain);
+		const hint = briefHint(plain);
 		await db
 			.prepare("UPDATE upstream_credentials SET secret_hint = ? WHERE id = ?")
 			.bind(hint, row.id)

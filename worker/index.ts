@@ -214,14 +214,14 @@ export default {
 		const rate = Number.parseFloat(env.CNY_USD_RATE || "7");
 
 		ctx.waitUntil(
-			Promise.allSettled([
-				candleDao.aggregate(Date.now() - 60_000),
-				candleDao.generateQuotedCandles(),
-				sweepAutoTopUp(env.DB, env.STRIPE_SECRET_KEY),
-				syncAllModels(env.DB, rate),
-				syncAutoCredits(env.DB, env.ENCRYPTION_KEY, rate),
-				candleDao.pruneOldCandles(),
-			]),
+			(async () => {
+				await candleDao.aggregate(Date.now() - 60_000);
+				await candleDao.generateQuotedCandles();
+				await sweepAutoTopUp(env.DB, env.STRIPE_SECRET_KEY);
+				await syncAllModels(env.DB, rate);
+				await syncAutoCredits(env.DB, env.ENCRYPTION_KEY, rate);
+				await candleDao.pruneOldCandles();
+			})(),
 		);
 	},
 };

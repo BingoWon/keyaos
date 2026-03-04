@@ -20,6 +20,7 @@ import {
 	useState,
 } from "react";
 import { useTranslation } from "react-i18next";
+import { activateThreadModel } from "../../hooks/useThreadRuntime";
 
 export const ChatThreadList: FC = () => {
 	const { t } = useTranslation();
@@ -132,8 +133,10 @@ const ThreadListItem: FC = () => {
 	return (
 		<ThreadListItemPrimitive.Root className="group relative mb-0.5 flex items-center rounded-lg transition-colors data-active:bg-brand-50 data-active:text-brand-700 dark:data-active:bg-brand-500/15 dark:data-active:text-brand-300">
 			<ThreadListItemPrimitive.Trigger
-				className="flex min-w-0 flex-1 items-center rounded-lg px-2.5 py-2 text-left text-sm whitespace-nowrap text-gray-700 transition-colors hover:bg-gray-100 group-data-active:bg-transparent group-data-active:text-brand-700 dark:text-gray-300 dark:hover:bg-white/5 dark:group-data-active:text-brand-300"
+				className="flex min-w-0 flex-1 items-center overflow-hidden rounded-lg py-2 pl-2.5 pr-8 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 group-data-active:bg-transparent group-data-active:text-brand-700 dark:text-gray-300 dark:hover:bg-white/5 dark:group-data-active:text-brand-300"
 				onClick={() => {
+					const remoteId = runtime.getState().remoteId;
+					if (remoteId) activateThreadModel(remoteId);
 					setTimeout(() => {
 						document
 							.querySelector<HTMLTextAreaElement>(

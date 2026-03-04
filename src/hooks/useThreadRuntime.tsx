@@ -77,6 +77,10 @@ export function useActiveThreadModel(): string | null {
 	return useSyncExternalStore(_subscribe, _getSnapshot);
 }
 
+export function activateThreadModel(remoteId: string): void {
+	setActiveThreadModel(_modelMap.get(remoteId) ?? null);
+}
+
 // ---------------------------------------------------------------------------
 // History adapter
 // ---------------------------------------------------------------------------

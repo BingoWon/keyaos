@@ -1,6 +1,7 @@
 import {
 	ThreadListItemPrimitive,
 	ThreadListPrimitive,
+	useAssistantRuntime,
 	useThreadList,
 	useThreadListItemRuntime,
 } from "@assistant-ui/react";
@@ -91,13 +92,16 @@ export const ChatThreadList: FC = () => {
 
 const GroupedThreadItems: FC = () => {
 	const { t } = useTranslation();
-	const state = useThreadList();
+	const runtime = useAssistantRuntime();
+	const threadCount = useThreadList((s) => s.threadIds.length);
+	const components = useMemo(() => ({ ThreadListItem }), []);
 
 	const groups = useMemo(() => {
 		const now = Date.now();
 		const buckets: number[][] = [[], [], [], [], []];
+		const state = runtime.threads.getState();
 
-		for (let i = 0; i < state.threadIds.length; i++) {
+		for (let i = 0; i < threadCount; i++) {
 			const threadId = state.threadIds[i]!;
 			const item = state.threadItems[threadId];
 			const remoteId = item?.remoteId;
@@ -109,7 +113,9 @@ const GroupedThreadItems: FC = () => {
 		return buckets
 			.map((indices, bi) => ({ label: t(TIME_BUCKET_KEYS[bi]!), indices }))
 			.filter((g) => g.indices.length > 0);
-	}, [state.threadIds, state.threadItems, t]);
+	}, [threadCount, runtime, t]);
+
+	if (groups.length === 0) return null;
 
 	return (
 		<>
@@ -122,7 +128,7 @@ const GroupedThreadItems: FC = () => {
 						<ThreadListPrimitive.ItemByIndex
 							key={i}
 							index={i}
-							components={{ ThreadListItem }}
+							components={components}
 						/>
 					))}
 				</div>

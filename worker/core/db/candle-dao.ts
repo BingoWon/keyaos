@@ -292,7 +292,9 @@ export class CandleDao {
 
 	/**
 	 * Bulk sparkline data for all items in a dimension over the last 24h.
-	 * Returns close prices sampled at `sampleMs` intervals + 24h high/low/first/last.
+	 * Returns gap-filled close prices sampled at `sampleMs` intervals + 24h high/low/first/last.
+	 * Gap-fill: missing intervals use the previous close_price (no data = no price change).
+	 * low/high are derived from close_price only, consistent with the sparkline line.
 	 */
 	async getSparklines(
 		dimension: CandleDimension,
@@ -309,10 +311,11 @@ export class CandleDao {
 			}
 		>
 	> {
-		const since = Date.now() - 24 * 60 * 60 * 1000;
+		const now = Date.now();
+		const since = now - 24 * 60 * 60 * 1000;
 		const res = await this.db
 			.prepare(
-				`SELECT dimension_value, interval_start, close_price, high_price, low_price
+				`SELECT dimension_value, interval_start, close_price
 				 FROM price_candles
 				 WHERE dimension = ? AND interval_start >= ?
 				 ORDER BY interval_start ASC`,
@@ -322,27 +325,23 @@ export class CandleDao {
 				dimension_value: string;
 				interval_start: number;
 				close_price: number;
-				high_price: number;
-				low_price: number;
 			}>();
 
 		const SAMPLE_MS = sampleMs;
-		const groups = new Map<
-			string,
-			{ closes: Map<number, number>; low: number; high: number }
-		>();
+		const groups = new Map<string, Map<number, number>>();
 
 		for (const r of res.results || []) {
-			let g = groups.get(r.dimension_value);
-			if (!g) {
-				g = { closes: new Map(), low: Infinity, high: -Infinity };
-				groups.set(r.dimension_value, g);
+			let closes = groups.get(r.dimension_value);
+			if (!closes) {
+				closes = new Map();
+				groups.set(r.dimension_value, closes);
 			}
 			const bucket = Math.floor(r.interval_start / SAMPLE_MS) * SAMPLE_MS;
-			g.closes.set(bucket, r.close_price);
-			if (r.low_price < g.low) g.low = r.low_price;
-			if (r.high_price > g.high) g.high = r.high_price;
+			closes.set(bucket, r.close_price);
 		}
+
+		const alignedSince = Math.floor(since / SAMPLE_MS) * SAMPLE_MS;
+		const alignedEnd = Math.floor(now / SAMPLE_MS) * SAMPLE_MS;
 
 		const result: Record<
 			string,
@@ -355,14 +354,31 @@ export class CandleDao {
 			}
 		> = {};
 
-		for (const [key, g] of groups) {
-			const sorted = [...g.closes.entries()].sort((a, b) => a[0] - b[0]);
-			const points = sorted.map(([, v]) => v);
+		for (const [key, closes] of groups) {
+			const points: number[] = [];
+			let lastClose: number | null = null;
+
+			for (let ts = alignedSince; ts <= alignedEnd; ts += SAMPLE_MS) {
+				const val = closes.get(ts);
+				if (val != null) {
+					lastClose = val;
+				}
+				if (lastClose != null) {
+					points.push(lastClose);
+				}
+			}
+
 			if (points.length > 0) {
+				let low = Infinity;
+				let high = -Infinity;
+				for (const p of points) {
+					if (p < low) low = p;
+					if (p > high) high = p;
+				}
 				result[key] = {
 					points,
-					low: g.low,
-					high: g.high,
+					low,
+					high,
 					first: points[0],
 					last: points[points.length - 1],
 				};

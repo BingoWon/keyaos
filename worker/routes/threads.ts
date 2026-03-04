@@ -119,6 +119,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 	const threadId = c.req.param("id");
 	const body = await c.req.json<{
 		messages: { role: string; content: string }[];
+		model?: string;
 	}>();
 
 	const snippet = (body.messages ?? [])
@@ -145,7 +146,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 		return fallback("New Thread");
 	}
 
-	const titleModel = "openai/gpt-5-nano";
+	const titleModel = body.model || "openai/gpt-5-nano";
 
 	let result: Awaited<ReturnType<typeof executeCompletion>>;
 	try {

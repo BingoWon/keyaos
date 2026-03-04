@@ -85,6 +85,7 @@ export function Chat() {
 	const adapter = useThreadListAdapter({
 		apiBase: "/api/threads",
 		getHeaders,
+		getModel: () => modelRef.current,
 	});
 
 	const runtime = useKeyaosRuntime({ transport, adapter });

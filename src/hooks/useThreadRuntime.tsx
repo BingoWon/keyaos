@@ -44,6 +44,7 @@ async function fetchApi<T>(
 type AdapterOpts = {
 	apiBase: string;
 	getHeaders: () => Promise<Record<string, string>>;
+	getModel: () => string;
 };
 
 // ---------------------------------------------------------------------------
@@ -256,6 +257,7 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 	const [adapter] = useState<RemoteThreadListAdapter>(() => {
 		const h = () => optsRef.current.getHeaders();
 		const b = () => optsRef.current.apiBase;
+		const m = () => optsRef.current.getModel();
 
 		return {
 			list: async () => {
@@ -319,6 +321,7 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 							: String(m.content ?? ""),
 					}));
 				try {
+					const titleModel = m() || "openai/gpt-5-nano";
 					const res = await fetch(
 						`${b()}/${remoteId}/generate-title`,
 						{
@@ -327,7 +330,10 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 								"Content-Type": "application/json",
 								...hd,
 							},
-							body: JSON.stringify({ messages: condensed }),
+							body: JSON.stringify({
+								messages: condensed,
+								model: titleModel,
+							}),
 						},
 					);
 					if (!res.ok || !res.body) {

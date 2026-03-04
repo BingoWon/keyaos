@@ -332,7 +332,9 @@
 		"threads": "Conversations",
 		"new_thread": "New conversation",
 		"system_prompt": "System Prompt",
-		"system_prompt_placeholder": "Custom instructions for the assistant…"
+		"system_prompt_placeholder": "Custom instructions for the assistant…",
+		"label_model": "Model",
+		"label_provider": "Provider"
 	},
 	"landing": {
 		"hero_tagline": "Order in Chaos",

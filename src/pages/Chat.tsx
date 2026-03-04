@@ -12,6 +12,7 @@ import {
 	XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { Modality } from "../../worker/core/db/schema";
 import { useAuth } from "../auth";
 import { ChatThread } from "../components/chat/ChatThread";
@@ -36,6 +37,7 @@ const LS_PROVIDER_KEY = "kx-chat-provider";
 const AUTO_PROVIDER = "auto";
 
 export function Chat() {
+	const { t } = useTranslation();
 	const { getToken } = useAuth();
 	const [modelId, setModelId] = useState(
 		() => localStorage.getItem(LS_MODEL_KEY) || "",
@@ -187,20 +189,22 @@ export function Chat() {
 							)}
 						</button>
 						<div className="flex items-center gap-1">
-							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">Model</span>
+							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">{t("chat.label_model")}</span>
 							<ModelPicker
 								models={uniqueModels}
 								value={modelId}
 								onChange={handleModelIdChange}
 							/>
+							{modelId && <CopyButton text={modelId} />}
 						</div>
 						<div className="flex items-center gap-1">
-							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">Provider</span>
+							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">{t("chat.label_provider")}</span>
 							<ProviderPicker
 								providers={availableProviders}
 								value={providerId}
 								onChange={handleProviderIdChange}
 							/>
+							{providerId !== AUTO_PROVIDER && <CopyButton text={providerId} />}
 						</div>
 						<SystemPrompt
 							value={systemPrompt}

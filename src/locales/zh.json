@@ -329,7 +329,9 @@
 		"threads": "会话列表",
 		"new_thread": "新建会话",
 		"system_prompt": "系统提示词",
-		"system_prompt_placeholder": "为助手设置自定义指令…"
+		"system_prompt_placeholder": "为助手设置自定义指令…",
+		"label_model": "模型",
+		"label_provider": "服务商"
 	},
 	"landing": {
 		"hero_tagline": "万钥归一",

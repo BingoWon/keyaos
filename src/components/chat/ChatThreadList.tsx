@@ -30,15 +30,24 @@ export const ChatThreadList: FC = () => {
 				<h2 className="text-sm font-semibold text-gray-900 dark:text-white">
 					{t("chat.threads")}
 				</h2>
-				<ThreadListPrimitive.New asChild>
-					<button
-						type="button"
-						className="flex size-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
-						aria-label={t("chat.new_thread")}
-					>
-						<PencilSquareIcon className="size-4" />
-					</button>
-				</ThreadListPrimitive.New>
+			<ThreadListPrimitive.New asChild>
+				<button
+					type="button"
+					onClick={() => {
+						setTimeout(() => {
+							document
+								.querySelector<HTMLTextAreaElement>(
+									'[aria-label="Message input"]',
+								)
+								?.focus();
+						}, 100);
+					}}
+					className="flex size-7 items-center justify-center rounded-md text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-gray-200"
+					aria-label={t("chat.new_thread")}
+				>
+					<PencilSquareIcon className="size-4" />
+				</button>
+			</ThreadListPrimitive.New>
 			</div>
 			<div className="flex-1 overflow-y-auto px-2 pb-2">
 				<ThreadListPrimitive.Items

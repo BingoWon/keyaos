@@ -98,6 +98,7 @@ CREATE TABLE IF NOT EXISTS price_candles (
 );
 
 CREATE INDEX IF NOT EXISTS idx_candles_dimension_time ON price_candles(dimension, interval_start);
+CREATE INDEX IF NOT EXISTS idx_candles_interval ON price_candles(interval_start);
 
 -- 6. [Platform] User wallets
 CREATE TABLE IF NOT EXISTS wallets (

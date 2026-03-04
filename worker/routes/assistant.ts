@@ -21,10 +21,10 @@ assistantRouter.post("/", async (c) => {
 	}
 
 	const messages = body.messages as UIMessage[] | undefined;
-	const modelId = body.model as string | undefined;
+	const modelId = body.model_id as string | undefined;
 	const system = body.system as string | undefined;
 	const threadId = body.threadId as string | undefined;
-	const providers = body.providers as string[] | undefined;
+	const providerIds = body.provider_ids as string[] | undefined;
 
 	if (!modelId) throw new BadRequestError("model is required");
 	if (!messages?.length) throw new BadRequestError("messages is required");
@@ -69,7 +69,7 @@ assistantRouter.post("/", async (c) => {
 	}
 
 	log.info("assistant", "Request", {
-		model: modelId,
+		model_id: modelId,
 		msgs: openaiMessages.length,
 		threadId,
 	});
@@ -83,21 +83,21 @@ assistantRouter.post("/", async (c) => {
 			let result: Awaited<ReturnType<typeof executeCompletion>>;
 			try {
 				result = await executeCompletion(c, {
-					model: modelId,
+					model_id: modelId,
 					body: { messages: openaiMessages, stream: true },
-					providers,
+					provider_ids: providerIds,
 				});
 			} catch (err) {
 				const msg =
 					err instanceof Error ? err.message : "Unknown gateway error";
-				log.error("assistant", "Gateway error", { error: msg, model: modelId });
+				log.error("assistant", "Gateway error", { error: msg, model_id: modelId });
 				writer.write({ type: "error", errorText: msg });
 				return;
 			}
 
 			const upstream = result.response;
 			log.info("assistant", "Streaming", {
-				provider: result.provider,
+				provider_id: result.provider_id,
 				reqId: result.requestId,
 			});
 

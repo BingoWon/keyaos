@@ -12,8 +12,8 @@ import { formatSignedUSD } from "../utils/format";
 interface LogEntry {
 	id: string;
 	direction: "spent" | "earned" | "self";
-	provider: string;
-	model: string;
+	provider_id: string;
+	model_id: string;
 	inputTokens: number;
 	outputTokens: number;
 	netCredits: number;
@@ -148,11 +148,11 @@ export function Logs() {
 									<td className="whitespace-nowrap px-3 py-4">
 										<DirectionBadge direction={tx.direction} />
 									</td>
-									<td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-white">
-										{tx.model}
-									</td>
-									<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-										{tx.provider}
+								<td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-white">
+									{tx.model_id}
+								</td>
+								<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+									{tx.provider_id}
 									</td>
 									<td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-500 dark:text-gray-400">
 										{tx.inputTokens.toLocaleString()}

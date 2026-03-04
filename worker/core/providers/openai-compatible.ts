@@ -48,7 +48,7 @@ function defaultParseModels(
 		.filter((m) => m.id)
 		.map((m) => ({
 			id: `${providerId}:${m.id}`,
-			provider: providerId,
+			provider_id: providerId,
 			model_id: m.id as string,
 			name: (m.name as string) || null,
 			input_price: 0,

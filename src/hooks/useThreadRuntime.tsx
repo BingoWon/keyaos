@@ -269,11 +269,11 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 						remoteId: string;
 						status: string;
 						title?: string;
-						model?: string;
+						model_id?: string;
 					}>;
 				}>(b(), await h());
 				for (const t of data.threads) {
-					if (t.model) _modelMap.set(t.remoteId, t.model);
+					if (t.model_id) _modelMap.set(t.remoteId, t.model_id);
 				}
 				return data;
 			},
@@ -361,11 +361,11 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 						remoteId: string;
 						status: string;
 						title?: string;
-						model?: string;
+						model_id?: string;
 					}>(`${b()}/${threadId}`, await h());
-					if (data.model) _modelMap.set(data.remoteId, data.model);
+					if (data.model_id) _modelMap.set(data.remoteId, data.model_id);
 					setActiveThreadModel(
-						data.model ?? _modelMap.get(data.remoteId) ?? null,
+						data.model_id ?? _modelMap.get(data.remoteId) ?? null,
 					);
 					return data;
 				} catch (err) {

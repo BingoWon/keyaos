@@ -16,7 +16,7 @@ threadsRouter.get("/", async (c) => {
 			remoteId: t.id,
 			status: t.status,
 			title: t.title,
-			model: t.model_id,
+			model_id: t.model_id,
 		})),
 	});
 });
@@ -49,7 +49,7 @@ threadsRouter.get("/:id", async (c) => {
 		remoteId: thread.id,
 		status: thread.status,
 		title: thread.title,
-		model: thread.model_id,
+		model_id: thread.model_id,
 	});
 });
 
@@ -119,7 +119,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 	const threadId = c.req.param("id");
 	const body = await c.req.json<{
 		messages: { role: string; content: string }[];
-		model?: string;
+		model_id?: string;
 	}>();
 
 	const snippet = (body.messages ?? [])
@@ -146,17 +146,17 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 		return fallback("New Thread");
 	}
 
-	if (!body.model) {
+	if (!body.model_id) {
 		log.warn("threads", "generate-title: no model provided", { threadId });
 		return fallback("New Thread");
 	}
 
-	const titleModel = body.model;
+	const titleModel = body.model_id;
 
 	let result: Awaited<ReturnType<typeof executeCompletion>>;
 	try {
 		result = await executeCompletion(c, {
-			model: titleModel,
+			model_id: titleModel,
 			body: {
 				messages: [
 					{
@@ -173,7 +173,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 	} catch (err) {
 		log.error("threads", "generate-title: gateway FAILED", {
 			threadId,
-			model: titleModel,
+			model_id: titleModel,
 			error: err instanceof Error ? err.message : String(err),
 		});
 		return fallback("New Thread");
@@ -240,7 +240,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 			log.info("threads", "generate-title: success", {
 				threadId,
 				title,
-				model: titleModel,
+				model_id: titleModel,
 			});
 			try {
 				const dao = new ThreadsDao(c.env.DB);

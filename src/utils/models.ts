@@ -12,7 +12,7 @@ export interface ModelGroup {
 }
 
 export interface ProviderRow {
-	provider: string;
+	provider_id: string;
 	inputPrice: number;
 	outputPrice: number;
 	platformInputPrice?: number;
@@ -45,7 +45,7 @@ export function aggregateModels(entries: ModelEntry[]): ModelGroup[] {
 			group.createdAt = e.created_at;
 		}
 		group.providers.push({
-			provider: e.provider,
+			provider_id: e.provider_id,
 			inputPrice: e.input_price ?? 0,
 			outputPrice: e.output_price ?? 0,
 			platformInputPrice: e.platform_input_price,

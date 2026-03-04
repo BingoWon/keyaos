@@ -12,7 +12,7 @@ export interface DbApiKey {
 export interface DbCredential {
 	id: string;
 	owner_id: string;
-	provider: string;
+	provider_id: string;
 	auth_type: string;
 	encrypted_secret: string;
 	secret_hash: string;
@@ -31,7 +31,7 @@ export type Modality = "text" | "image" | "audio" | "video" | "file";
 
 export interface DbModelPricing {
 	id: string;
-	provider: string;
+	provider_id: string;
 	model_id: string;
 	name: string | null;
 	input_price: number;
@@ -52,7 +52,7 @@ export interface DbLogEntry {
 	consumer_id: string;
 	credential_id: string;
 	credential_owner_id: string;
-	provider: string;
+	provider_id: string;
 	model_id: string;
 	input_tokens: number;
 	output_tokens: number;

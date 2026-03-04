@@ -8,7 +8,7 @@ export class PricingDao {
 	): Promise<void> {
 		const now = Date.now();
 		const stmt = this.db.prepare(
-			`INSERT INTO model_pricing (id, provider, model_id, name, input_price, output_price, context_length, input_modalities, output_modalities, is_active, sort_order, upstream_model_id, metadata, created_at, refreshed_at)
+			`INSERT INTO model_pricing (id, provider_id, model_id, name, input_price, output_price, context_length, input_modalities, output_modalities, is_active, sort_order, upstream_model_id, metadata, created_at, refreshed_at)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?)
 			 ON CONFLICT(id) DO UPDATE SET
 			   name = excluded.name,
@@ -27,7 +27,7 @@ export class PricingDao {
 		const batch = models.map((m) =>
 			stmt.bind(
 				m.id,
-				m.provider,
+				m.provider_id,
 				m.model_id,
 				m.name,
 				m.input_price,
@@ -49,7 +49,7 @@ export class PricingDao {
 	}
 
 	async deactivateMissing(
-		provider: string,
+		providerId: string,
 		activeIds: string[],
 	): Promise<void> {
 		if (activeIds.length === 0) return;
@@ -57,9 +57,9 @@ export class PricingDao {
 		const activeSet = new Set(activeIds);
 		const existing = await this.db
 			.prepare(
-				"SELECT id FROM model_pricing WHERE provider = ? AND is_active = 1",
+				"SELECT id FROM model_pricing WHERE provider_id = ? AND is_active = 1",
 			)
-			.bind(provider)
+			.bind(providerId)
 			.all<{ id: string }>();
 
 		const toDeactivate = (existing.results || [])
@@ -95,7 +95,7 @@ export class PricingDao {
 				`SELECT mp.*, MIN(c.price_multiplier) AS best_multiplier
 				 FROM model_pricing mp
 				 LEFT JOIN upstream_credentials c
-				   ON c.provider = mp.provider
+				   ON c.provider_id = mp.provider_id
 				   AND c.is_enabled = 1
 				   AND c.health_status NOT IN ('dead')
 				 WHERE mp.is_active = 1

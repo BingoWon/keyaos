@@ -63,20 +63,20 @@ describe("Platform billing: cross-user settlement", () => {
 		const credOwner = dbQuery(
 			`SELECT owner_id FROM upstream_credentials WHERE id = '${credentialId}'`,
 		) as { owner_id: string }[];
-		const providerId = credOwner[0].owner_id;
+		const credentialOwnerId = credOwner[0].owner_id;
 
 		assert.notStrictEqual(
 			consumerId,
-			providerId,
+			credentialOwnerId,
 			"Consumer and provider must be different users",
 		);
 
-		const beforeProvider = allBalances.get(providerId) ?? 0;
+		const beforeProvider = allBalances.get(credentialOwnerId) ?? 0;
 
 		await new Promise((r) => setTimeout(r, 3000));
 
 		const afterConsumer = getBalance(consumerId);
-		const afterProvider = getBalance(providerId);
+		const afterProvider = getBalance(credentialOwnerId);
 
 		assert.ok(
 			afterConsumer < beforeConsumer,
@@ -103,7 +103,7 @@ describe("Platform billing: cross-user settlement", () => {
 		assert.ok(logRows.length > 0, "Log entry not found");
 		const entry = logRows[0];
 		assert.strictEqual(entry.consumer_id, consumerId);
-		assert.strictEqual(entry.credential_owner_id, providerId);
+		assert.strictEqual(entry.credential_owner_id, credentialOwnerId);
 		assert.ok(entry.base_cost > 0, "base_cost should be positive");
 		assert.ok(
 			entry.consumer_charged > entry.base_cost,

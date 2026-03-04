@@ -21,19 +21,19 @@ export class CandleDao {
 
 		const rows = await this.db
 			.prepare(
-				`SELECT u.provider, u.model, u.price_multiplier,
+				`SELECT u.provider_id, u.model_id, u.price_multiplier,
 				        u.input_tokens, u.output_tokens, u.created_at,
 				        mp.input_price, mp.output_price
 				 FROM logs u
 				 JOIN model_pricing mp
-				   ON mp.provider = u.provider AND mp.model_id = u.model AND mp.is_active = 1
+				   ON mp.provider_id = u.provider_id AND mp.model_id = u.model_id AND mp.is_active = 1
 				 WHERE u.created_at >= ? AND u.created_at < ?
 				 ORDER BY u.created_at ASC`,
 			)
 			.bind(windowStart, now)
 			.all<{
-				provider: string;
-				model: string;
+			provider_id: string;
+			model_id: string;
 				price_multiplier: number;
 				input_tokens: number;
 				output_tokens: number;
@@ -97,7 +97,7 @@ export class CandleDao {
 			if (row.input_tokens > 0 && effectiveInput > 0) {
 				upsert(
 					"model:input",
-					row.model,
+					row.model_id,
 					interval,
 					effectiveInput,
 					row.input_tokens,
@@ -106,7 +106,7 @@ export class CandleDao {
 			if (row.output_tokens > 0 && effectiveOutput > 0) {
 				upsert(
 					"model:output",
-					row.model,
+					row.model_id,
 					interval,
 					effectiveOutput,
 					row.output_tokens,
@@ -116,7 +116,7 @@ export class CandleDao {
 			if (mul > 0) {
 				upsert(
 					"provider",
-					row.provider,
+					row.provider_id,
 					interval,
 					mul,
 					row.input_tokens + row.output_tokens,
@@ -177,7 +177,7 @@ export class CandleDao {
 					        MIN(mp.input_price * COALESCE(c.price_multiplier, 1.0)) AS price
 					 FROM model_pricing mp
 					 LEFT JOIN upstream_credentials c
-					   ON c.provider = mp.provider
+					   ON c.provider_id = mp.provider_id
 					   AND c.is_enabled = 1
 					   AND c.health_status NOT IN ('dead')
 					 WHERE mp.is_active = 1 AND mp.input_price > 0
@@ -190,7 +190,7 @@ export class CandleDao {
 					        MIN(mp.output_price * COALESCE(c.price_multiplier, 1.0)) AS price
 					 FROM model_pricing mp
 					 LEFT JOIN upstream_credentials c
-					   ON c.provider = mp.provider
+					   ON c.provider_id = mp.provider_id
 					   AND c.is_enabled = 1
 					   AND c.health_status NOT IN ('dead')
 					 WHERE mp.is_active = 1 AND mp.output_price > 0
@@ -199,15 +199,15 @@ export class CandleDao {
 				.all<{ val: string; price: number }>(),
 			this.db
 				.prepare(
-					`SELECT mp.provider AS val,
+					`SELECT mp.provider_id AS val,
 					        COALESCE(MIN(c.price_multiplier), 1.0) AS price
 					 FROM model_pricing mp
 					 LEFT JOIN upstream_credentials c
-					   ON c.provider = mp.provider
+					   ON c.provider_id = mp.provider_id
 					   AND c.is_enabled = 1
 					   AND c.health_status NOT IN ('dead')
 					 WHERE mp.is_active = 1
-					 GROUP BY mp.provider`,
+					 GROUP BY mp.provider_id`,
 				)
 				.all<{ val: string; price: number }>(),
 		]);

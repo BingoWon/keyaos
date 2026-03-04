@@ -57,7 +57,7 @@ function parseOpenRouterModels(raw: Record<string, unknown>): ParsedModel[] {
 		const createdMs = createdEpoch * 1000;
 		results.push({
 			id: `openrouter:${id}`,
-			provider: "openrouter",
+			provider_id: "openrouter",
 			model_id: id,
 			name: (m.name as string) || null,
 			input_price: dollarsToCentsPerM(inputUsdPerM),
@@ -91,7 +91,7 @@ function parseZenMuxModels(raw: Record<string, unknown>): ParsedModel[] {
 
 		results.push({
 			id: `zenmux:${id}`,
-			provider: "zenmux",
+			provider_id: "zenmux",
 			model_id: id,
 			name: (m.display_name as string) || null,
 			input_price: dollarsToCentsPerM(promptArr[0].value),
@@ -126,7 +126,7 @@ function parseDeepInfraModels(raw: Record<string, unknown>): ParsedModel[] {
 		const canonicalId = id.toLowerCase();
 		results.push({
 			id: `deepinfra:${canonicalId}`,
-			provider: "deepinfra",
+			provider_id: "deepinfra",
 			model_id: canonicalId,
 			name: null,
 			input_price: dollarsToCentsPerM(pricing.input_tokens),
@@ -159,7 +159,7 @@ function parseStaticUsdModels(
 ): ParsedModel[] {
 	return models.map((m) => ({
 		id: `${provider}:${m.id}`,
-		provider,
+		provider_id: provider,
 		model_id: m.id,
 		name: m.name,
 		input_price: dollarsToCentsPerM(m.input_usd),

@@ -9,10 +9,8 @@ import {
 import {
 	Bars3Icon,
 	ChevronUpDownIcon,
-	ClipboardDocumentIcon,
 	XMarkIcon,
 } from "@heroicons/react/24/outline";
-import { CheckIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Modality } from "../../worker/core/db/schema";
 import { useAuth } from "../auth";
@@ -22,6 +20,7 @@ import {
 	SystemPrompt,
 	loadSystemPrompt,
 } from "../components/chat/SystemPrompt";
+import { CopyButton } from "../components/CopyButton";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { useFetch } from "../hooks/useFetch";
 import {
@@ -38,10 +37,10 @@ const AUTO_PROVIDER = "auto";
 
 export function Chat() {
 	const { getToken } = useAuth();
-	const [model, setModel] = useState(
+	const [modelId, setModelId] = useState(
 		() => localStorage.getItem(LS_MODEL_KEY) || "",
 	);
-	const [provider, setProvider] = useState(
+	const [providerId, setProviderId] = useState(
 		() => localStorage.getItem(LS_PROVIDER_KEY) || AUTO_PROVIDER,
 	);
 	const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -49,11 +48,11 @@ export function Chat() {
 
 	const activeThreadModel = useActiveThreadModel();
 	useEffect(() => {
-		if (activeThreadModel) setModel(activeThreadModel);
+		if (activeThreadModel) setModelId(activeThreadModel);
 	}, [activeThreadModel]);
 
-	const handleModelChange = useCallback((v: string) => {
-		setModel(v);
+	const handleModelIdChange = useCallback((v: string) => {
+		setModelId(v);
 		try {
 			localStorage.setItem(LS_MODEL_KEY, v);
 		} catch {
@@ -61,8 +60,8 @@ export function Chat() {
 		}
 	}, []);
 
-	const handleProviderChange = useCallback((v: string) => {
-		setProvider(v);
+	const handleProviderIdChange = useCallback((v: string) => {
+		setProviderId(v);
 		try {
 			localStorage.setItem(LS_PROVIDER_KEY, v);
 		} catch {
@@ -72,10 +71,10 @@ export function Chat() {
 
 	const getTokenRef = useRef(getToken);
 	getTokenRef.current = getToken;
-	const modelRef = useRef(model);
-	modelRef.current = model;
-	const providerRef = useRef(provider);
-	providerRef.current = provider;
+	const modelIdRef = useRef(modelId);
+	modelIdRef.current = modelId;
+	const providerIdRef = useRef(providerId);
+	providerIdRef.current = providerId;
 	const systemPromptRef = useRef(systemPrompt);
 	systemPromptRef.current = systemPrompt;
 
@@ -92,9 +91,9 @@ export function Chat() {
 			new AssistantChatTransport({
 				api: "/api/chat",
 				body: () => ({
-					model: modelRef.current,
-					...(providerRef.current !== AUTO_PROVIDER && {
-						providers: [providerRef.current],
+					model_id: modelIdRef.current,
+					...(providerIdRef.current !== AUTO_PROVIDER && {
+						provider_ids: [providerIdRef.current],
 					}),
 					...(systemPromptRef.current && {
 						system: systemPromptRef.current,
@@ -108,7 +107,7 @@ export function Chat() {
 	const adapter = useThreadListAdapter({
 		apiBase: "/api/threads",
 		getHeaders,
-		getModel: () => modelRef.current,
+		getModel: () => modelIdRef.current,
 	});
 
 	const runtime = useKeyaosRuntime({ transport, adapter });
@@ -129,31 +128,31 @@ export function Chat() {
 	const availableProviders = useMemo(() => {
 		if (!models) return [];
 		const providerIds = new Set(
-			models.filter((m) => m.id === model).map((m) => m.provider),
+			models.filter((m) => m.id === modelId).map((m) => m.provider_id),
 		);
 		if (!providersMeta) return [...providerIds].map((id) => ({ id, name: id, logoUrl: "" }));
 		return providersMeta.filter((p) => providerIds.has(p.id));
-	}, [models, model, providersMeta]);
+	}, [models, modelId, providersMeta]);
 
 	useEffect(() => {
 		if (
-			provider !== AUTO_PROVIDER &&
+			providerId !== AUTO_PROVIDER &&
 			availableProviders.length > 0 &&
-			!availableProviders.some((p) => p.id === provider)
+			!availableProviders.some((p) => p.id === providerId)
 		) {
-			handleProviderChange(AUTO_PROVIDER);
+			handleProviderIdChange(AUTO_PROVIDER);
 		}
-	}, [availableProviders, provider, handleProviderChange]);
+	}, [availableProviders, providerId, handleProviderIdChange]);
 
 	useEffect(() => {
-		if (uniqueModels.length > 0 && !model) {
-			handleModelChange(uniqueModels[0].id);
+		if (uniqueModels.length > 0 && !modelId) {
+			handleModelIdChange(uniqueModels[0].id);
 		}
-	}, [uniqueModels, model, handleModelChange]);
+	}, [uniqueModels, modelId, handleModelIdChange]);
 
 	const selectedModel = useMemo(
-		() => uniqueModels.find((m) => m.id === model),
-		[uniqueModels, model],
+		() => uniqueModels.find((m) => m.id === modelId),
+		[uniqueModels, modelId],
 	);
 
 	const allowAttachments = useMemo(() => {
@@ -191,16 +190,16 @@ export function Chat() {
 						<span className="text-xs font-medium text-gray-400 dark:text-gray-500">Model</span>
 						<ModelPicker
 							models={uniqueModels}
-							value={model}
-							onChange={handleModelChange}
+							value={modelId}
+							onChange={handleModelIdChange}
 						/>
 					</div>
 					<div className="flex items-center gap-1">
 						<span className="text-xs font-medium text-gray-400 dark:text-gray-500">Provider</span>
 						<ProviderPicker
 							providers={availableProviders}
-							value={provider}
-							onChange={handleProviderChange}
+							value={providerId}
+							onChange={handleProviderIdChange}
 						/>
 					</div>
 					<SystemPrompt
@@ -214,37 +213,6 @@ export function Chat() {
 				</div>
 			</div>
 		</AssistantRuntimeProvider>
-	);
-}
-
-function CopyButton({ text }: { text: string }) {
-	const [copied, setCopied] = useState(false);
-	const timerRef = useRef<ReturnType<typeof setTimeout>>();
-
-	const handleCopy = useCallback(
-		(e: React.MouseEvent) => {
-			e.stopPropagation();
-			navigator.clipboard.writeText(text);
-			setCopied(true);
-			clearTimeout(timerRef.current);
-			timerRef.current = setTimeout(() => setCopied(false), 1500);
-		},
-		[text],
-	);
-
-	return (
-		<button
-			type="button"
-			onClick={handleCopy}
-			className="ml-auto shrink-0 rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300"
-			title={`Copy ID: ${text}`}
-		>
-			{copied ? (
-				<CheckIcon className="size-3.5 text-green-500" />
-			) : (
-				<ClipboardDocumentIcon className="size-3.5" />
-			)}
-		</button>
 	);
 }
 

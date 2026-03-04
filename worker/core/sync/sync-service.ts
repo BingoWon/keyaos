@@ -47,7 +47,7 @@ export async function syncAllModels(
 		otherProviders.map(async (provider) => {
 			const models = await provider.fetchModels(cnyUsdRate);
 			if (models.length === 0) {
-				log.warn("sync", "0 models, skipping", { provider: provider.info.id });
+				log.warn("sync", "0 models, skipping", { provider_id: provider.info.id });
 				return;
 			}
 
@@ -62,7 +62,7 @@ export async function syncAllModels(
 				filtered.map((m) => m.id),
 			);
 			log.info("sync", "Models synced", {
-				provider: provider.info.id,
+				provider_id: provider.info.id,
 				total: models.length,
 				kept: filtered.length,
 				filtered: models.length - filtered.length,
@@ -91,7 +91,7 @@ export async function syncAutoCredits(
 
 	const results = await Promise.allSettled(
 		autos.map(async (credential) => {
-			const provider = getProvider(credential.provider);
+			const provider = getProvider(credential.provider_id);
 			if (!provider) return;
 
 			const secret = await dao.decryptSecret(credential);

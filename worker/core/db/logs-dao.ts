@@ -11,7 +11,7 @@ export class LogsDao {
 		await this.db
 			.prepare(
 				`INSERT INTO logs (
-					id, consumer_id, credential_id, credential_owner_id, provider, model_id,
+					id, consumer_id, credential_id, credential_owner_id, provider_id, model_id,
 					input_tokens, output_tokens, base_cost,
 					consumer_charged, provider_earned, platform_fee, price_multiplier, created_at
 				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -21,7 +21,7 @@ export class LogsDao {
 				tx.consumer_id,
 				tx.credential_id,
 				tx.credential_owner_id,
-				tx.provider,
+				tx.provider_id,
 				tx.model_id,
 				tx.input_tokens,
 				tx.output_tokens,

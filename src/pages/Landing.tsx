@@ -305,11 +305,11 @@ function PlatformShowcase() {
 												<td className="py-3 pl-2 pr-5">
 													<div className="flex items-center justify-end gap-1">
 														<span className="hidden sm:inline-flex items-center gap-0.5">
-															{g.providers.slice(0, 4).map((p) => {
-																const meta = providerMap.get(p.provider);
-																return meta ? (
-																	<ProviderLogo
-																		key={p.provider}
+														{g.providers.slice(0, 4).map((p) => {
+															const meta = providerMap.get(p.provider_id);
+															return meta ? (
+																<ProviderLogo
+																	key={p.provider_id}
 																		src={meta.logoUrl}
 																		name={meta.name}
 																		size={16}

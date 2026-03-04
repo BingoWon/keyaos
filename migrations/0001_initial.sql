@@ -19,7 +19,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_api_keys_hash ON api_keys(key_hash);
 CREATE TABLE IF NOT EXISTS upstream_credentials (
     id TEXT PRIMARY KEY,
     owner_id TEXT NOT NULL,
-    provider TEXT NOT NULL,
+    provider_id TEXT NOT NULL,
     auth_type TEXT NOT NULL DEFAULT 'api_key',
     encrypted_secret TEXT NOT NULL,
     secret_hash TEXT NOT NULL,
@@ -36,12 +36,12 @@ CREATE TABLE IF NOT EXISTS upstream_credentials (
 
 CREATE INDEX IF NOT EXISTS idx_credentials_owner ON upstream_credentials(owner_id);
 CREATE UNIQUE INDEX IF NOT EXISTS idx_credentials_secret_hash ON upstream_credentials(secret_hash);
-CREATE INDEX IF NOT EXISTS idx_credentials_provider ON upstream_credentials(provider, is_enabled, health_status);
+CREATE INDEX IF NOT EXISTS idx_credentials_provider ON upstream_credentials(provider_id, is_enabled, health_status);
 
 -- 3. Model pricing catalog (auto-synced by cron)
 CREATE TABLE IF NOT EXISTS model_pricing (
     id TEXT PRIMARY KEY,
-    provider TEXT NOT NULL,
+    provider_id TEXT NOT NULL,
     model_id TEXT NOT NULL,
     name TEXT,
     input_price REAL NOT NULL,
@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS model_pricing (
     refreshed_at INTEGER NOT NULL
 );
 
-CREATE UNIQUE INDEX IF NOT EXISTS idx_model_pricing_provider_model ON model_pricing(provider, model_id);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_model_pricing_provider_model ON model_pricing(provider_id, model_id);
 CREATE INDEX IF NOT EXISTS idx_model_pricing_routing ON model_pricing(model_id, is_active, input_price);
 CREATE INDEX IF NOT EXISTS idx_model_pricing_sort ON model_pricing(model_id, sort_order);
 
@@ -67,7 +67,7 @@ CREATE TABLE IF NOT EXISTS logs (
     consumer_id TEXT NOT NULL,
     credential_id TEXT NOT NULL,
     credential_owner_id TEXT NOT NULL,
-    provider TEXT NOT NULL,
+    provider_id TEXT NOT NULL,
     model_id TEXT NOT NULL,
     input_tokens INTEGER NOT NULL,
     output_tokens INTEGER NOT NULL,

@@ -3,7 +3,7 @@ import type { Modality } from "../../worker/core/db/schema";
 /** Dashboard model entry — one per provider × model_id offering */
 export interface ModelEntry {
 	id: string;
-	provider: string;
+	provider_id: string;
 	name?: string;
 	input_price?: number;
 	output_price?: number;

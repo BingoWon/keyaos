@@ -32,7 +32,7 @@ import { formatUSD } from "../utils/format";
 
 interface CredentialInfo {
 	id: string;
-	provider: string;
+	provider_id: string;
 	authType: "api_key" | "oauth";
 	secretHint: string;
 	quota: number | null;
@@ -62,7 +62,7 @@ export function Byok() {
 	const [showPassword, setShowPassword] = useState(false);
 	const defaultProvider = providers[0]?.id ?? "openrouter";
 	const [draft, setDraft] = useState({
-		provider: defaultProvider,
+		provider_id: defaultProvider,
 		secret: "",
 		quota: "",
 		isEnabled: true,
@@ -83,7 +83,7 @@ export function Byok() {
 		Authorization: `Bearer ${await getToken()}`,
 	});
 
-	const selectedProvider = providers.find((p) => p.id === draft.provider);
+	const selectedProvider = providers.find((p) => p.id === draft.provider_id);
 	const isAutoProvider = selectedProvider?.supportsAutoCredits ?? false;
 	const isSubProvider = selectedProvider?.isSubscription ?? false;
 	const needsManualQuota = !isAutoProvider && !isSubProvider;
@@ -132,7 +132,7 @@ export function Byok() {
 		const tid = toast.loading(t("common.loading"));
 		try {
 			const body: Record<string, unknown> = {
-				provider: draft.provider,
+				provider_id: draft.provider_id,
 				secret: draft.secret,
 				isEnabled: draft.isEnabled ? 1 : 0,
 				priceMultiplier: Number.parseFloat(draft.priceMultiplier) || 1.0,
@@ -151,7 +151,7 @@ export function Byok() {
 			if (res.ok) {
 				setIsAddOpen(false);
 				setDraft({
-					provider: defaultProvider,
+					provider_id: defaultProvider,
 					secret: "",
 					quota: "",
 					isEnabled: true,
@@ -264,7 +264,7 @@ export function Byok() {
 	};
 
 	const isSubscription = (cred: CredentialInfo) =>
-		providers.find((p) => p.id === cred.provider)?.isSubscription ?? false;
+		providers.find((p) => p.id === cred.provider_id)?.isSubscription ?? false;
 
 	const formatQuota = (cred: CredentialInfo) => {
 		if (isSubscription(cred)) return t("credentials.subscription");
@@ -290,7 +290,7 @@ export function Byok() {
 							const isSub =
 								providers.find((p) => p.id === pid)?.isSubscription ?? false;
 							setDraft({
-								provider: pid,
+								provider_id: pid,
 								secret: "",
 								quota: "",
 								isEnabled: true,
@@ -351,14 +351,14 @@ export function Byok() {
 							<ProviderSelect
 								id="provider"
 								providers={providers}
-								value={draft.provider}
+								value={draft.provider_id}
 								onChange={(newId) => {
 									const isSub =
 										providers.find((p) => p.id === newId)?.isSubscription ??
 										false;
 									setDraft((d) => ({
 										...d,
-										provider: newId,
+										provider_id: newId,
 										...(!priceMultiplierTouched && {
 											priceMultiplier: isSub ? "0.5" : "0.8",
 										}),
@@ -372,7 +372,7 @@ export function Byok() {
 					{guide && (
 						<GuidancePanel
 							guide={guide}
-							providerId={draft.provider}
+							providerId={draft.provider_id}
 							isOAuth={isOAuth}
 							open={guideOpen}
 							onToggle={() => setGuideOpen(!guideOpen)}
@@ -642,16 +642,16 @@ export function Byok() {
 												{/* Provider */}
 												<td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
 													{(() => {
-														const meta = providers.find(
-															(p) => p.id === cred.provider,
-														);
-														return meta ? (
-															<ProviderChip
-																src={meta.logoUrl}
-																name={meta.name}
-															/>
-														) : (
-															<span>{cred.provider}</span>
+													const meta = providers.find(
+														(p) => p.id === cred.provider_id,
+													);
+													return meta ? (
+														<ProviderChip
+															src={meta.logoUrl}
+															name={meta.name}
+														/>
+													) : (
+														<span>{cred.provider_id}</span>
 														);
 													})()}
 												</td>

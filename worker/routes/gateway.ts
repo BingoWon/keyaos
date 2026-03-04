@@ -26,15 +26,15 @@ import { requestLogger } from "../shared/logger";
 import type { AppEnv } from "../shared/types";
 
 export interface CompletionRequest {
-	model: string;
+	model_id: string;
 	body: Record<string, unknown>;
-	providers?: string[];
+	provider_ids?: string[];
 }
 
 export interface CompletionResult {
 	response: Response;
 	requestId: string;
-	provider: string;
+	provider_id: string;
 	credentialId: string;
 }
 
@@ -45,7 +45,7 @@ export async function executeCompletion(
 	const consumerId = c.get("owner_id");
 	const isPlatform = !!c.env.CLERK_SECRET_KEY;
 	const requestId = crypto.randomUUID();
-	const rlog = requestLogger(requestId, { model: req.model, consumerId });
+	const rlog = requestLogger(requestId, { model: req.model_id, consumerId });
 	const encryptionKey = c.env.ENCRYPTION_KEY;
 
 	let creditsFallback = false;
@@ -58,12 +58,12 @@ export async function executeCompletion(
 	const candidates = await dispatchAll(
 		c.env.DB,
 		encryptionKey,
-		req.model,
+		req.model_id,
 		poolOwnerId,
-		req.providers,
+		req.provider_ids,
 	).catch((err) => {
 		if (creditsFallback && err instanceof NoKeyAvailableError) {
-			throw new CreditsExhaustedNoFallbackError(req.model);
+			throw new CreditsExhaustedNoFallbackError(req.model_id);
 		}
 		throw err;
 	});
@@ -90,11 +90,11 @@ export async function executeCompletion(
 
 			if (!response.ok) {
 				await credDao.reportFailure(credential.id, response.status, isSub);
-				rlog.warn("gateway", "Upstream error, retrying", {
-					attempt,
-					provider: provider.info.id,
-					status: response.status,
-				});
+			rlog.warn("gateway", "Upstream error, retrying", {
+				attempt,
+				provider_id: provider.info.id,
+				status: response.status,
+			});
 				lastError = new Error(
 					`Upstream ${provider.info.id} returned ${response.status}`,
 				);
@@ -107,7 +107,7 @@ export async function executeCompletion(
 
 			rlog.info("gateway", "Upstream OK", {
 				attempt,
-				provider: provider.info.id,
+				provider_id: provider.info.id,
 				credentialId: credential.id,
 				latencyMs,
 			});
@@ -129,8 +129,8 @@ export async function executeCompletion(
 								consumerId,
 								credentialId: credential.id,
 								credentialOwnerId,
-								provider: credential.provider,
-								model_id: modelId,
+							provider_id: credential.provider_id,
+							model_id: modelId,
 								baseCost,
 								inputTokens: usage.prompt_tokens,
 								outputTokens: usage.completion_tokens,
@@ -154,9 +154,9 @@ export async function executeCompletion(
 								}
 							}
 
-							rlog.info("billing", "Recorded", {
-								provider: credential.provider,
-								baseCost,
+						rlog.info("billing", "Recorded", {
+							provider_id: credential.provider_id,
+							baseCost,
 								inputTokens: usage.prompt_tokens,
 								outputTokens: usage.completion_tokens,
 							});
@@ -172,7 +172,7 @@ export async function executeCompletion(
 				},
 				onStreamError: (err) => {
 					rlog.warn("gateway", "Stream interrupted after 200", {
-						provider: provider.info.id,
+						provider_id: provider.info.id,
 						credentialId: credential.id,
 						error: err instanceof Error ? err.message : String(err),
 					});
@@ -185,14 +185,14 @@ export async function executeCompletion(
 			return {
 				response: finalResponse,
 				requestId,
-				provider: credential.provider,
+				provider_id: credential.provider_id,
 				credentialId: credential.id,
 			};
 		} catch (err) {
 			await credDao.reportFailure(credential.id, undefined, isSub);
 			rlog.warn("gateway", "Provider threw, retrying", {
 				attempt,
-				provider: provider.info.id,
+				provider_id: provider.info.id,
 				error: err instanceof Error ? err.message : String(err),
 			});
 			lastError = err;
@@ -202,5 +202,5 @@ export async function executeCompletion(
 	rlog.error("gateway", "All candidates exhausted", {
 		error: lastError instanceof Error ? lastError.message : String(lastError),
 	});
-	throw new NoKeyAvailableError(req.model);
+	throw new NoKeyAvailableError(req.model_id);
 }

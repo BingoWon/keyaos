@@ -283,7 +283,7 @@ export class GoogleOAuthAdapter implements ProviderAdapter {
 	async fetchModels(_cnyUsdRate?: number): Promise<ParsedModel[]> {
 		return this.cfg.models.map((m) => ({
 			id: `${this.cfg.id}:${m.id}`,
-			provider: this.cfg.id,
+			provider_id: this.cfg.id,
 			model_id: m.id,
 			name: m.name,
 			input_price: dollarsToCentsPerM(m.input_usd),

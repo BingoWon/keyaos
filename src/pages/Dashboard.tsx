@@ -45,8 +45,8 @@ interface PoolStats {
 interface LogEntry {
 	id: string;
 	direction: "spent" | "earned" | "self";
-	provider: string;
-	model: string;
+	provider_id: string;
+	model_id: string;
 	inputTokens: number;
 	outputTokens: number;
 	netCredits: number;
@@ -313,11 +313,11 @@ export function Dashboard() {
 											<td className="py-2.5 pl-2 pr-5">
 												<div className="flex items-center justify-end gap-1">
 													<span className="hidden sm:inline-flex items-center gap-0.5">
-														{g.providers.slice(0, 4).map((p) => {
-															const meta = providerMap.get(p.provider);
-															return meta ? (
-																<ProviderLogo
-																	key={p.provider}
+													{g.providers.slice(0, 4).map((p) => {
+														const meta = providerMap.get(p.provider_id);
+														return meta ? (
+															<ProviderLogo
+																key={p.provider_id}
 																	src={meta.logoUrl}
 																	name={meta.name}
 																	size={16}
@@ -368,11 +368,11 @@ export function Dashboard() {
 									<td className="py-2.5 pl-5 pr-2 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
 										{formatDateTime(tx.createdAt)}
 									</td>
-									<td className="px-2 py-2.5 text-sm text-gray-900 dark:text-white">
-										{tx.model}
-									</td>
-									<td className="px-2 py-2.5 text-sm text-gray-500 dark:text-gray-400">
-										{tx.provider}
+								<td className="px-2 py-2.5 text-sm text-gray-900 dark:text-white">
+									{tx.model_id}
+								</td>
+								<td className="px-2 py-2.5 text-sm text-gray-500 dark:text-gray-400">
+									{tx.provider_id}
 									</td>
 									<td
 										className={`py-2.5 pl-2 pr-5 text-sm text-right font-medium whitespace-nowrap ${

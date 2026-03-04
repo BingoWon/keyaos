@@ -52,7 +52,7 @@ publicModelsRouter.get("/", edgeCache(), async (c) => {
 		}
 
 		if (row.best_multiplier != null) {
-			if (!g.providers.includes(row.provider)) g.providers.push(row.provider);
+			if (!g.providers.includes(row.provider_id)) g.providers.push(row.provider_id);
 		}
 	}
 
@@ -120,10 +120,10 @@ dashboardModelsRouter.get("/", edgeCache(), async (c) => {
 	]);
 
 	const data = all.map((m) => {
-		const mul = providerMuls.get(m.provider) ?? m.best_multiplier;
+		const mul = providerMuls.get(m.provider_id) ?? m.best_multiplier;
 		return {
 			id: m.model_id,
-			provider: m.provider,
+			provider_id: m.provider_id,
 			name: m.name,
 			input_price: m.input_price,
 			output_price: m.output_price,

@@ -259,7 +259,7 @@ export class KiroAdapter implements ProviderAdapter {
 	async fetchModels(_cnyUsdRate?: number): Promise<ParsedModel[]> {
 		return (kiroModels as ModelEntry[]).map((m) => ({
 			id: `kiro:${m.id}`,
-			provider: "kiro",
+			provider_id: "kiro",
 			model_id: m.id,
 			name: m.name,
 			input_price: dollarsToCentsPerM(m.input_usd),

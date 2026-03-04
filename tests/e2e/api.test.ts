@@ -28,12 +28,12 @@ test("Credentials exist in database", () => {
 
 test("All price_multipliers are <= 1.0", () => {
 	const rows = dbQuery(
-		"SELECT id, provider, price_multiplier FROM upstream_credentials WHERE price_multiplier > 1.0",
-	) as { id: string; provider: string; price_multiplier: number }[];
+		"SELECT id, provider_id, price_multiplier FROM upstream_credentials WHERE price_multiplier > 1.0",
+	) as { id: string; provider_id: string; price_multiplier: number }[];
 	assert.strictEqual(
 		rows.length,
 		0,
-		`Found ${rows.length} credentials with multiplier > 1.0: ${rows.map((r) => `${r.provider}=${r.price_multiplier}`).join(", ")}`,
+		`Found ${rows.length} credentials with multiplier > 1.0: ${rows.map((r) => `${r.provider_id}=${r.price_multiplier}`).join(", ")}`,
 	);
 });
 

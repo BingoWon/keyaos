@@ -47,14 +47,14 @@ export function ModelDetailModal({
 				<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 					{group.providers.map((p, i) => (
 						<tr
-							key={p.provider}
+							key={p.provider_id}
 							className={
 								i === 0 ? "bg-brand-50/50 dark:bg-brand-500/[0.04]" : undefined
 							}
 						>
 							<ProviderCell
-								id={p.provider}
-								meta={providerMap.get(p.provider)}
+								id={p.provider_id}
+								meta={providerMap.get(p.provider_id)}
 							/>
 							<td className="px-2 py-2.5 text-sm font-mono text-right text-gray-600 dark:text-gray-400">
 								<DualPrice

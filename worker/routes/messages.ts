@@ -45,12 +45,12 @@ messagesRouter.post("/", async (c) => {
 		throw new BadRequestError("Invalid JSON body");
 	}
 
-	const model = body.model as string;
-	if (!model) throw new BadRequestError("model is required");
+	const modelId = body.model as string;
+	if (!modelId) throw new BadRequestError("model is required");
 	if (!body.max_tokens) throw new BadRequestError("max_tokens is required");
 
 	const { provider: rawProvider, ...rest } = body;
-	const providers = rawProvider
+	const providerIds = rawProvider
 		? Array.isArray(rawProvider)
 			? (rawProvider as string[])
 			: [rawProvider as string]
@@ -58,14 +58,14 @@ messagesRouter.post("/", async (c) => {
 
 	const openaiBody = toOpenAIRequest(rest);
 	const result = await executeCompletion(c, {
-		model,
+		model_id: modelId,
 		body: openaiBody,
-		providers,
+		provider_ids: providerIds,
 	});
 
 	const meta = {
 		"x-request-id": result.requestId,
-		"x-provider": result.provider,
+		"x-provider": result.provider_id,
 		"x-credential-id": result.credentialId,
 	};
 
@@ -75,7 +75,7 @@ messagesRouter.post("/", async (c) => {
 		if (!result.response.body) return c.text("", 502);
 
 		return new Response(
-			result.response.body.pipeThrough(createOpenAIToAnthropicStream(model)),
+			result.response.body.pipeThrough(createOpenAIToAnthropicStream(modelId)),
 			{
 				status: 200,
 				headers: {
@@ -88,7 +88,7 @@ messagesRouter.post("/", async (c) => {
 	}
 
 	const openaiJson = (await result.response.json()) as Record<string, unknown>;
-	return new Response(JSON.stringify(toAnthropicResponse(openaiJson, model)), {
+	return new Response(JSON.stringify(toAnthropicResponse(openaiJson, modelId)), {
 		status: 200,
 		headers: { "Content-Type": "application/json", ...meta },
 	});

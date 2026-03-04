@@ -29,12 +29,12 @@ export function aggregateProviders(
 
 	const byProvider = new Map<string, ProviderGroup>();
 	for (const m of entries) {
-		const meta = providerMap.get(m.provider);
+		const meta = providerMap.get(m.provider_id);
 		if (!meta) continue;
-		let group = byProvider.get(m.provider);
+		let group = byProvider.get(m.provider_id);
 		if (!group) {
 			group = { provider: meta, models: [] };
-			byProvider.set(m.provider, group);
+			byProvider.set(m.provider_id, group);
 		}
 		group.models.push({
 			id: m.id,

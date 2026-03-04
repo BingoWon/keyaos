@@ -12,7 +12,7 @@ export class CredentialsDao {
 
 	async add(params: {
 		owner_id: string;
-		provider: string;
+		provider_id: string;
 		authType?: "api_key" | "oauth";
 		secret: string;
 		quota?: number | null;
@@ -31,7 +31,7 @@ export class CredentialsDao {
 		await this.db
 			.prepare(
 				`INSERT INTO upstream_credentials (
-					id, owner_id, provider, auth_type,
+					id, owner_id, provider_id, auth_type,
 					encrypted_secret, secret_hash, secret_hint,
 					quota, quota_source,
 					is_enabled, price_multiplier,
@@ -41,7 +41,7 @@ export class CredentialsDao {
 			.bind(
 				id,
 				params.owner_id,
-				params.provider,
+				params.provider_id,
 				params.authType ?? "api_key",
 				encryptedSecret,
 				secretHash,
@@ -97,19 +97,19 @@ export class CredentialsDao {
 	 * Excludes: dead, disabled, and cooldown credentials still within their window.
 	 */
 	async selectAvailable(
-		provider: string,
+		providerId: string,
 		ownerId?: string,
 	): Promise<DbCredential[]> {
 		const now = Date.now();
 		const ownerClause = ownerId ? "AND owner_id = ? " : "";
 		const binds: (string | number)[] = ownerId
-			? [provider, ownerId, COOLDOWN_MS, now]
-			: [provider, COOLDOWN_MS, now];
+			? [providerId, ownerId, COOLDOWN_MS, now]
+			: [providerId, COOLDOWN_MS, now];
 
 		const res = await this.db
 			.prepare(
 				`SELECT * FROM upstream_credentials
-				 WHERE provider = ? ${ownerClause}AND is_enabled = 1
+				 WHERE provider_id = ? ${ownerClause}AND is_enabled = 1
 				   AND health_status != 'dead'
 				   AND (health_status != 'cooldown' OR last_health_check + ? < ?)
 				 ORDER BY price_multiplier ASC, COALESCE(quota, 9999999) DESC`,
@@ -229,7 +229,7 @@ export class CredentialsDao {
 				`SELECT
 					COUNT(*) AS total,
 					COUNT(CASE WHEN health_status = 'dead' THEN 1 END) AS dead,
-					COUNT(DISTINCT CASE WHEN is_enabled = 1 AND health_status != 'dead' THEN provider END) AS active_providers,
+					COUNT(DISTINCT CASE WHEN is_enabled = 1 AND health_status != 'dead' THEN provider_id END) AS active_providers,
 					COALESCE(SUM(quota), 0) AS total_quota
 				 FROM upstream_credentials
 				 WHERE owner_id = ?`,

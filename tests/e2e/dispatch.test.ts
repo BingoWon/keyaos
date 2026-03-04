@@ -15,7 +15,7 @@ import { API_BASE, KEYAOS_KEY, dbQuery } from "./utils.ts";
 
 interface CredRow {
 	id: string;
-	provider: string;
+	provider_id: string;
 	price_multiplier: number;
 }
 
@@ -25,14 +25,14 @@ async function chat(
 ): Promise<{
 	status: number;
 	credentialId: string;
-	provider: string;
+	provider_id: string;
 	body: string;
 }> {
 	const reqBody: Record<string, unknown> = {
 		model,
 		messages: [{ role: "user", content: "Say hi" }],
 	};
-	if (provider) reqBody.provider = provider;
+	if (provider) reqBody.provider_id = provider;
 
 	const res = await fetch(`${API_BASE}/v1/chat/completions`, {
 		method: "POST",
@@ -47,7 +47,7 @@ async function chat(
 	return {
 		status: res.status,
 		credentialId: res.headers.get("x-credential-id") ?? "",
-		provider: res.headers.get("x-provider") ?? "",
+		provider_id: res.headers.get("x-provider") ?? "",
 		body,
 	};
 }
@@ -55,7 +55,7 @@ async function chat(
 describe("Dispatch: same-provider ordering by price_multiplier", () => {
 	test("OpenRouter: 0.5 credential selected over 0.7", async () => {
 		const creds = dbQuery(
-			"SELECT id, provider, price_multiplier FROM upstream_credentials WHERE provider = 'openrouter' AND is_enabled = 1 ORDER BY price_multiplier ASC",
+			"SELECT id, provider_id, price_multiplier FROM upstream_credentials WHERE provider_id = 'openrouter' AND is_enabled = 1 ORDER BY price_multiplier ASC",
 		) as CredRow[];
 
 		assert.ok(creds.length >= 2, `Need 2 OpenRouter creds, found ${creds.length}`);
@@ -76,7 +76,7 @@ describe("Dispatch: same-provider ordering by price_multiplier", () => {
 
 	test("DeepSeek: 0.6 credential selected over 0.8", async () => {
 		const creds = dbQuery(
-			"SELECT id, provider, price_multiplier FROM upstream_credentials WHERE provider = 'deepseek' AND is_enabled = 1 ORDER BY price_multiplier ASC",
+			"SELECT id, provider_id, price_multiplier FROM upstream_credentials WHERE provider_id = 'deepseek' AND is_enabled = 1 ORDER BY price_multiplier ASC",
 		) as CredRow[];
 
 		assert.ok(creds.length >= 2, `Need 2 DeepSeek creds, found ${creds.length}`);
@@ -100,37 +100,37 @@ describe("Dispatch: cross-provider effective cost", () => {
 	test("openai/gpt-4o-mini: provider with lowest effective cost wins", async () => {
 		const result = await chat("openai/gpt-4o-mini");
 		console.log(
-			`  selected provider=${result.provider}, cred=${result.credentialId.slice(-8)}`,
+			`  selected provider=${result.provider_id}, cred=${result.credentialId.slice(-8)}`,
 		);
 
 		assert.strictEqual(result.status, 200, `Chat failed: ${result.body}`);
 
 		const prices = dbQuery(
-			"SELECT provider, input_price FROM model_pricing WHERE model_id = 'openai/gpt-4o-mini' AND is_active = 1 ORDER BY input_price ASC",
-		) as { provider: string; input_price: number }[];
+			"SELECT provider_id, input_price FROM model_pricing WHERE model_id = 'openai/gpt-4o-mini' AND is_active = 1 ORDER BY input_price ASC",
+		) as { provider_id: string; input_price: number }[];
 
 		const credMap = new Map<string, number>();
 		const creds = dbQuery(
-			"SELECT provider, MIN(price_multiplier) as best_mult FROM upstream_credentials WHERE is_enabled = 1 AND health_status != 'dead' GROUP BY provider",
-		) as { provider: string; best_mult: number }[];
-		for (const c of creds) credMap.set(c.provider, c.best_mult);
+			"SELECT provider_id, MIN(price_multiplier) as best_mult FROM upstream_credentials WHERE is_enabled = 1 AND health_status != 'dead' GROUP BY provider_id",
+		) as { provider_id: string; best_mult: number }[];
+		for (const c of creds) credMap.set(c.provider_id, c.best_mult);
 
 		const ranked = prices
-			.filter((p) => credMap.has(p.provider))
+			.filter((p) => credMap.has(p.provider_id))
 			.map((p) => ({
-				provider: p.provider,
-				effectiveCost: p.input_price * (credMap.get(p.provider) ?? 1),
+				provider_id: p.provider_id,
+				effectiveCost: p.input_price * (credMap.get(p.provider_id) ?? 1),
 			}))
 			.sort((a, b) => a.effectiveCost - b.effectiveCost);
 
 		console.log(
-			`  effective cost ranking: ${ranked.slice(0, 4).map((r) => `${r.provider}=${r.effectiveCost.toFixed(1)}`).join(", ")}`,
+			`  effective cost ranking: ${ranked.slice(0, 4).map((r) => `${r.provider_id}=${r.effectiveCost.toFixed(1)}`).join(", ")}`,
 		);
 
 		assert.strictEqual(
-			result.provider,
-			ranked[0].provider,
-			`Expected ${ranked[0].provider} (lowest effective cost ${ranked[0].effectiveCost}) but got ${result.provider}`,
+			result.provider_id,
+			ranked[0].provider_id,
+			`Expected ${ranked[0].provider_id} (lowest effective cost ${ranked[0].effectiveCost}) but got ${result.provider_id}`,
 		);
 	});
 });
@@ -164,10 +164,10 @@ describe("Dispatch: resilience", () => {
 	test("DeepSeek model responds successfully via dispatch", async () => {
 		const result = await chat("deepseek/deepseek-chat");
 		assert.strictEqual(result.status, 200, `Chat failed: ${result.body}`);
-		assert.ok(result.provider, "Missing x-provider header");
+		assert.ok(result.provider_id, "Missing x-provider header");
 		assert.ok(result.credentialId, "Missing x-credential-id header");
 		console.log(
-			`  provider=${result.provider}, cred=${result.credentialId.slice(-8)}`,
+			`  provider=${result.provider_id}, cred=${result.credentialId.slice(-8)}`,
 		);
 	});
 });

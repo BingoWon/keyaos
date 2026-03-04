@@ -31,26 +31,26 @@ export interface DispatchResult {
 export async function dispatchAll(
 	db: D1Database,
 	encryptionKey: string,
-	model: string,
+	modelId: string,
 	ownerId?: string,
-	providers?: string[],
+	providerIds?: string[],
 ): Promise<DispatchResult[]> {
-	if (!model) throw new BadRequestError("Model is required");
+	if (!modelId) throw new BadRequestError("Model is required");
 
 	const pricingDao = new PricingDao(db);
 	const credDao = new CredentialsDao(db, encryptionKey);
 
-	const offerings = await pricingDao.findByModelId(model);
+	const offerings = await pricingDao.findByModelId(modelId);
 	const candidates: DispatchResult[] = [];
 
 	for (const offering of offerings) {
-		if (providers?.length && !providers.includes(offering.provider)) continue;
+		if (providerIds?.length && !providerIds.includes(offering.provider_id)) continue;
 		if (offering.input_price < 0 || offering.output_price < 0) continue;
-		const provider = getProvider(offering.provider);
+		const provider = getProvider(offering.provider_id);
 		if (!provider) continue;
 
 		const credentials = await credDao.selectAvailable(
-			offering.provider,
+			offering.provider_id,
 			ownerId,
 		);
 
@@ -68,7 +68,7 @@ export async function dispatchAll(
 		}
 	}
 
-	if (candidates.length === 0) throw new NoKeyAvailableError(model);
+	if (candidates.length === 0) throw new NoKeyAvailableError(modelId);
 
 	candidates.sort((a, b) => {
 		const diff = a.modelPrice.inputPricePerM - b.modelPrice.inputPricePerM;

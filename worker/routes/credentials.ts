@@ -16,7 +16,7 @@ function toQuota(
 }
 
 const AddCredentialBody = z.object({
-	provider: z.string().min(1, "provider is required"),
+	provider_id: z.string().min(1, "provider_id is required"),
 	secret: z.string().min(1, "secret is required"),
 	quota: z.number().positive().optional(),
 	isEnabled: z.number().int().min(0).max(1).optional(),
@@ -50,13 +50,13 @@ credentialsRouter.post("/", async (c) => {
 		}),
 	);
 
-	const provider = getProvider(body.provider);
+	const provider = getProvider(body.provider_id);
 	if (!provider) {
 		const supported = getAllProviders()
 			.map((p) => p.info.id)
 			.join(", ");
 		throw new BadRequestError(
-			`Unknown provider: ${body.provider}. Supported: ${supported}`,
+			`Unknown provider: ${body.provider_id}. Supported: ${supported}`,
 		);
 	}
 
@@ -65,7 +65,7 @@ credentialsRouter.post("/", async (c) => {
 
 	if (needsManualQuota && (body.quota == null || body.quota <= 0)) {
 		throw new BadRequestError(
-			`${body.provider} does not support automatic quota detection. Please provide a "quota" value.`,
+			`${body.provider_id} does not support automatic quota detection. Please provide a "quota" value.`,
 		);
 	}
 
@@ -83,7 +83,7 @@ credentialsRouter.post("/", async (c) => {
 	const isValid = await provider.validateKey(secret);
 	if (!isValid) {
 		throw new BadRequestError(
-			`Invalid credential for ${body.provider}. The secret was rejected by the provider.`,
+			`Invalid credential for ${body.provider_id}. The secret was rejected by the provider.`,
 		);
 	}
 
@@ -112,7 +112,7 @@ credentialsRouter.post("/", async (c) => {
 
 	const credential = await dao.add({
 		owner_id: c.get("owner_id"),
-		provider: body.provider,
+		provider_id: body.provider_id,
 		authType,
 		secret,
 		quota,
@@ -124,7 +124,7 @@ credentialsRouter.post("/", async (c) => {
 	return c.json(
 		{
 			id: credential.id,
-			provider: credential.provider,
+			provider_id: credential.provider_id,
 			secretHint: credential.secret_hint,
 			quota: credential.quota,
 			quotaSource: credential.quota_source,
@@ -144,7 +144,7 @@ credentialsRouter.get("/", async (c) => {
 	return c.json({
 		data: all.map((cred) => ({
 			id: cred.id,
-			provider: cred.provider,
+			provider_id: cred.provider_id,
 			authType: cred.auth_type,
 			secretHint: cred.secret_hint,
 			quota: cred.quota,
@@ -179,7 +179,7 @@ credentialsRouter.patch("/:id/quota", async (c) => {
 		);
 	}
 
-	const provider = getProvider(credential.provider);
+	const provider = getProvider(credential.provider_id);
 	if (provider?.info.isSubscription) {
 		throw new BadRequestError(
 			"Subscription-based providers do not use quota tracking.",
@@ -269,13 +269,13 @@ credentialsRouter.get("/:id/quota", async (c) => {
 
 	const result: Record<string, unknown> = {
 		id: credential.id,
-		provider: credential.provider,
+		provider_id: credential.provider_id,
 		quota: credential.quota,
 		quotaSource: credential.quota_source,
 	};
 
 	if (credential.quota_source === "auto") {
-		const provider = getProvider(credential.provider);
+		const provider = getProvider(credential.provider_id);
 		if (provider) {
 			const secret = await dao.decryptSecret(credential);
 			const cnyRate = Number.parseFloat(c.env.CNY_USD_RATE || "7");

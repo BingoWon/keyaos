@@ -37,7 +37,11 @@ async function fetchApi<T>(
 			...init?.headers,
 		},
 	});
-	if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+	if (!res.ok) {
+		const text = await res.text().catch(() => "");
+		console.error(`[fetchApi] ${init?.method ?? "GET"} ${url} → ${res.status}`, text.slice(0, 200));
+		throw new Error(`${res.status} ${res.statusText}`);
+	}
 	return res.json() as Promise<T>;
 }
 
@@ -99,7 +103,9 @@ function useKeyaosHistoryAdapter(
 			): GenericThreadHistoryAdapter<TMessage> {
 				return {
 					async load(): Promise<MessageFormatRepository<TMessage>> {
-						const remoteId = aui.threadListItem().getState().remoteId;
+						const state = aui.threadListItem().getState();
+						const remoteId = state.remoteId;
+						console.debug("[history.load]", { remoteId, status: state.status, id: state.id });
 						if (!remoteId) return { messages: [] };
 
 						const headers = await h();
@@ -112,6 +118,7 @@ function useKeyaosHistoryAdapter(
 							}[];
 						}>(`${b()}/${remoteId}/messages`, headers);
 
+						console.debug("[history.load] messages loaded:", data.messages?.length ?? 0);
 						if (!data.messages?.length) return { messages: [] };
 
 						let lastId: string | null = null;
@@ -264,20 +271,28 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 
 		return {
 			list: async () => {
-				const data = await fetchApi<{
-					threads: Array<{
-						remoteId: string;
-						status: string;
-						title?: string;
-						model_id?: string;
-					}>;
-				}>(b(), await h());
-				for (const t of data.threads) {
-					if (t.model_id) _modelMap.set(t.remoteId, t.model_id);
+				console.debug("[adapter.list] fetching threads…");
+				try {
+					const data = await fetchApi<{
+						threads: Array<{
+							remoteId: string;
+							status: string;
+							title?: string;
+							model_id?: string;
+						}>;
+					}>(b(), await h());
+					console.debug("[adapter.list] ok, threads:", data.threads.length, data.threads.map((t) => t.remoteId));
+					for (const t of data.threads) {
+						if (t.model_id) _modelMap.set(t.remoteId, t.model_id);
+					}
+					return data;
+				} catch (err) {
+					console.error("[adapter.list] FAILED:", err);
+					throw err;
 				}
-				return data;
 			},
 			initialize: async (threadId) => {
+				console.debug("[adapter.initialize]", threadId);
 				setActiveThreadModel(null);
 				return fetchApi(b(), await h(), {
 					method: "POST",
@@ -356,6 +371,7 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 				}
 			},
 			fetch: async (threadId) => {
+				console.debug("[adapter.fetch]", threadId);
 				try {
 					const data = await fetchApi<{
 						remoteId: string;
@@ -363,13 +379,14 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 						title?: string;
 						model_id?: string;
 					}>(`${b()}/${threadId}`, await h());
+					console.debug("[adapter.fetch] ok:", data.remoteId, data.status, data.title);
 					if (data.model_id) _modelMap.set(data.remoteId, data.model_id);
 					setActiveThreadModel(
 						data.model_id ?? _modelMap.get(data.remoteId) ?? null,
 					);
 					return data;
 				} catch (err) {
-					console.error("[adapter.fetch] failed for thread", threadId, err);
+					console.error("[adapter.fetch] FAILED for thread", threadId, err);
 					throw err;
 				}
 			},

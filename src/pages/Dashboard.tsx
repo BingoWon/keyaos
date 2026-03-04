@@ -200,19 +200,42 @@ export function Dashboard() {
 						<div className="h-4 w-28 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
 						<div className="h-3 w-16 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
 					</div>
-					<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-						{Array.from({ length: 4 }).map((_, i) => (
-							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-							<div key={i} className="flex items-center gap-4 px-5 py-3.5">
-								<div className="flex-1 space-y-1.5">
-									<div className="h-4 w-40 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
-									<div className="h-3 w-56 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-								</div>
-								<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-								<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-							</div>
-						))}
-					</div>
+					<table className="min-w-full">
+						<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+							{Array.from({ length: 4 }).map((_, i) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+								<tr key={i}>
+									<td className="py-2.5 pl-5 pr-2">
+										<div className="space-y-1.5">
+											<div className="h-4 w-36 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+											<div className="h-3 w-52 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+										</div>
+									</td>
+									<td className="px-2 py-2.5 hidden lg:table-cell">
+										<div className="flex gap-1">
+											<div className="h-5 w-10 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+											<div className="h-5 w-10 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+										</div>
+									</td>
+									<td className="px-2 py-2.5 hidden md:table-cell">
+										<div className="h-7 w-24 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+									</td>
+									<td className="px-2 py-2.5 text-right">
+										<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse ml-auto" />
+									</td>
+									<td className="px-2 py-2.5 text-right">
+										<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse ml-auto" />
+									</td>
+									<td className="px-2 py-2.5 hidden sm:table-cell text-right">
+										<div className="h-4 w-12 rounded bg-gray-100 dark:bg-white/5 animate-pulse ml-auto" />
+									</td>
+									<td className="py-2.5 pl-2 pr-5 text-right">
+										<div className="h-5 w-7 rounded bg-gray-100 dark:bg-white/5 animate-pulse ml-auto" />
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			) : (
 				latestModels.length > 0 && (

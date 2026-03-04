@@ -96,19 +96,50 @@ export function Providers() {
 
 			{initialLoading ? (
 				<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
-					<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-						{Array.from({ length: 6 }).map((_, i) => (
-							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-							<div key={i} className="flex items-center gap-4 px-5 py-3.5">
-								<div className="flex items-center gap-2 flex-1">
-									<div className="size-5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
-									<div className="h-4 w-28 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
-								</div>
-								<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-								<div className="h-5 w-8 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
-							</div>
-						))}
-					</div>
+					<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+						<thead>
+							<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+								<th className="py-2.5 pl-4 pr-2 sm:pl-5">
+									{t("models.provider")}
+								</th>
+								<th className="px-2">ID</th>
+								<th className="px-2 hidden md:table-cell">24h Chart</th>
+								<th className="px-2 hidden md:table-cell">24h Range</th>
+								<th className="px-2 text-right">Multiplier</th>
+								<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
+									{t("providers.models_count")}
+								</th>
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+							{Array.from({ length: 6 }).map((_, i) => (
+								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+								<tr key={i}>
+									<td className="py-2.5 pl-4 pr-2 sm:pl-5">
+										<div className="flex items-center gap-2">
+											<div className="size-5 rounded-full bg-gray-200 dark:bg-white/10 animate-pulse" />
+											<div className="h-4 w-24 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
+										</div>
+									</td>
+									<td className="px-2 py-2.5">
+										<div className="h-3.5 w-20 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+									</td>
+									<td className="px-2 py-2.5 hidden md:table-cell">
+										<div className="h-6 w-[clamp(120px,18vw,250px)] rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+									</td>
+									<td className="px-2 py-2.5 hidden md:table-cell">
+										<div className="h-4 w-[clamp(120px,18vw,250px)] rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+									</td>
+									<td className="px-2 py-2.5 text-right">
+										<div className="h-5 w-14 rounded bg-gray-100 dark:bg-white/5 animate-pulse ml-auto" />
+									</td>
+									<td className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
+										<div className="h-5 w-7 rounded bg-gray-100 dark:bg-white/5 animate-pulse ml-auto" />
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
 				</div>
 			) : groups.length === 0 ? (
 				<p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">

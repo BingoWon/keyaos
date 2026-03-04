@@ -13,7 +13,6 @@ import {
 } from "@heroicons/react/24/outline";
 import {
 	type ComponentType,
-	lazy,
 	Suspense,
 	type SVGProps,
 	useMemo,
@@ -34,10 +33,11 @@ import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
 import { formatContext, formatRelativeTime } from "../utils/format";
+import { lazyWithRetry } from "../utils/lazyWithRetry";
 import { aggregateModels, type ModelGroup } from "../utils/models";
 import { aggregateProviders } from "../utils/providers";
 
-const ModelDetailModal = lazy(() =>
+const ModelDetailModal = lazyWithRetry(() =>
 	import("../components/ModelDetailModal").then((m) => ({
 		default: m.ModelDetailModal,
 	})),

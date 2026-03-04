@@ -4,7 +4,7 @@ import {
 	CreditCardIcon,
 	DocumentCheckIcon,
 } from "@heroicons/react/24/outline";
-import { lazy, Suspense, useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { isPlatform } from "../auth";
@@ -24,10 +24,11 @@ import {
 	formatSignedUSD,
 	formatUSD,
 } from "../utils/format";
+import { lazyWithRetry } from "../utils/lazyWithRetry";
 import { aggregateModels, type ModelGroup } from "../utils/models";
 import { aggregateProviders } from "../utils/providers";
 
-const ModelDetailModal = lazy(() =>
+const ModelDetailModal = lazyWithRetry(() =>
 	import("../components/ModelDetailModal").then((m) => ({
 		default: m.ModelDetailModal,
 	})),

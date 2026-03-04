@@ -1,9 +1,10 @@
-import { lazy, Suspense, useState } from "react";
+import { Suspense, useState } from "react";
+import { lazyWithRetry } from "../utils/lazyWithRetry";
 import type { ProviderGroup } from "../utils/providers";
 import { ProviderChip } from "./ProviderLogo";
 import { Badge } from "./ui";
 
-const ProviderDetailModal = lazy(() =>
+const ProviderDetailModal = lazyWithRetry(() =>
 	import("./ProviderDetailModal").then((m) => ({
 		default: m.ProviderDetailModal,
 	})),

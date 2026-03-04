@@ -6,9 +6,11 @@ import { AuthProvider } from "./auth";
 import { CookieConsent } from "./components/CookieConsent";
 import { initGAFromConsent, loadCrisp } from "./lib/analytics";
 import { router } from "./router";
+import { clearChunkRetryFlag } from "./utils/lazyWithRetry";
 import "./styles/globals.css";
 import "./locales/i18n";
 
+clearChunkRetryFlag();
 setTimeout(loadCrisp);
 setTimeout(initGAFromConsent);
 

@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CopyButton } from "../components/CopyButton";
 import { ProviderChip } from "../components/ProviderLogo";
@@ -14,9 +14,10 @@ import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
+import { lazyWithRetry } from "../utils/lazyWithRetry";
 import { aggregateProviders, type ProviderGroup } from "../utils/providers";
 
-const ProviderDetailModal = lazy(() =>
+const ProviderDetailModal = lazyWithRetry(() =>
 	import("../components/ProviderDetailModal").then((m) => ({
 		default: m.ProviderDetailModal,
 	})),

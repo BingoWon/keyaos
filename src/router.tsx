@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import {
 	createBrowserRouter,
 	Navigate,
@@ -13,75 +13,92 @@ import { MdxPage } from "./pages/docs/MdxPage";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
 import { NotFound } from "./pages/NotFound";
+import { lazyWithRetry } from "./utils/lazyWithRetry";
 
 // ─── Lazy-loaded page components ─────────────────────────
 
-const Dashboard = lazy(() =>
+const Dashboard = lazyWithRetry(() =>
 	import("./pages/Dashboard").then((m) => ({ default: m.Dashboard })),
 );
-const Models = lazy(() =>
+const Models = lazyWithRetry(() =>
 	import("./pages/Models").then((m) => ({ default: m.Models })),
 );
-const Providers = lazy(() =>
+const Providers = lazyWithRetry(() =>
 	import("./pages/Providers").then((m) => ({ default: m.Providers })),
 );
-const ApiKeys = lazy(() =>
+const ApiKeys = lazyWithRetry(() =>
 	import("./pages/ApiKeys").then((m) => ({ default: m.ApiKeys })),
 );
-const Byok = lazy(() =>
+const Byok = lazyWithRetry(() =>
 	import("./pages/Byok").then((m) => ({ default: m.Byok })),
 );
-const Logs = lazy(() =>
+const Logs = lazyWithRetry(() =>
 	import("./pages/Logs").then((m) => ({ default: m.Logs })),
 );
-const Credits = lazy(() =>
+const Credits = lazyWithRetry(() =>
 	import("./pages/Credits").then((m) => ({ default: m.Credits })),
 );
-const DesignSystem = lazy(() =>
+const DesignSystem = lazyWithRetry(() =>
 	import("./pages/DesignSystem").then((m) => ({ default: m.DesignSystem })),
 );
 
 // ─── Lazy-loaded admin pages ─────────────────────────────
 
-const AdminLayout = lazy(() =>
+const AdminLayout = lazyWithRetry(() =>
 	import("./pages/admin/AdminLayout").then((m) => ({
 		default: m.AdminLayout,
 	})),
 );
-const Overview = lazy(() =>
+const Overview = lazyWithRetry(() =>
 	import("./pages/admin/Overview").then((m) => ({ default: m.Overview })),
 );
-const Users = lazy(() =>
+const Users = lazyWithRetry(() =>
 	import("./pages/admin/Users").then((m) => ({ default: m.Users })),
 );
-const Data = lazy(() =>
+const Data = lazyWithRetry(() =>
 	import("./pages/admin/Data").then((m) => ({ default: m.Data })),
 );
 
 // ─── Lazy-loaded docs ────────────────────────────────────
 
-const DocsLayout = lazy(() =>
+const DocsLayout = lazyWithRetry(() =>
 	import("./pages/docs/DocsLayout").then((m) => ({ default: m.DocsLayout })),
 );
-const IntroductionMdx = lazy(() => import("./pages/docs/introduction.mdx"));
-const QuickstartMdx = lazy(() => import("./pages/docs/quickstart.mdx"));
-const ModelsRoutingMdx = lazy(() => import("./pages/docs/models-routing.mdx"));
-const CredentialsSharingMdx = lazy(
+const IntroductionMdx = lazyWithRetry(
+	() => import("./pages/docs/introduction.mdx"),
+);
+const QuickstartMdx = lazyWithRetry(
+	() => import("./pages/docs/quickstart.mdx"),
+);
+const ModelsRoutingMdx = lazyWithRetry(
+	() => import("./pages/docs/models-routing.mdx"),
+);
+const CredentialsSharingMdx = lazyWithRetry(
 	() => import("./pages/docs/credentials-sharing.mdx"),
 );
-const PricingMdx = lazy(() => import("./pages/docs/pricing.mdx"));
-const CreditsMdx = lazy(() => import("./pages/docs/credits.mdx"));
-const AuthenticationMdx = lazy(() => import("./pages/docs/authentication.mdx"));
-const OpenaiApiMdx = lazy(() => import("./pages/docs/openai-api.mdx"));
-const AnthropicApiMdx = lazy(() => import("./pages/docs/anthropic-api.mdx"));
-const ModelsApiMdx = lazy(() => import("./pages/docs/models-api.mdx"));
-const CreditsApiMdx = lazy(() => import("./pages/docs/credits-api.mdx"));
-const ErrorCodesMdx = lazy(() => import("./pages/docs/error-codes.mdx"));
-const PrivacyPolicyMdx = lazy(() => import("./pages/docs/privacy-policy.mdx"));
-const TermsOfServiceMdx = lazy(
+const PricingMdx = lazyWithRetry(() => import("./pages/docs/pricing.mdx"));
+const CreditsMdx = lazyWithRetry(() => import("./pages/docs/credits.mdx"));
+const AuthenticationMdx = lazyWithRetry(
+	() => import("./pages/docs/authentication.mdx"),
+);
+const OpenaiApiMdx = lazyWithRetry(() => import("./pages/docs/openai-api.mdx"));
+const AnthropicApiMdx = lazyWithRetry(
+	() => import("./pages/docs/anthropic-api.mdx"),
+);
+const ModelsApiMdx = lazyWithRetry(() => import("./pages/docs/models-api.mdx"));
+const CreditsApiMdx = lazyWithRetry(
+	() => import("./pages/docs/credits-api.mdx"),
+);
+const ErrorCodesMdx = lazyWithRetry(
+	() => import("./pages/docs/error-codes.mdx"),
+);
+const PrivacyPolicyMdx = lazyWithRetry(
+	() => import("./pages/docs/privacy-policy.mdx"),
+);
+const TermsOfServiceMdx = lazyWithRetry(
 	() => import("./pages/docs/terms-of-service.mdx"),
 );
-const ContactMdx = lazy(() => import("./pages/docs/contact.mdx"));
+const ContactMdx = lazyWithRetry(() => import("./pages/docs/contact.mdx"));
 
 // ─── Route definitions ───────────────────────────────────
 

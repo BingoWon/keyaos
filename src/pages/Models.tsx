@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
@@ -21,9 +21,10 @@ import {
 	formatPrice,
 	formatRelativeTime,
 } from "../utils/format";
+import { lazyWithRetry } from "../utils/lazyWithRetry";
 import { aggregateModels, type ModelGroup } from "../utils/models";
 
-const ModelDetailModal = lazy(() =>
+const ModelDetailModal = lazyWithRetry(() =>
 	import("../components/ModelDetailModal").then((m) => ({
 		default: m.ModelDetailModal,
 	})),

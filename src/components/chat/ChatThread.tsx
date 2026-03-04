@@ -85,9 +85,7 @@ const ThreadWelcome: FC = () => {
 	);
 };
 
-const Composer: FC<{ allowAttachments?: boolean }> = ({
-	allowAttachments,
-}) => {
+const Composer: FC<{ allowAttachments?: boolean }> = ({ allowAttachments }) => {
 	const { t } = useTranslation();
 	return (
 		<ComposerPrimitive.Root className="relative flex w-full flex-col">

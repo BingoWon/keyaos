@@ -52,7 +52,8 @@ publicModelsRouter.get("/", edgeCache(), async (c) => {
 		}
 
 		if (row.best_multiplier != null) {
-			if (!g.providers.includes(row.provider_id)) g.providers.push(row.provider_id);
+			if (!g.providers.includes(row.provider_id))
+				g.providers.push(row.provider_id);
 		}
 	}
 

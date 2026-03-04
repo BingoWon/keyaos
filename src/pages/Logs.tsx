@@ -148,11 +148,11 @@ export function Logs() {
 									<td className="whitespace-nowrap px-3 py-4">
 										<DirectionBadge direction={tx.direction} />
 									</td>
-								<td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-white">
-									{tx.model_id}
-								</td>
-								<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-									{tx.provider_id}
+									<td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900 dark:text-white">
+										{tx.model_id}
+									</td>
+									<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+										{tx.provider_id}
 									</td>
 									<td className="whitespace-nowrap px-3 py-4 text-sm text-right text-gray-500 dark:text-gray-400">
 										{tx.inputTokens.toLocaleString()}

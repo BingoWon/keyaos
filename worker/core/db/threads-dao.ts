@@ -1,11 +1,9 @@
 import type { DbChatMessage, DbChatThread } from "./schema";
 
 export class ThreadsDao {
-	constructor(private db: D1Database) { }
+	constructor(private db: D1Database) {}
 
-	async list(
-		ownerId: string,
-	): Promise<{ threads: DbChatThread[] }> {
+	async list(ownerId: string): Promise<{ threads: DbChatThread[] }> {
 		const { results } = await this.db
 			.prepare(
 				"SELECT * FROM chat_threads WHERE owner_id = ? ORDER BY updated_at DESC LIMIT 100",
@@ -18,9 +16,7 @@ export class ThreadsDao {
 	async get(id: string, ownerId: string): Promise<DbChatThread | null> {
 		return (
 			(await this.db
-				.prepare(
-					"SELECT * FROM chat_threads WHERE id = ? AND owner_id = ?",
-				)
+				.prepare("SELECT * FROM chat_threads WHERE id = ? AND owner_id = ?")
 				.bind(id, ownerId)
 				.first<DbChatThread>()) ?? null
 		);
@@ -43,11 +39,7 @@ export class ThreadsDao {
 			.run();
 	}
 
-	async updateTitle(
-		id: string,
-		ownerId: string,
-		title: string,
-	): Promise<void> {
+	async updateTitle(id: string, ownerId: string, title: string): Promise<void> {
 		await this.db
 			.prepare(
 				"UPDATE chat_threads SET title = ?, updated_at = ? WHERE id = ? AND owner_id = ?",
@@ -84,13 +76,9 @@ export class ThreadsDao {
 
 	async delete(id: string, ownerId: string): Promise<void> {
 		await this.db.batch([
+			this.db.prepare("DELETE FROM chat_messages WHERE thread_id = ?").bind(id),
 			this.db
-				.prepare("DELETE FROM chat_messages WHERE thread_id = ?")
-				.bind(id),
-			this.db
-				.prepare(
-					"DELETE FROM chat_threads WHERE id = ? AND owner_id = ?",
-				)
+				.prepare("DELETE FROM chat_threads WHERE id = ? AND owner_id = ?")
 				.bind(id, ownerId),
 		]);
 	}
@@ -120,9 +108,7 @@ export class ThreadsDao {
 					message.created_at,
 				),
 			this.db
-				.prepare(
-					"UPDATE chat_threads SET updated_at = ? WHERE id = ?",
-				)
+				.prepare("UPDATE chat_threads SET updated_at = ? WHERE id = ?")
 				.bind(Date.now(), message.thread_id),
 		]);
 	}

@@ -211,8 +211,7 @@ threadsRouter.post("/:id/messages", async (c) => {
 	const body = await c.req.json<{
 		messages: { id: string; role: string; parts: unknown; model?: string }[];
 	}>();
-	if (!body.messages?.length)
-		throw new BadRequestError("messages is required");
+	if (!body.messages?.length) throw new BadRequestError("messages is required");
 	const dao = new ThreadsDao(c.env.DB);
 	const now = Date.now();
 	for (const m of body.messages) {

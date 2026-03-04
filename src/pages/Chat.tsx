@@ -6,21 +6,18 @@ import {
 	ListboxOption,
 	ListboxOptions,
 } from "@headlessui/react";
-import {
-	Bars3Icon,
-	ChevronUpDownIcon,
-} from "@heroicons/react/24/outline";
+import { Bars3Icon, ChevronUpDownIcon } from "@heroicons/react/24/outline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Modality } from "../../worker/core/db/schema";
 import { useAuth } from "../auth";
+import { CopyButton } from "../components/CopyButton";
 import { ChatThread } from "../components/chat/ChatThread";
 import { ChatThreadList } from "../components/chat/ChatThreadList";
 import {
-	SystemPrompt,
 	loadSystemPrompt,
+	SystemPrompt,
 } from "../components/chat/SystemPrompt";
-import { CopyButton } from "../components/CopyButton";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { useFetch } from "../hooks/useFetch";
 import {
@@ -151,7 +148,8 @@ export function Chat() {
 		const providerIds = new Set(
 			models.filter((m) => m.id === modelId).map((m) => m.provider_id),
 		);
-		if (!providersMeta) return [...providerIds].map((id) => ({ id, name: id, logoUrl: "" }));
+		if (!providersMeta)
+			return [...providerIds].map((id) => ({ id, name: id, logoUrl: "" }));
 		return providersMeta.filter((p) => providerIds.has(p.id));
 	}, [models, modelId, providersMeta]);
 
@@ -230,7 +228,9 @@ export function Chat() {
 							<Bars3Icon className="size-4" />
 						</button>
 						<div className="flex items-center gap-1">
-							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">{t("chat.label_model")}</span>
+							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+								{t("chat.label_model")}
+							</span>
 							<ModelPicker
 								models={uniqueModels}
 								value={modelId}
@@ -240,7 +240,9 @@ export function Chat() {
 						</div>
 						<div className="h-4 w-px bg-gray-300 dark:bg-white/15" />
 						<div className="flex items-center gap-1">
-							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">{t("chat.label_provider")}</span>
+							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+								{t("chat.label_provider")}
+							</span>
 							<ProviderPicker
 								providers={availableProviders}
 								value={providerId}
@@ -248,10 +250,7 @@ export function Chat() {
 							/>
 							{providerId !== AUTO_PROVIDER && <CopyButton text={providerId} />}
 						</div>
-						<SystemPrompt
-							value={systemPrompt}
-							onChange={setSystemPrompt}
-						/>
+						<SystemPrompt value={systemPrompt} onChange={setSystemPrompt} />
 					</div>
 					<div className="min-h-0 flex-1">
 						<ChatThread allowAttachments={allowAttachments} />
@@ -314,7 +313,11 @@ function ProviderPicker({
 			<div className="relative">
 				<ListboxButton className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-white/10">
 					{selected?.logoUrl && (
-						<ProviderLogo src={selected.logoUrl} name={selected.name} size={16} />
+						<ProviderLogo
+							src={selected.logoUrl}
+							name={selected.name}
+							size={16}
+						/>
 					)}
 					<span className="truncate">{display}</span>
 					<ChevronUpDownIcon className="size-4 text-gray-400" />

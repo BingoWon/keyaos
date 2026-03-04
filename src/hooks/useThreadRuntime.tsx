@@ -1,14 +1,14 @@
 import {
-	RuntimeAdapterProvider,
-	unstable_useRemoteThreadListRuntime as useRemoteThreadListRuntime,
-	useAui,
-	type unstable_RemoteThreadListAdapter as RemoteThreadListAdapter,
 	type GenericThreadHistoryAdapter,
 	type MessageFormatAdapter,
 	type MessageFormatItem,
 	type MessageFormatRepository,
 	type MessageStorageEntry,
+	type unstable_RemoteThreadListAdapter as RemoteThreadListAdapter,
+	RuntimeAdapterProvider,
 	type ThreadHistoryAdapter,
+	useAui,
+	unstable_useRemoteThreadListRuntime as useRemoteThreadListRuntime,
 } from "@assistant-ui/react";
 import {
 	type AssistantChatTransport,
@@ -92,8 +92,10 @@ export function activateThreadModel(remoteId: string): void {
 function useKeyaosHistoryAdapter(
 	optsRef: React.RefObject<AdapterOpts>,
 ): ThreadHistoryAdapter {
+	// biome-ignore lint/correctness/useHookAtTopLevel: called inside KeyaosHistoryProvider component
 	const aui = useAui();
 
+	// biome-ignore lint/correctness/useHookAtTopLevel: called inside KeyaosHistoryProvider component
 	return useMemo((): ThreadHistoryAdapter => {
 		const h = () => optsRef.current.getHeaders();
 		const b = () => optsRef.current.apiBase;
@@ -123,8 +125,8 @@ function useKeyaosHistoryAdapter(
 						if (!data.messages?.length) return { messages: [] };
 
 						let lastId: string | null = null;
-						const messages: MessageFormatItem<TMessage>[] =
-							data.messages.map((m) => {
+						const messages: MessageFormatItem<TMessage>[] = data.messages.map(
+							(m) => {
 								const entry: MessageStorageEntry<TStorageFormat> = {
 									id: m.id,
 									parent_id: lastId,
@@ -136,7 +138,8 @@ function useKeyaosHistoryAdapter(
 								};
 								lastId = m.id;
 								return formatAdapter.decode(entry);
-							});
+							},
+						);
 
 						const lastMsg = messages.at(-1);
 						return {
@@ -170,13 +173,17 @@ function buildFallbackTitleStream(title: string): ReadableStream {
 // ---------------------------------------------------------------------------
 // Adapter hook
 // ---------------------------------------------------------------------------
-export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter {
+export function useThreadListAdapter(
+	opts: AdapterOpts,
+): RemoteThreadListAdapter {
 	const optsRef = useRef(opts);
 	optsRef.current = opts;
 
 	const unstable_Provider: FC<{ children: ReactNode }> = useCallback(
 		function KeyaosHistoryProvider({ children }: { children: ReactNode }) {
+			// biome-ignore lint/correctness/useHookAtTopLevel: KeyaosHistoryProvider is a React component
 			const history = useKeyaosHistoryAdapter(optsRef);
+			// biome-ignore lint/correctness/useHookAtTopLevel: KeyaosHistoryProvider is a React component
 			const adapters = useMemo(() => ({ history }), [history]);
 			return (
 				<RuntimeAdapterProvider adapters={adapters}>
@@ -272,11 +279,7 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 					);
 					return buildFallbackTitleStream(data.title || "New Thread");
 				} catch (err) {
-					console.error(
-						"[generateTitle] failed for thread",
-						remoteId,
-						err,
-					);
+					console.error("[generateTitle] failed for thread", remoteId, err);
 					return buildFallbackTitleStream("New Thread");
 				}
 			},
@@ -309,6 +312,7 @@ export function useKeyaosRuntime(opts: {
 }) {
 	return useRemoteThreadListRuntime({
 		runtimeHook: function RuntimeHook() {
+			// biome-ignore lint/correctness/useHookAtTopLevel: RuntimeHook is a React component per library API
 			return useChatRuntime({ transport: opts.transport });
 		},
 		adapter: opts.adapter,

@@ -88,10 +88,13 @@ messagesRouter.post("/", async (c) => {
 	}
 
 	const openaiJson = (await result.response.json()) as Record<string, unknown>;
-	return new Response(JSON.stringify(toAnthropicResponse(openaiJson, modelId)), {
-		status: 200,
-		headers: { "Content-Type": "application/json", ...meta },
-	});
+	return new Response(
+		JSON.stringify(toAnthropicResponse(openaiJson, modelId)),
+		{
+			status: 200,
+			headers: { "Content-Type": "application/json", ...meta },
+		},
+	);
 });
 
 export default messagesRouter;

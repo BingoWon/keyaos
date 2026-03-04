@@ -102,16 +102,17 @@ const GroupedThreadItems: FC = () => {
 		const state = runtime.threads.getState();
 
 		for (let i = 0; i < threadCount; i++) {
-			const threadId = state.threadIds[i]!;
+			const threadId = state.threadIds[i];
+			if (!threadId) continue;
 			const item = state.threadItems[threadId];
 			const remoteId = item?.remoteId;
 			const ts = remoteId ? getThreadTimestamp(remoteId) : undefined;
 			const bucket = ts ? getTimeBucket(ts, now) : 0;
-			buckets[bucket]!.push(i);
+			buckets[bucket]?.push(i);
 		}
 
 		return buckets
-			.map((indices, bi) => ({ label: t(TIME_BUCKET_KEYS[bi]!), indices }))
+			.map((indices, bi) => ({ label: t(TIME_BUCKET_KEYS[bi] ?? ""), indices }))
 			.filter((g) => g.indices.length > 0);
 	}, [threadCount, runtime, t]);
 
@@ -249,6 +250,7 @@ const ThreadListItem: FC = () => {
 			</div>
 			{showMenu && (
 				<div
+					role="menu"
 					className="absolute right-0 top-full z-30 mt-1 w-36 rounded-lg border border-gray-200 bg-white py-1 shadow-lg dark:border-white/10 dark:bg-gray-800"
 					onMouseLeave={() => setShowMenu(false)}
 				>

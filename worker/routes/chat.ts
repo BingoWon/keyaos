@@ -23,7 +23,11 @@ chatRouter.post("/completions", async (c) => {
 			: [rawProvider as string]
 		: undefined;
 
-	const result = await executeCompletion(c, { modelId, body: rest, providerIds });
+	const result = await executeCompletion(c, {
+		modelId,
+		body: rest,
+		providerIds,
+	});
 
 	result.response.headers.set("x-request-id", result.requestId);
 	result.response.headers.set("x-provider", result.providerId);

@@ -1,8 +1,5 @@
 import { AttachmentPrimitive } from "@assistant-ui/react";
-import {
-	DocumentTextIcon,
-	XMarkIcon,
-} from "@heroicons/react/24/outline";
+import { DocumentTextIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import type { FC } from "react";
 import { classNames } from "../../utils/classNames";
 

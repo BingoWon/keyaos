@@ -642,16 +642,16 @@ export function Byok() {
 												{/* Provider */}
 												<td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
 													{(() => {
-													const meta = providers.find(
-														(p) => p.id === cred.provider_id,
-													);
-													return meta ? (
-														<ProviderChip
-															src={meta.logoUrl}
-															name={meta.name}
-														/>
-													) : (
-														<span>{cred.provider_id}</span>
+														const meta = providers.find(
+															(p) => p.id === cred.provider_id,
+														);
+														return meta ? (
+															<ProviderChip
+																src={meta.logoUrl}
+																name={meta.name}
+															/>
+														) : (
+															<span>{cred.provider_id}</span>
 														);
 													})()}
 												</td>

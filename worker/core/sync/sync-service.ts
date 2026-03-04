@@ -47,7 +47,9 @@ export async function syncAllModels(
 		otherProviders.map(async (provider) => {
 			const models = await provider.fetchModels(cnyUsdRate);
 			if (models.length === 0) {
-				log.warn("sync", "0 models, skipping", { provider_id: provider.info.id });
+				log.warn("sync", "0 models, skipping", {
+					provider_id: provider.info.id,
+				});
 				return;
 			}
 

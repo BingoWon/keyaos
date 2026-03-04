@@ -62,8 +62,8 @@ assistantRouter.post("/", async (c) => {
 			role: m.role,
 			content: textOnly
 				? (parts as { type: "text"; text: string }[])
-					.map((cp) => cp.text)
-					.join("")
+						.map((cp) => cp.text)
+						.join("")
 				: parts,
 		});
 	}
@@ -112,13 +112,13 @@ assistantRouter.post("/", async (c) => {
 			const decoder = new TextDecoder();
 			let buf = "";
 
-			for (; ;) {
+			for (;;) {
 				const { done, value } = await reader.read();
 				if (done) break;
 
 				buf += decoder.decode(value, { stream: true });
 				const lines = buf.split("\n");
-				buf = lines.pop()!;
+				buf = lines.pop() ?? "";
 
 				for (const line of lines) {
 					if (!line.startsWith("data: ")) continue;
@@ -135,9 +135,7 @@ assistantRouter.post("/", async (c) => {
 						log.warn("assistant", "SSE chunk parse error", {
 							payload: payload.slice(0, 200),
 							error:
-								parseErr instanceof Error
-									? parseErr.message
-									: String(parseErr),
+								parseErr instanceof Error ? parseErr.message : String(parseErr),
 						});
 					}
 				}
@@ -148,7 +146,7 @@ assistantRouter.post("/", async (c) => {
 			writer.write({ type: "finish", finishReason: "stop" });
 
 			if (threadId && fullResponseText) {
-				const lastUserMsg = messages![messages!.length - 1];
+				const lastUserMsg = messages?.[messages.length - 1];
 				c.executionCtx.waitUntil(
 					(async () => {
 						try {
@@ -173,12 +171,11 @@ assistantRouter.post("/", async (c) => {
 								model_id: modelId,
 								created_at: Date.now(),
 							});
-							await dao.updateModel(threadId, ownerId, modelId!);
+							if (modelId) await dao.updateModel(threadId, ownerId, modelId);
 						} catch (err) {
 							log.error("assistant", "Failed to save messages", {
 								threadId,
-								error:
-									err instanceof Error ? err.message : String(err),
+								error: err instanceof Error ? err.message : String(err),
 							});
 						}
 					})(),

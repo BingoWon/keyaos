@@ -32,8 +32,8 @@ export class CandleDao {
 			)
 			.bind(windowStart, now)
 			.all<{
-			provider_id: string;
-			model_id: string;
+				provider_id: string;
+				model_id: string;
 				price_multiplier: number;
 				input_tokens: number;
 				output_tokens: number;

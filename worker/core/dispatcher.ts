@@ -44,7 +44,8 @@ export async function dispatchAll(
 	const candidates: DispatchResult[] = [];
 
 	for (const offering of offerings) {
-		if (providerIds?.length && !providerIds.includes(offering.provider_id)) continue;
+		if (providerIds?.length && !providerIds.includes(offering.provider_id))
+			continue;
 		if (offering.input_price < 0 || offering.output_price < 0) continue;
 		const provider = getProvider(offering.provider_id);
 		if (!provider) continue;

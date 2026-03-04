@@ -10,7 +10,7 @@ import {
 	ListboxOptions,
 } from "@headlessui/react";
 import { ChevronUpDownIcon } from "@heroicons/react/24/outline";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../auth";
 import { ChatThread } from "../components/chat/ChatThread";
 import { useFetch } from "../hooks/useFetch";
@@ -25,32 +25,17 @@ export function Chat() {
 	const modelRef = useRef(model);
 	modelRef.current = model;
 
-	const authFetch: typeof globalThis.fetch = useCallback(
-		async (input, init) => {
-			const token = await getTokenRef.current();
-			const headers = new Headers(init?.headers);
-			if (token) headers.set("Authorization", `Bearer ${token}`);
-			if (init?.body) {
-				try {
-					const body = JSON.parse(init.body as string);
-					body.model = modelRef.current;
-					return globalThis.fetch(input, {
-						...init,
-						headers,
-						body: JSON.stringify(body),
-					});
-				} catch {
-					/* non-JSON body, pass through */
-				}
-			}
-			return globalThis.fetch(input, { ...init, headers });
-		},
-		[],
-	);
-
 	const transport = useMemo(
-		() => new AssistantChatTransport({ api: "/api/chat", fetch: authFetch }),
-		[authFetch],
+		() =>
+			new AssistantChatTransport({
+				api: "/api/chat",
+				body: () => ({ model: modelRef.current }),
+				headers: async () => {
+					const token = await getTokenRef.current();
+					return token ? { Authorization: `Bearer ${token}` } : {};
+				},
+			}),
+		[],
 	);
 
 	const runtime = useChatRuntime({ transport });
@@ -66,9 +51,11 @@ export function Chat() {
 		});
 	}, [models]);
 
-	if (uniqueModels.length > 0 && !model) {
-		setModel(uniqueModels[0].id);
-	}
+	useEffect(() => {
+		if (uniqueModels.length > 0 && !model) {
+			setModel(uniqueModels[0].id);
+		}
+	}, [uniqueModels, model]);
 
 	return (
 		<AssistantRuntimeProvider runtime={runtime}>

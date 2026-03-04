@@ -26,12 +26,12 @@ import { ChatMarkdown } from "./ChatMarkdown";
 export const ChatThread: FC = () => {
 	return (
 		<ThreadPrimitive.Root
-			className="aui-root aui-thread-root flex h-full flex-col bg-white dark:bg-gray-900"
+			className="flex h-full flex-col bg-white dark:bg-gray-900"
 			style={{ "--thread-max-width": "44rem" } as React.CSSProperties}
 		>
 			<ThreadPrimitive.Viewport
 				turnAnchor="top"
-				className="aui-thread-viewport relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
+				className="relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
 			>
 				<AuiIf condition={(s) => s.thread.isEmpty}>
 					<ThreadWelcome />
@@ -41,7 +41,7 @@ export const ChatThread: FC = () => {
 					components={{ UserMessage, EditComposer, AssistantMessage }}
 				/>
 
-				<ThreadPrimitive.ViewportFooter className="aui-thread-viewport-footer sticky bottom-0 mx-auto mt-auto flex w-full max-w-[var(--thread-max-width)] flex-col gap-4 overflow-visible rounded-t-3xl bg-white pb-4 dark:bg-gray-900 md:pb-6">
+				<ThreadPrimitive.ViewportFooter className="sticky bottom-0 mx-auto mt-auto flex w-full max-w-[var(--thread-max-width)] flex-col gap-4 overflow-visible rounded-t-3xl bg-white pb-4 dark:bg-gray-900 md:pb-6">
 					<ThreadScrollToBottom />
 					<Composer />
 				</ThreadPrimitive.ViewportFooter>

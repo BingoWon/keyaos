@@ -30,7 +30,7 @@ const ModelDetailModal = lazyWithRetry(() =>
 	})),
 );
 
-const DEFAULT_PAGE_SIZE = 30;
+const DEFAULT_PAGE_SIZE = 20;
 
 export function Models() {
 	const { t, i18n } = useTranslation();

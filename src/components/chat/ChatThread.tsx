@@ -6,6 +6,7 @@ import {
 	ErrorPrimitive,
 	MessagePrimitive,
 	ThreadPrimitive,
+	useMessagePartImage,
 } from "@assistant-ui/react";
 import {
 	ArrowDownIcon,
@@ -15,15 +16,19 @@ import {
 	ChevronLeftIcon,
 	ChevronRightIcon,
 	ClipboardDocumentIcon,
+	PaperClipIcon,
 	PencilIcon,
 	StopIcon,
 } from "@heroicons/react/24/outline";
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { classNames } from "../../utils/classNames";
+import { ComposerAttachment, UserMessageAttachment } from "./ChatAttachment";
 import { ChatMarkdown } from "./ChatMarkdown";
 
-export const ChatThread: FC = () => {
+export const ChatThread: FC<{ allowAttachments?: boolean }> = ({
+	allowAttachments,
+}) => {
 	return (
 		<ThreadPrimitive.Root
 			className="flex h-full flex-col bg-white dark:bg-gray-900"
@@ -43,7 +48,7 @@ export const ChatThread: FC = () => {
 
 				<ThreadPrimitive.ViewportFooter className="sticky bottom-0 mx-auto mt-auto flex w-full max-w-[var(--thread-max-width)] flex-col gap-4 overflow-visible rounded-t-3xl bg-white pb-4 dark:bg-gray-900 md:pb-6">
 					<ThreadScrollToBottom />
-					<Composer />
+					<Composer allowAttachments={allowAttachments} />
 				</ThreadPrimitive.ViewportFooter>
 			</ThreadPrimitive.Viewport>
 		</ThreadPrimitive.Root>
@@ -80,11 +85,17 @@ const ThreadWelcome: FC = () => {
 	);
 };
 
-const Composer: FC = () => {
+const Composer: FC<{ allowAttachments?: boolean }> = ({
+	allowAttachments,
+}) => {
 	const { t } = useTranslation();
 	return (
 		<ComposerPrimitive.Root className="relative flex w-full flex-col">
-			<div className="flex w-full flex-col rounded-2xl border border-gray-200 bg-white px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-brand-500 has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-brand-500/20 dark:border-white/15 dark:bg-white/5 dark:has-[textarea:focus-visible]:border-brand-400 dark:has-[textarea:focus-visible]:ring-brand-400/20">
+			<ComposerPrimitive.AttachmentDropzone className="flex w-full flex-col rounded-2xl border border-gray-200 bg-white px-1 pt-2 outline-none transition-shadow has-[textarea:focus-visible]:border-brand-500 has-[textarea:focus-visible]:ring-2 has-[textarea:focus-visible]:ring-brand-500/20 data-[drop-active]:border-brand-500 data-[drop-active]:bg-brand-50/50 dark:border-white/15 dark:bg-white/5 dark:has-[textarea:focus-visible]:border-brand-400 dark:has-[textarea:focus-visible]:ring-brand-400/20 dark:data-[drop-active]:border-brand-400 dark:data-[drop-active]:bg-brand-500/10">
+				<ComposerPrimitive.Attachments
+					components={{ Attachment: ComposerAttachment }}
+					className="flex flex-wrap gap-2 px-3 pt-2 empty:hidden"
+				/>
 				<ComposerPrimitive.Input
 					placeholder={t("chat.placeholder")}
 					className="mb-1 max-h-32 min-h-14 w-full resize-none bg-transparent px-4 pt-2 pb-3 text-sm text-gray-900 outline-none placeholder:text-gray-400 focus-visible:ring-0 dark:text-white dark:placeholder:text-gray-500"
@@ -92,36 +103,53 @@ const Composer: FC = () => {
 					autoFocus
 					aria-label="Message input"
 				/>
-				<ComposerAction />
-			</div>
+				<ComposerAction allowAttachments={allowAttachments} />
+			</ComposerPrimitive.AttachmentDropzone>
 		</ComposerPrimitive.Root>
 	);
 };
 
-const ComposerAction: FC = () => (
-	<div className="relative mx-2 mb-2 flex items-center justify-end">
-		<AuiIf condition={(s) => !s.thread.isRunning}>
-			<ComposerPrimitive.Send asChild>
-				<button
-					type="submit"
-					className="flex size-8 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-40 dark:bg-brand-500 dark:hover:bg-brand-600"
-					aria-label="Send message"
-				>
-					<ArrowUpIcon className="size-4" />
-				</button>
-			</ComposerPrimitive.Send>
-		</AuiIf>
-		<AuiIf condition={(s) => s.thread.isRunning}>
-			<ComposerPrimitive.Cancel asChild>
-				<button
-					type="button"
-					className="flex size-8 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
-					aria-label="Stop generating"
-				>
-					<StopIcon className="size-3" />
-				</button>
-			</ComposerPrimitive.Cancel>
-		</AuiIf>
+const ComposerAction: FC<{ allowAttachments?: boolean }> = ({
+	allowAttachments,
+}) => (
+	<div className="relative mx-2 mb-2 flex items-center justify-between">
+		<div>
+			{allowAttachments && (
+				<ComposerPrimitive.AddAttachment asChild>
+					<button
+						type="button"
+						className="flex size-8 items-center justify-center rounded-full text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-white/10 dark:hover:text-gray-300"
+						aria-label="Attach file"
+					>
+						<PaperClipIcon className="size-4" />
+					</button>
+				</ComposerPrimitive.AddAttachment>
+			)}
+		</div>
+		<div>
+			<AuiIf condition={(s) => !s.thread.isRunning}>
+				<ComposerPrimitive.Send asChild>
+					<button
+						type="submit"
+						className="flex size-8 items-center justify-center rounded-full bg-brand-600 text-white transition-colors hover:bg-brand-700 disabled:opacity-40 dark:bg-brand-500 dark:hover:bg-brand-600"
+						aria-label="Send message"
+					>
+						<ArrowUpIcon className="size-4" />
+					</button>
+				</ComposerPrimitive.Send>
+			</AuiIf>
+			<AuiIf condition={(s) => s.thread.isRunning}>
+				<ComposerPrimitive.Cancel asChild>
+					<button
+						type="button"
+						className="flex size-8 items-center justify-center rounded-full bg-gray-900 text-white transition-colors hover:bg-gray-700 dark:bg-white dark:text-gray-900 dark:hover:bg-gray-200"
+						aria-label="Stop generating"
+					>
+						<StopIcon className="size-3" />
+					</button>
+				</ComposerPrimitive.Cancel>
+			</AuiIf>
+		</div>
 	</div>
 );
 
@@ -133,13 +161,27 @@ const MessageError: FC = () => (
 	</MessagePrimitive.Error>
 );
 
+const ChatImage: FC = () => {
+	const image = useMessagePartImage();
+	if (!image?.url) return null;
+	return (
+		<img
+			src={image.url}
+			alt=""
+			className="my-2 max-h-96 rounded-lg border border-gray-200 dark:border-white/10"
+		/>
+	);
+};
+
 const AssistantMessage: FC = () => (
 	<MessagePrimitive.Root
 		className="relative mx-auto w-full max-w-[var(--thread-max-width)] py-3"
 		data-role="assistant"
 	>
 		<div className="px-2 leading-relaxed text-gray-900 dark:text-gray-100">
-			<MessagePrimitive.Parts components={{ Text: ChatMarkdown }} />
+			<MessagePrimitive.Parts
+				components={{ Text: ChatMarkdown, Image: ChatImage }}
+			/>
 			<MessageError />
 		</div>
 		<div className="mt-1 ml-2 flex">
@@ -188,6 +230,10 @@ const UserMessage: FC = () => (
 		data-role="user"
 	>
 		<div className="relative col-start-2 min-w-0">
+			<MessagePrimitive.Attachments
+				components={{ Attachment: UserMessageAttachment }}
+				className="mb-2 flex flex-wrap gap-2 empty:hidden"
+			/>
 			<div className="rounded-2xl bg-brand-50 px-4 py-2.5 text-gray-900 dark:bg-brand-500/15 dark:text-white">
 				<MessagePrimitive.Parts />
 			</div>

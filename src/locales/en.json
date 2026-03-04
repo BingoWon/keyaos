@@ -328,7 +328,11 @@
 		"welcome_title": "Hello there!",
 		"welcome_subtitle": "How can I help you today?",
 		"placeholder": "Send a message…",
-		"update": "Update"
+		"update": "Update",
+		"threads": "Conversations",
+		"new_thread": "New conversation",
+		"system_prompt": "System Prompt",
+		"system_prompt_placeholder": "Custom instructions for the assistant…"
 	},
 	"landing": {
 		"hero_tagline": "Order in Chaos",

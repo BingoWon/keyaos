@@ -143,3 +143,28 @@ CREATE TABLE IF NOT EXISTS credit_adjustments (
 );
 
 CREATE INDEX IF NOT EXISTS idx_adjustments_owner ON credit_adjustments(owner_id);
+
+-- 10. Chat threads (Dashboard AI assistant conversation persistence)
+CREATE TABLE IF NOT EXISTS chat_threads (
+    id TEXT PRIMARY KEY,
+    owner_id TEXT NOT NULL,
+    title TEXT,
+    model TEXT,
+    status TEXT NOT NULL DEFAULT 'regular',
+    created_at INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_threads_owner ON chat_threads(owner_id, updated_at DESC);
+
+-- 11. Chat messages
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id TEXT PRIMARY KEY,
+    thread_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    model TEXT,
+    created_at INTEGER NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_thread ON chat_messages(thread_id, created_at);

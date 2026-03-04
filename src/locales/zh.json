@@ -325,7 +325,11 @@
 		"welcome_title": "你好！",
 		"welcome_subtitle": "有什么可以帮助你的？",
 		"placeholder": "发送消息…",
-		"update": "更新"
+		"update": "更新",
+		"threads": "会话列表",
+		"new_thread": "新建会话",
+		"system_prompt": "系统提示词",
+		"system_prompt_placeholder": "为助手设置自定义指令…"
 	},
 	"landing": {
 		"hero_tagline": "万钥归一",

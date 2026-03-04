@@ -75,3 +75,22 @@ export interface DbPriceCandle {
 	volume: number;
 	total_tokens: number;
 }
+
+export interface DbChatThread {
+	id: string;
+	owner_id: string;
+	title: string | null;
+	model: string | null;
+	status: "regular" | "archived";
+	created_at: number;
+	updated_at: number;
+}
+
+export interface DbChatMessage {
+	id: string;
+	thread_id: string;
+	role: string;
+	content: string;
+	model: string | null;
+	created_at: number;
+}

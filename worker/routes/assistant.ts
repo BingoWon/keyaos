@@ -4,6 +4,7 @@ import {
 	type UIMessage,
 } from "ai";
 import { Hono } from "hono";
+import { ThreadsDao } from "../core/db/threads-dao";
 import { BadRequestError } from "../shared/errors";
 import { log } from "../shared/logger";
 import type { AppEnv } from "../shared/types";
@@ -22,29 +23,58 @@ assistantRouter.post("/", async (c) => {
 	const messages = body.messages as UIMessage[] | undefined;
 	const modelId = body.model as string | undefined;
 	const system = body.system as string | undefined;
+	const threadId = body.threadId as string | undefined;
 
 	if (!modelId) throw new BadRequestError("model is required");
 	if (!messages?.length) throw new BadRequestError("messages is required");
 
-	const openaiMessages: { role: string; content: string }[] = [];
+	type ContentPart =
+		| { type: "text"; text: string }
+		| { type: "image_url"; image_url: { url: string } };
+
+	const openaiMessages: {
+		role: string;
+		content: string | ContentPart[];
+	}[] = [];
 	if (system) openaiMessages.push({ role: "system", content: system });
 
 	for (const m of messages) {
-		const text = Array.isArray(m.parts)
-			? m.parts
-					.filter((p): p is { type: "text"; text: string } => p.type === "text")
-					.map((p) => p.text)
-					.join("")
-			: "";
-		if (text) openaiMessages.push({ role: m.role, content: text });
+		if (!Array.isArray(m.parts)) continue;
+		const parts: ContentPart[] = [];
+		for (const p of m.parts) {
+			if (p.type === "text" && (p as { text?: string }).text) {
+				parts.push({ type: "text", text: (p as { text: string }).text });
+			} else if (
+				p.type === "file" &&
+				(p as { url?: string }).url &&
+				(p as { mediaType?: string }).mediaType?.startsWith("image/")
+			) {
+				parts.push({
+					type: "image_url",
+					image_url: { url: (p as { url: string }).url },
+				});
+			}
+		}
+		if (!parts.length) continue;
+		const textOnly = parts.every((cp) => cp.type === "text");
+		openaiMessages.push({
+			role: m.role,
+			content: textOnly
+				? (parts as { type: "text"; text: string }[])
+						.map((cp) => cp.text)
+						.join("")
+				: parts,
+		});
 	}
 
 	log.info("assistant", "Request", {
 		model: modelId,
 		msgs: openaiMessages.length,
+		threadId,
 	});
 
 	const partId = crypto.randomUUID();
+	let fullResponseText = "";
 
 	const stream = createUIMessageStream({
 		execute: async ({ writer }) => {
@@ -95,6 +125,7 @@ assistantRouter.post("/", async (c) => {
 					try {
 						const delta = JSON.parse(payload).choices?.[0]?.delta?.content;
 						if (delta) {
+							fullResponseText += delta;
 							writer.write({ type: "text-delta", delta, id: partId });
 						}
 					} catch {}
@@ -104,6 +135,43 @@ assistantRouter.post("/", async (c) => {
 			writer.write({ type: "text-end", id: partId });
 			writer.write({ type: "finish-step" });
 			writer.write({ type: "finish", finishReason: "stop" });
+
+			if (threadId && fullResponseText) {
+				const lastUserMsg = messages![messages!.length - 1];
+				c.executionCtx.waitUntil(
+					(async () => {
+						try {
+							const dao = new ThreadsDao(c.env.DB);
+							if (lastUserMsg?.role === "user") {
+								await dao.addMessage({
+									id: lastUserMsg.id || `msg_${crypto.randomUUID()}`,
+									thread_id: threadId,
+									role: "user",
+									content: JSON.stringify(lastUserMsg.parts ?? []),
+									model: null,
+									created_at: Date.now(),
+								});
+							}
+							await dao.addMessage({
+								id: `msg_${crypto.randomUUID()}`,
+								thread_id: threadId,
+								role: "assistant",
+								content: JSON.stringify([
+									{ type: "text", text: fullResponseText },
+								]),
+								model: modelId,
+								created_at: Date.now(),
+							});
+						} catch (err) {
+							log.error("assistant", "Failed to save messages", {
+								threadId,
+								error:
+									err instanceof Error ? err.message : String(err),
+							});
+						}
+					})(),
+				);
+			}
 		},
 		onError: (error) => {
 			const msg = error instanceof Error ? error.message : String(error);

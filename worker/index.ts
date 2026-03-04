@@ -12,6 +12,7 @@ import apiKeysRouter from "./routes/api-keys";
 import chatRouter from "./routes/chat";
 import assistantRouter from "./routes/assistant";
 import credentialsRouter from "./routes/credentials";
+import threadsRouter from "./routes/threads";
 import messagesRouter from "./routes/messages";
 import { dashboardModelsRouter, publicModelsRouter } from "./routes/models";
 import systemRouter from "./routes/system";
@@ -140,6 +141,7 @@ app.route("/api/models", dashboardModelsRouter);
 app.route("/api", systemRouter);
 
 app.route("/api/chat", assistantRouter);
+app.route("/api/threads", threadsRouter);
 
 // ─── Platform-only routes (gated at request time) ───────
 const platformNotFound = (c: Context) =>

@@ -23,7 +23,7 @@ assistantRouter.post("/", async (c) => {
 	const messages = body.messages as UIMessage[] | undefined;
 	const modelId = body.model_id as string | undefined;
 	const system = body.system as string | undefined;
-	const threadId = body.threadId as string | undefined;
+	const threadId = (body.id ?? body.threadId) as string | undefined;
 	const providerIds = body.provider_ids as string[] | undefined;
 
 	if (!modelId) throw new BadRequestError("model_id is required");

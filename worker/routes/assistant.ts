@@ -24,6 +24,7 @@ assistantRouter.post("/", async (c) => {
 	const modelId = body.model as string | undefined;
 	const system = body.system as string | undefined;
 	const threadId = body.threadId as string | undefined;
+	const providers = body.providers as string[] | undefined;
 
 	if (!modelId) throw new BadRequestError("model is required");
 	if (!messages?.length) throw new BadRequestError("messages is required");
@@ -84,6 +85,7 @@ assistantRouter.post("/", async (c) => {
 				result = await executeCompletion(c, {
 					model: modelId,
 					body: { messages: openaiMessages, stream: true },
+					providers,
 				});
 			} catch (err) {
 				const msg =

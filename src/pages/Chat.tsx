@@ -9,8 +9,10 @@ import {
 import {
 	Bars3Icon,
 	ChevronUpDownIcon,
+	ClipboardDocumentIcon,
 	XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { CheckIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Modality } from "../../worker/core/db/schema";
 import { useAuth } from "../auth";
@@ -20,6 +22,7 @@ import {
 	SystemPrompt,
 	loadSystemPrompt,
 } from "../components/chat/SystemPrompt";
+import { ProviderLogo } from "../components/ProviderLogo";
 import { useFetch } from "../hooks/useFetch";
 import {
 	useActiveThreadModel,
@@ -27,13 +30,19 @@ import {
 	useThreadListAdapter,
 } from "../hooks/useThreadRuntime";
 import type { ModelEntry } from "../types/model";
+import type { ProviderMeta } from "../types/provider";
 
 const LS_MODEL_KEY = "kx-chat-model";
+const LS_PROVIDER_KEY = "kx-chat-provider";
+const AUTO_PROVIDER = "auto";
 
 export function Chat() {
 	const { getToken } = useAuth();
 	const [model, setModel] = useState(
 		() => localStorage.getItem(LS_MODEL_KEY) || "",
+	);
+	const [provider, setProvider] = useState(
+		() => localStorage.getItem(LS_PROVIDER_KEY) || AUTO_PROVIDER,
 	);
 	const [sidebarOpen, setSidebarOpen] = useState(true);
 	const [systemPrompt, setSystemPrompt] = useState(loadSystemPrompt);
@@ -52,10 +61,21 @@ export function Chat() {
 		}
 	}, []);
 
+	const handleProviderChange = useCallback((v: string) => {
+		setProvider(v);
+		try {
+			localStorage.setItem(LS_PROVIDER_KEY, v);
+		} catch {
+			/* quota exceeded – ignore */
+		}
+	}, []);
+
 	const getTokenRef = useRef(getToken);
 	getTokenRef.current = getToken;
 	const modelRef = useRef(model);
 	modelRef.current = model;
+	const providerRef = useRef(provider);
+	providerRef.current = provider;
 	const systemPromptRef = useRef(systemPrompt);
 	systemPromptRef.current = systemPrompt;
 
@@ -73,6 +93,9 @@ export function Chat() {
 				api: "/api/chat",
 				body: () => ({
 					model: modelRef.current,
+					...(providerRef.current !== AUTO_PROVIDER && {
+						providers: [providerRef.current],
+					}),
 					...(systemPromptRef.current && {
 						system: systemPromptRef.current,
 					}),
@@ -91,6 +114,8 @@ export function Chat() {
 	const runtime = useKeyaosRuntime({ transport, adapter });
 
 	const { data: models } = useFetch<ModelEntry[]>("/api/models");
+	const { data: providersMeta } = useFetch<ProviderMeta[]>("/api/providers");
+
 	const uniqueModels = useMemo(() => {
 		if (!models) return [];
 		const seen = new Set<string>();
@@ -100,6 +125,25 @@ export function Chat() {
 			return true;
 		});
 	}, [models]);
+
+	const availableProviders = useMemo(() => {
+		if (!models) return [];
+		const providerIds = new Set(
+			models.filter((m) => m.id === model).map((m) => m.provider),
+		);
+		if (!providersMeta) return [...providerIds].map((id) => ({ id, name: id, logoUrl: "" }));
+		return providersMeta.filter((p) => providerIds.has(p.id));
+	}, [models, model, providersMeta]);
+
+	useEffect(() => {
+		if (
+			provider !== AUTO_PROVIDER &&
+			availableProviders.length > 0 &&
+			!availableProviders.some((p) => p.id === provider)
+		) {
+			handleProviderChange(AUTO_PROVIDER);
+		}
+	}, [availableProviders, provider, handleProviderChange]);
 
 	useEffect(() => {
 		if (uniqueModels.length > 0 && !model) {
@@ -130,35 +174,77 @@ export function Chat() {
 
 				{/* Main chat area */}
 				<div className="flex min-w-0 flex-1 flex-col">
-					<div className="flex shrink-0 items-center gap-2 border-b border-gray-200 px-3 py-2 dark:border-white/10">
-						<button
-							type="button"
-							onClick={() => setSidebarOpen((v) => !v)}
-							className="flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10"
-							aria-label="Toggle sidebar"
-						>
-							{sidebarOpen ? (
-								<XMarkIcon className="size-4" />
-							) : (
-								<Bars3Icon className="size-4" />
-							)}
-						</button>
+				<div className="flex shrink-0 items-center gap-3 border-b border-gray-200 px-3 py-2 dark:border-white/10">
+					<button
+						type="button"
+						onClick={() => setSidebarOpen((v) => !v)}
+						className="flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10"
+						aria-label="Toggle sidebar"
+					>
+						{sidebarOpen ? (
+							<XMarkIcon className="size-4" />
+						) : (
+							<Bars3Icon className="size-4" />
+						)}
+					</button>
+					<div className="flex items-center gap-1">
+						<span className="text-xs font-medium text-gray-400 dark:text-gray-500">Model</span>
 						<ModelPicker
 							models={uniqueModels}
 							value={model}
 							onChange={handleModelChange}
 						/>
-						<SystemPrompt
-							value={systemPrompt}
-							onChange={setSystemPrompt}
+					</div>
+					<div className="flex items-center gap-1">
+						<span className="text-xs font-medium text-gray-400 dark:text-gray-500">Provider</span>
+						<ProviderPicker
+							providers={availableProviders}
+							value={provider}
+							onChange={handleProviderChange}
 						/>
 					</div>
+					<SystemPrompt
+						value={systemPrompt}
+						onChange={setSystemPrompt}
+					/>
+				</div>
 					<div className="min-h-0 flex-1">
 						<ChatThread allowAttachments={allowAttachments} />
 					</div>
 				</div>
 			</div>
 		</AssistantRuntimeProvider>
+	);
+}
+
+function CopyButton({ text }: { text: string }) {
+	const [copied, setCopied] = useState(false);
+	const timerRef = useRef<ReturnType<typeof setTimeout>>();
+
+	const handleCopy = useCallback(
+		(e: React.MouseEvent) => {
+			e.stopPropagation();
+			navigator.clipboard.writeText(text);
+			setCopied(true);
+			clearTimeout(timerRef.current);
+			timerRef.current = setTimeout(() => setCopied(false), 1500);
+		},
+		[text],
+	);
+
+	return (
+		<button
+			type="button"
+			onClick={handleCopy}
+			className="ml-auto shrink-0 rounded p-0.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600 dark:hover:bg-white/10 dark:hover:text-gray-300"
+			title={`Copy ID: ${text}`}
+		>
+			{copied ? (
+				<CheckIcon className="size-3.5 text-green-500" />
+			) : (
+				<ClipboardDocumentIcon className="size-3.5" />
+			)}
+		</button>
 	);
 }
 
@@ -180,14 +266,66 @@ function ModelPicker({
 					<span className="truncate">{display}</span>
 					<ChevronUpDownIcon className="size-4 text-gray-400" />
 				</ListboxButton>
-				<ListboxOptions className="absolute left-0 z-20 mt-1 max-h-80 w-72 overflow-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg focus:outline-none dark:border-white/10 dark:bg-gray-800">
+				<ListboxOptions className="absolute left-0 z-20 mt-1 max-h-80 w-80 overflow-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg focus:outline-none dark:border-white/10 dark:bg-gray-800">
 					{models.map((m) => (
 						<ListboxOption
 							key={m.id}
 							value={m.id}
-							className="cursor-pointer px-3 py-2 text-sm text-gray-900 data-focus:bg-brand-50 data-selected:font-medium data-selected:text-brand-700 dark:text-gray-100 dark:data-focus:bg-brand-500/15 dark:data-selected:text-brand-300"
+							className="group flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-gray-900 data-focus:bg-brand-50 data-selected:font-medium data-selected:text-brand-700 dark:text-gray-100 dark:data-focus:bg-brand-500/15 dark:data-selected:text-brand-300"
 						>
-							{m.name || m.id}
+							<span className="min-w-0 flex-1 truncate">{m.name || m.id}</span>
+							<CopyButton text={m.id} />
+						</ListboxOption>
+					))}
+				</ListboxOptions>
+			</div>
+		</Listbox>
+	);
+}
+
+function ProviderPicker({
+	providers,
+	value,
+	onChange,
+}: {
+	providers: Pick<ProviderMeta, "id" | "name" | "logoUrl">[];
+	value: string;
+	onChange: (v: string) => void;
+}) {
+	const selected = providers.find((p) => p.id === value);
+	const display = value === AUTO_PROVIDER ? "Auto" : selected?.name || value;
+
+	return (
+		<Listbox value={value} onChange={onChange}>
+			<div className="relative">
+				<ListboxButton className="flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-medium text-gray-900 transition-colors hover:bg-gray-100 dark:text-white dark:hover:bg-white/10">
+					{selected?.logoUrl && (
+						<ProviderLogo src={selected.logoUrl} name={selected.name} size={16} />
+					)}
+					<span className="truncate">{display}</span>
+					<ChevronUpDownIcon className="size-4 text-gray-400" />
+				</ListboxButton>
+				<ListboxOptions className="absolute left-0 z-20 mt-1 max-h-80 w-64 overflow-auto rounded-xl border border-gray-200 bg-white py-1 shadow-lg focus:outline-none dark:border-white/10 dark:bg-gray-800">
+					<ListboxOption
+						value={AUTO_PROVIDER}
+						className="group flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-gray-900 data-focus:bg-brand-50 data-selected:font-medium data-selected:text-brand-700 dark:text-gray-100 dark:data-focus:bg-brand-500/15 dark:data-selected:text-brand-300"
+					>
+						<span className="size-4" />
+						<span className="min-w-0 flex-1">Auto</span>
+					</ListboxOption>
+					{providers.map((p) => (
+						<ListboxOption
+							key={p.id}
+							value={p.id}
+							className="group flex cursor-pointer items-center gap-2 px-3 py-2 text-sm text-gray-900 data-focus:bg-brand-50 data-selected:font-medium data-selected:text-brand-700 dark:text-gray-100 dark:data-focus:bg-brand-500/15 dark:data-selected:text-brand-300"
+						>
+							{p.logoUrl ? (
+								<ProviderLogo src={p.logoUrl} name={p.name} size={16} />
+							) : (
+								<span className="size-4" />
+							)}
+							<span className="min-w-0 flex-1 truncate">{p.name}</span>
+							<CopyButton text={p.id} />
 						</ListboxOption>
 					))}
 				</ListboxOptions>

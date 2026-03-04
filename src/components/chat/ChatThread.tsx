@@ -7,6 +7,7 @@ import {
 	MessagePrimitive,
 	ThreadPrimitive,
 	useMessagePartImage,
+	useThread,
 } from "@assistant-ui/react";
 import {
 	ArrowDownIcon,
@@ -20,7 +21,7 @@ import {
 	PencilIcon,
 	StopIcon,
 } from "@heroicons/react/24/outline";
-import type { FC } from "react";
+import { type FC, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { classNames } from "../../utils/classNames";
 import { ComposerAttachment, UserMessageAttachment } from "./ChatAttachment";
@@ -34,6 +35,7 @@ export const ChatThread: FC<{ allowAttachments?: boolean }> = ({
 			className="flex h-full flex-col bg-white dark:bg-gray-900"
 			style={{ "--thread-max-width": "44rem" } as React.CSSProperties}
 		>
+			<ComposerAutoFocus />
 			<ThreadPrimitive.Viewport
 				turnAnchor="top"
 				className="relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth px-4 pt-4"
@@ -66,6 +68,18 @@ const ThreadScrollToBottom: FC = () => (
 		</button>
 	</ThreadPrimitive.ScrollToBottom>
 );
+
+const ComposerAutoFocus: FC = () => {
+	const isEmpty = useThread((t) => t.isEmpty);
+	useEffect(() => {
+		if (!isEmpty) return;
+		const el = document.querySelector<HTMLTextAreaElement>(
+			'[aria-label="Message input"]',
+		);
+		el?.focus();
+	}, [isEmpty]);
+	return null;
+};
 
 const ThreadWelcome: FC = () => {
 	const { t } = useTranslation();

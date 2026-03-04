@@ -4,7 +4,6 @@ import {
 	useThreadListItemRuntime,
 } from "@assistant-ui/react";
 import {
-	ChatBubbleLeftRightIcon,
 	CheckIcon,
 	EllipsisHorizontalIcon,
 	PencilIcon,
@@ -95,7 +94,6 @@ const ThreadListItem: FC = () => {
 		return (
 			<ThreadListItemPrimitive.Root className="group relative mb-0.5 flex items-center rounded-lg bg-gray-100 dark:bg-white/10">
 				<div className="flex min-w-0 flex-1 items-center gap-2 px-2.5 py-1.5">
-					<ChatBubbleLeftRightIcon className="size-4 shrink-0 opacity-50" />
 					<input
 						ref={inputRef}
 						value={draft}
@@ -133,8 +131,7 @@ const ThreadListItem: FC = () => {
 
 	return (
 		<ThreadListItemPrimitive.Root className="group relative mb-0.5 flex items-center rounded-lg transition-colors data-active:bg-brand-50 data-active:text-brand-700 dark:data-active:bg-brand-500/15 dark:data-active:text-brand-300">
-			<ThreadListItemPrimitive.Trigger className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 group-data-active:bg-transparent group-data-active:text-brand-700 dark:text-gray-300 dark:hover:bg-white/5 dark:group-data-active:text-brand-300">
-				<ChatBubbleLeftRightIcon className="size-4 shrink-0 opacity-50" />
+			<ThreadListItemPrimitive.Trigger className="flex min-w-0 flex-1 items-center rounded-lg px-2.5 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-gray-100 group-data-active:bg-transparent group-data-active:text-brand-700 dark:text-gray-300 dark:hover:bg-white/5 dark:group-data-active:text-brand-300">
 				<ThreadListItemPrimitive.Title
 					fallback="New Thread"
 					className="truncate"

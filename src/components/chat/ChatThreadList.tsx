@@ -146,10 +146,9 @@ const ThreadListItem: FC = () => {
 					}, 100);
 				}}
 			>
-				<ThreadListItemPrimitive.Title
-					fallback="New Thread"
-					className="truncate"
-				/>
+				<span className="truncate">
+					<ThreadListItemPrimitive.Title fallback="New Thread" />
+				</span>
 			</ThreadListItemPrimitive.Trigger>
 			<div className="absolute right-1 flex items-center opacity-0 transition-opacity group-hover:opacity-100 group-data-active:opacity-100">
 				<button

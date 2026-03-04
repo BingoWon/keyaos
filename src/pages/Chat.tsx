@@ -49,7 +49,12 @@ export function Chat() {
 
 	const activeThreadModel = useActiveThreadModel();
 	useEffect(() => {
-		if (activeThreadModel) setModelId(activeThreadModel);
+		if (activeThreadModel) {
+			setModelId(activeThreadModel);
+		} else {
+			const stored = localStorage.getItem(LS_MODEL_KEY);
+			if (stored) setModelId(stored);
+		}
 	}, [activeThreadModel]);
 
 	const handleModelIdChange = useCallback((v: string) => {

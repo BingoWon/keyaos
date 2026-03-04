@@ -145,7 +145,7 @@ function useKeyaosHistoryAdapter(
 }
 
 // ---------------------------------------------------------------------------
-// Streaming title helpers
+// Title helpers
 // ---------------------------------------------------------------------------
 function buildFallbackTitleStream(title: string): ReadableStream {
 	return new ReadableStream({
@@ -154,84 +154,6 @@ function buildFallbackTitleStream(title: string): ReadableStream {
 			ctrl.enqueue({ type: "text-delta", textDelta: title, path: [0] });
 			ctrl.enqueue({ type: "part-finish", path: [0] });
 			ctrl.close();
-		},
-	});
-}
-
-function buildStreamingTitle(body: ReadableStream<Uint8Array>): ReadableStream {
-	const reader = body.getReader();
-	const decoder = new TextDecoder();
-	let buf = "";
-	let started = false;
-
-	return new ReadableStream({
-		async start(ctrl) {
-			try {
-				for (;;) {
-					const { done, value } = await reader.read();
-					if (done) break;
-					buf += decoder.decode(value, { stream: true });
-					const lines = buf.split("\n");
-					buf = lines.pop()!;
-
-					for (const line of lines) {
-						if (!line.startsWith("data: ")) continue;
-						const payload = line.slice(6).trim();
-						if (payload === "[DONE]") continue;
-						try {
-							const { delta } = JSON.parse(payload);
-							if (delta) {
-								if (!started) {
-									ctrl.enqueue({
-										type: "part-start",
-										part: { type: "text" },
-										path: [0],
-									});
-									started = true;
-								}
-								ctrl.enqueue({
-									type: "text-delta",
-									textDelta: delta,
-									path: [0],
-								});
-							}
-						} catch {
-							/* skip malformed SSE chunks */
-						}
-					}
-				}
-
-				if (!started) {
-					ctrl.enqueue({
-						type: "part-start",
-						part: { type: "text" },
-						path: [0],
-					});
-					ctrl.enqueue({
-						type: "text-delta",
-						textDelta: "New Thread",
-						path: [0],
-					});
-				}
-				ctrl.enqueue({ type: "part-finish", path: [0] });
-				ctrl.close();
-			} catch (err) {
-				console.error("[buildStreamingTitle] stream error:", err);
-				if (!started) {
-					ctrl.enqueue({
-						type: "part-start",
-						part: { type: "text" },
-						path: [0],
-					});
-				}
-				ctrl.enqueue({
-					type: "text-delta",
-					textDelta: "New Thread",
-					path: [0],
-				});
-				ctrl.enqueue({ type: "part-finish", path: [0] });
-				ctrl.close();
-			}
 		},
 	});
 }
@@ -305,7 +227,6 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 				});
 			},
 			generateTitle: async (remoteId, messages) => {
-				const hd = await h();
 				const condensed = (
 					messages as {
 						role: string;
@@ -327,24 +248,18 @@ export function useThreadListAdapter(opts: AdapterOpts): RemoteThreadListAdapter
 					if (!titleModel) {
 						return buildFallbackTitleStream("New Thread");
 					}
-					const res = await fetch(
+					const data = await fetchApi<{ title: string }>(
 						`${b()}/${remoteId}/generate-title`,
+						await h(),
 						{
 							method: "POST",
-							headers: {
-								"Content-Type": "application/json",
-								...hd,
-							},
 							body: JSON.stringify({
 								messages: condensed,
 								model_id: titleModel,
 							}),
 						},
 					);
-					if (!res.ok || !res.body) {
-						return buildFallbackTitleStream("New Thread");
-					}
-					return buildStreamingTitle(res.body);
+					return buildFallbackTitleStream(data.title || "New Thread");
 				} catch (err) {
 					console.error(
 						"[generateTitle] failed for thread",

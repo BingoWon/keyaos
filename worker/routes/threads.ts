@@ -128,26 +128,16 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 		.map((m) => `${m.role}: ${m.content.slice(0, 200)}`)
 		.join("\n");
 
-	const sseHeaders = {
-		"Content-Type": "text/event-stream",
-		"Cache-Control": "no-cache",
-	};
-	const fallback = (text: string) =>
-		new Response(
-			`data: ${JSON.stringify({ delta: text })}\n\ndata: [DONE]\n\n`,
-			{ headers: sseHeaders },
-		);
-
 	if (!snippet) {
 		log.info("threads", "generate-title: empty snippet, skipping", {
 			threadId,
 		});
-		return fallback("New Thread");
+		return c.json({ title: "New Thread" });
 	}
 
 	if (!body.model_id) {
 		log.warn("threads", "generate-title: no model provided", { threadId });
-		return fallback("New Thread");
+		return c.json({ title: "New Thread" });
 	}
 
 	const titleModel = body.model_id;
@@ -175,7 +165,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 			modelId: titleModel,
 			error: err instanceof Error ? err.message : String(err),
 		});
-		return fallback("New Thread");
+		return c.json({ title: "New Thread" });
 	}
 
 	let title = "New Thread";
@@ -212,7 +202,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 		})(),
 	);
 
-	return fallback(title);
+	return c.json({ title });
 });
 
 threadsRouter.post("/:id/messages", async (c) => {

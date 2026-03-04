@@ -102,6 +102,11 @@ export function Chat() {
 					}),
 				}),
 				headers: getHeaders,
+				// Workaround: AssistantChatTransport uses an internal
+				// ExternalStoreRuntimeCore whose mainItem.initialize() always
+				// returns { remoteId: "DEFAULT_THREAD_ID" } because it lacks
+				// __internal_setGetInitializePromise. Override the body to use
+				// options.id (the correct AUI threadListItem.id) instead.
 				prepareSendMessagesRequest: async (options) => ({
 					body: {
 						...options.body,

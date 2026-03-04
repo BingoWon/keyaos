@@ -132,7 +132,6 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 		"Content-Type": "text/event-stream",
 		"Cache-Control": "no-cache",
 	};
-	const enc = new TextEncoder();
 	const fallback = (text: string) =>
 		new Response(
 			`data: ${JSON.stringify({ delta: text })}\n\ndata: [DONE]\n\n`,
@@ -166,7 +165,7 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 					},
 					{ role: "user", content: snippet },
 				],
-				stream: true,
+				stream: false,
 				max_tokens: 30,
 			},
 		});
@@ -179,83 +178,41 @@ threadsRouter.post("/:id/generate-title", async (c) => {
 		return fallback("New Thread");
 	}
 
-	if (!result.response.body) return fallback("New Thread");
+	let title = "New Thread";
+	try {
+		const json = (await result.response.json()) as {
+			choices?: { message?: { content?: string } }[];
+		};
+		const content = json.choices?.[0]?.message?.content?.trim();
+		if (content) title = content.replace(/[\n\r]+/g, " ");
+	} catch (err) {
+		log.warn("threads", "generate-title: parse failed", {
+			threadId,
+			error: err instanceof Error ? err.message : String(err),
+		});
+	}
 
-	const { readable, writable } = new TransformStream();
-	const writer = writable.getWriter();
+	log.info("threads", "generate-title: success", {
+		threadId,
+		title,
+		modelId: titleModel,
+	});
 
 	c.executionCtx.waitUntil(
 		(async () => {
-			let fullTitle = "";
-			const reader = result.response.body!.getReader();
-			const decoder = new TextDecoder();
-			let buf = "";
-
-			try {
-				for (; ;) {
-					const { done, value } = await reader.read();
-					if (done) break;
-					buf += decoder.decode(value, { stream: true });
-					const lines = buf.split("\n");
-					buf = lines.pop()!;
-
-					for (const line of lines) {
-						if (!line.startsWith("data: ")) continue;
-						const payload = line.slice(6).trim();
-						if (payload === "[DONE]") continue;
-						try {
-							const delta =
-								JSON.parse(payload).choices?.[0]?.delta
-									?.content;
-							if (delta) {
-								const clean = delta.replace(/[\n\r]/g, " ");
-								fullTitle += clean;
-								await writer.write(
-									enc.encode(
-										`data: ${JSON.stringify({ delta: clean })}\n\n`,
-									),
-								);
-							}
-						} catch (e) {
-							log.warn(
-								"threads",
-								"generate-title SSE parse error",
-								{
-									payload: payload.slice(0, 200),
-									error:
-										e instanceof Error
-											? e.message
-											: String(e),
-								},
-							);
-						}
-					}
-				}
-				await writer.write(enc.encode("data: [DONE]\n\n"));
-			} finally {
-				await writer.close();
-			}
-
-			const title = fullTitle.trim() || "New Thread";
-			log.info("threads", "generate-title: success", {
-				threadId,
-				title,
-				modelId: titleModel,
-			});
 			try {
 				const dao = new ThreadsDao(c.env.DB);
 				await dao.updateTitle(threadId, ownerId, title);
 			} catch (err) {
 				log.error("threads", "generate-title: DB save failed", {
 					threadId,
-					error:
-						err instanceof Error ? err.message : String(err),
+					error: err instanceof Error ? err.message : String(err),
 				});
 			}
 		})(),
 	);
 
-	return new Response(readable, { headers: sseHeaders });
+	return fallback(title);
 });
 
 threadsRouter.post("/:id/messages", async (c) => {

@@ -167,10 +167,10 @@ function ModelSearch() {
 											: "hover:bg-gray-50 dark:hover:bg-white/5",
 									)}
 								>
-									<span className="font-medium text-gray-900 dark:text-white truncate">
+									<span className="shrink-0 font-medium text-gray-900 dark:text-white">
 										{g.displayName}
 									</span>
-									<span className="shrink-0 font-mono text-xs text-gray-400 dark:text-gray-500">
+									<span className="truncate font-mono text-xs text-gray-400 dark:text-gray-500">
 										{g.id}
 									</span>
 								</div>

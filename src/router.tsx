@@ -126,7 +126,7 @@ function AppLayout() {
 function ContentShell() {
 	return (
 		<main className="min-h-dvh pt-24 pb-10">
-			<div className="px-4 sm:px-6 lg:px-8">
+			<div className="mx-auto max-w-screen-2xl px-6 sm:px-8 lg:px-12">
 				<Suspense fallback={<PageLoader />}>
 					<Outlet />
 				</Suspense>

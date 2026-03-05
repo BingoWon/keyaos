@@ -182,7 +182,7 @@ export function Chat() {
 
 	if (!models) {
 		return (
-			<div className="flex h-[calc(100dvh-3.5rem)] pt-14 animate-pulse">
+			<div className="flex h-dvh pt-14 animate-pulse">
 				<div className="w-64 shrink-0 border-r border-gray-200 bg-gray-50 dark:border-white/10 dark:bg-gray-900/50">
 					<div className="flex flex-col gap-2 p-4">
 						<div className="h-9 rounded-lg bg-gray-200 dark:bg-white/10" />
@@ -208,7 +208,7 @@ export function Chat() {
 
 	return (
 		<AssistantRuntimeProvider runtime={runtime}>
-			<div className="flex h-[calc(100dvh-3.5rem)] pt-14">
+			<div className="flex h-dvh pt-14">
 				{/* Sidebar */}
 				<div
 					className={`shrink-0 border-r border-gray-200 bg-gray-50 transition-[width] duration-200 dark:border-white/10 dark:bg-gray-900/50 ${sidebarOpen ? "w-64" : "w-0 overflow-hidden border-r-0"}`}

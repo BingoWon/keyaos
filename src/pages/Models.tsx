@@ -113,9 +113,9 @@ export function Models() {
 		<div>
 			<div className="sm:flex sm:items-end">
 				<div className="sm:flex-auto">
-					<h3 className="text-base font-semibold text-gray-900 dark:text-white">
+					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
 						{t("models.title")}
-					</h3>
+					</h1>
 					<p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						{t("models.subtitle")}
 					</p>
@@ -233,7 +233,7 @@ export function Models() {
 										<tr
 											key={g.id}
 											onClick={() => setSelected(g)}
-											className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+											className="even:bg-gray-50/50 hover:bg-gray-100/60 dark:even:bg-white/[0.015] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
 										>
 											<td className="py-2.5 pl-4 pr-2 sm:pl-5">
 												<div className="min-w-0">

@@ -5,7 +5,6 @@ export function SidebarLayout() {
 	return (
 		<BaseSidebarLayout
 			navigation={(onClose) => <NavigationList onNavigate={onClose} />}
-			mobileTitle="Keyaos"
 		/>
 	);
 }

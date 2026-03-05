@@ -1,8 +1,6 @@
-import { UserButton } from "@clerk/clerk-react";
 import { ArrowRightIcon } from "@heroicons/react/20/solid";
 import {
 	BoltIcon,
-	BookOpenIcon,
 	CodeBracketIcon,
 	CommandLineIcon,
 	GlobeAltIcon,
@@ -20,14 +18,12 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
-import { isPlatform, useAuth } from "../auth";
+import { useAuth } from "../auth";
 import { CopyButton } from "../components/CopyButton";
-import { LanguageSelector } from "../components/LanguageSelector";
 import { Logo } from "../components/Logo";
 import { ProviderGrid } from "../components/ProviderGrid";
 import { ProviderLogo } from "../components/ProviderLogo";
 import { Sparkline, type SparklineData } from "../components/Sparkline";
-import { ThemeToggle } from "../components/ThemeToggle";
 import { Badge, DualPrice } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
@@ -57,69 +53,6 @@ function GitHubIcon({ className }: { className?: string }) {
 		>
 			<path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
 		</svg>
-	);
-}
-
-function Navbar() {
-	const { t } = useTranslation();
-	const { isLoaded, isSignedIn } = useAuth();
-	const authed = isLoaded && isSignedIn;
-
-	return (
-		<header className="fixed inset-x-0 top-0 z-50 backdrop-blur-lg bg-white/70 dark:bg-gray-950/70 border-b border-gray-200/50 dark:border-white/5">
-			<nav className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
-				<Logo size="md" />
-
-				<div className="flex items-center gap-1.5">
-					<ThemeToggle />
-					<LanguageSelector />
-					<a
-						href={GITHUB_URL}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
-						aria-label="GitHub"
-					>
-						<GitHubIcon className="size-5" />
-					</a>
-					<a
-						href="/docs"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
-						aria-label="Docs"
-					>
-						<BookOpenIcon className="size-5" />
-					</a>
-					{authed ? (
-						<>
-							<Link
-								to="/dashboard"
-								className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm shadow-brand-500/20 transition-colors hover:bg-brand-600 dark:hover:bg-brand-400"
-							>
-								{t("nav.dashboard")}
-							</Link>
-							{isPlatform && <UserButton />}
-						</>
-					) : (
-						<>
-							<Link
-								to="/login"
-								className="hidden items-center px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:text-gray-900 sm:inline-flex dark:text-gray-400 dark:hover:text-white"
-							>
-								{t("landing.cta_signup")}
-							</Link>
-							<Link
-								to="/login"
-								className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-3.5 py-1.5 text-xs font-medium text-white shadow-sm shadow-brand-500/20 transition-colors hover:bg-brand-600 dark:hover:bg-brand-400"
-							>
-								{t("landing.cta_signin")}
-							</Link>
-						</>
-					)}
-				</div>
-			</nav>
-		</header>
 	);
 }
 
@@ -196,8 +129,6 @@ const LANDING_MODELS_LIMIT = 8;
 
 function PlatformShowcase() {
 	const { t, i18n } = useTranslation();
-	const { isLoaded, isSignedIn } = useAuth();
-	const authed = isLoaded && isSignedIn;
 
 	const { data: providers } = useFetch<ProviderMeta[]>("/api/providers", {
 		requireAuth: false,
@@ -328,7 +259,7 @@ function PlatformShowcase() {
 						</div>
 						<div className="mt-5 text-center">
 							<Link
-								to={authed ? "/dashboard/models" : "/login"}
+								to="/models"
 								className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
 							>
 								{t("landing.models_explore")}
@@ -629,14 +560,9 @@ function Footer() {
 					</span>
 				</div>
 				<div className="flex items-center gap-6 text-sm text-gray-500 dark:text-gray-400">
-					<a
-						href="/docs"
-						target="_blank"
-						rel="noopener noreferrer"
-						className="transition-colors hover:text-brand-500"
-					>
+					<Link to="/docs" className="transition-colors hover:text-brand-500">
 						{t("landing.footer_docs")}
-					</a>
+					</Link>
 					<a
 						href={GITHUB_URL}
 						target="_blank"
@@ -675,7 +601,6 @@ export function Landing() {
 				// biome-ignore lint/security/noDangerouslySetInnerHtml: static JSON-LD
 				dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
 			/>
-			<Navbar />
 			<Hero />
 			<PlatformShowcase />
 			<HowItWorks />

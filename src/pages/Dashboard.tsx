@@ -181,7 +181,7 @@ export function Dashboard() {
 							</span>
 						</h4>
 						<Link
-							to="/dashboard/providers"
+							to="/providers"
 							className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
 						>
 							{t("dashboard.view_all")}
@@ -248,7 +248,7 @@ export function Dashboard() {
 								</span>
 							</h4>
 							<Link
-								to="/dashboard/models"
+								to="/models"
 								className="text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
 							>
 								{t("dashboard.view_all")}

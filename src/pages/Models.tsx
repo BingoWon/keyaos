@@ -1,5 +1,6 @@
 import { Suspense, useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useSearchParams } from "react-router-dom";
 import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
 import { Pagination } from "../components/Pagination";
@@ -62,7 +63,8 @@ export function Models() {
 
 	const groups = useMemo(() => aggregateModels(raw ?? []), [raw]);
 
-	const [query, setQuery] = useState("");
+	const [searchParams] = useSearchParams();
+	const [query, setQuery] = useState(() => searchParams.get("q") ?? "");
 	const [page, setPage] = useState(1);
 	const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
 	const [selected, setSelected] = useState<ModelGroup | null>(null);

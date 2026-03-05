@@ -2,13 +2,14 @@ import { Suspense, useEffect } from "react";
 import {
 	createBrowserRouter,
 	Navigate,
+	Outlet,
 	useLocation,
 	useNavigate,
 } from "react-router-dom";
 import { AuthGuard, isPlatform, useAuth } from "./auth";
 import { PageLoader } from "./components/PageLoader";
 import { RouteError } from "./components/RouteError";
-import { SidebarLayout } from "./components/SidebarLayout";
+import { TopNav } from "./components/TopNav";
 import { MdxPage } from "./pages/docs/MdxPage";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
@@ -62,6 +63,14 @@ const Data = lazyWithRetry(() =>
 	import("./pages/admin/Data").then((m) => ({ default: m.Data })),
 );
 
+// ─── Lazy-loaded layouts ─────────────────────────────────
+
+const SidebarLayout = lazyWithRetry(() =>
+	import("./components/SidebarLayout").then((m) => ({
+		default: m.SidebarLayout,
+	})),
+);
+
 // ─── Lazy-loaded docs ────────────────────────────────────
 
 const DocsLayout = lazyWithRetry(() =>
@@ -103,18 +112,30 @@ const TermsOfServiceMdx = lazyWithRetry(
 );
 const ContactMdx = lazyWithRetry(() => import("./pages/docs/contact.mdx"));
 
-// ─── Route definitions ───────────────────────────────────
+// ─── Shared layouts ──────────────────────────────────────
 
-const dashboardChildren = [
-	{ index: true, element: <Dashboard /> },
-	{ path: "models", element: <Models /> },
-	{ path: "providers", element: <Providers /> },
-	{ path: "api-keys", element: <ApiKeys /> },
-	{ path: "byok", element: <Byok /> },
-	{ path: "logs", element: <Logs /> },
-	...(isPlatform ? [{ path: "credits", element: <Credits /> }] : []),
-	{ path: "chat", element: <Chat /> },
-];
+function AppLayout() {
+	return (
+		<>
+			<TopNav />
+			<Outlet />
+		</>
+	);
+}
+
+function ContentShell() {
+	return (
+		<main className="min-h-dvh pt-24 pb-10">
+			<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+				<Suspense fallback={<PageLoader />}>
+					<Outlet />
+				</Suspense>
+			</div>
+		</main>
+	);
+}
+
+// ─── Login route ─────────────────────────────────────────
 
 function LoginRoute() {
 	const { isLoaded, isSignedIn } = useAuth();
@@ -130,97 +151,136 @@ function LoginRoute() {
 	return <Login />;
 }
 
+// ─── Dashboard children ──────────────────────────────────
+
+const dashboardChildren = [
+	{ index: true, element: <Dashboard /> },
+	{ path: "byok", element: <Byok /> },
+	{ path: "api-keys", element: <ApiKeys /> },
+	{ path: "logs", element: <Logs /> },
+	...(isPlatform ? [{ path: "credits", element: <Credits /> }] : []),
+];
+
+// ─── Docs children ───────────────────────────────────────
+
+const docsChildren = [
+	{ index: true, element: <Navigate to="/docs/introduction" replace /> },
+	{ path: "introduction", element: <MdxPage Component={IntroductionMdx} /> },
+	{ path: "quickstart", element: <MdxPage Component={QuickstartMdx} /> },
+	{
+		path: "models-routing",
+		element: <MdxPage Component={ModelsRoutingMdx} />,
+	},
+	{
+		path: "credentials-sharing",
+		element: <MdxPage Component={CredentialsSharingMdx} />,
+	},
+	{ path: "pricing", element: <MdxPage Component={PricingMdx} /> },
+	{ path: "credits", element: <MdxPage Component={CreditsMdx} /> },
+	{
+		path: "authentication",
+		element: <MdxPage Component={AuthenticationMdx} />,
+	},
+	{ path: "openai-api", element: <MdxPage Component={OpenaiApiMdx} /> },
+	{
+		path: "anthropic-api",
+		element: <MdxPage Component={AnthropicApiMdx} />,
+	},
+	{ path: "models-api", element: <MdxPage Component={ModelsApiMdx} /> },
+	{ path: "credits-api", element: <MdxPage Component={CreditsApiMdx} /> },
+	{ path: "error-codes", element: <MdxPage Component={ErrorCodesMdx} /> },
+	{
+		path: "privacy-policy",
+		element: <MdxPage Component={PrivacyPolicyMdx} />,
+	},
+	{
+		path: "terms-of-service",
+		element: <MdxPage Component={TermsOfServiceMdx} />,
+	},
+	{ path: "contact", element: <MdxPage Component={ContactMdx} /> },
+];
+
+// ─── Route definitions ───────────────────────────────────
+
 export const router = createBrowserRouter([
-	{ path: "/login/*", element: <LoginRoute /> },
-	{ path: "/", element: <Landing />, errorElement: <RouteError /> },
 	{
-		path: "/dashboard",
-		element: (
-			<AuthGuard fallback={<Navigate to="/login" replace />}>
-				<SidebarLayout />
-			</AuthGuard>
-		),
-		errorElement: <RouteError />,
-		children: dashboardChildren,
-	},
-	...(isPlatform
-		? [
-				{
-					path: "/admin",
-					element: (
-						<AuthGuard fallback={<Navigate to="/login" replace />}>
-							<Suspense fallback={<PageLoader />}>
-								<AdminLayout />
-							</Suspense>
-						</AuthGuard>
-					),
-					errorElement: <RouteError />,
-					children: [
-						{ index: true, element: <Overview /> },
-						{ path: "users", element: <Users /> },
-						{ path: "data", element: <Data /> },
-					],
-				},
-			]
-		: []),
-	{
-		path: "/design",
-		element: (
-			<Suspense fallback={<PageLoader />}>
-				<DesignSystem />
-			</Suspense>
-		),
-	},
-	{
-		path: "/docs",
-		element: (
-			<Suspense fallback={<PageLoader />}>
-				<DocsLayout />
-			</Suspense>
-		),
+		element: <AppLayout />,
 		errorElement: <RouteError />,
 		children: [
-			{ index: true, element: <Navigate to="/docs/introduction" replace /> },
+			{ path: "/", element: <Landing /> },
+			{ path: "/login/*", element: <LoginRoute /> },
+
 			{
-				path: "introduction",
-				element: <MdxPage Component={IntroductionMdx} />,
+				element: <ContentShell />,
+				children: [
+					{ path: "/models", element: <Models /> },
+					{ path: "/providers", element: <Providers /> },
+				],
 			},
-			{ path: "quickstart", element: <MdxPage Component={QuickstartMdx} /> },
+
 			{
-				path: "models-routing",
-				element: <MdxPage Component={ModelsRoutingMdx} />,
+				path: "/chat",
+				element: (
+					<AuthGuard fallback={<Navigate to="/login" replace />}>
+						<Suspense fallback={<PageLoader />}>
+							<Chat />
+						</Suspense>
+					</AuthGuard>
+				),
 			},
+
 			{
-				path: "credentials-sharing",
-				element: <MdxPage Component={CredentialsSharingMdx} />,
+				path: "/docs",
+				element: (
+					<Suspense fallback={<PageLoader />}>
+						<DocsLayout />
+					</Suspense>
+				),
+				children: docsChildren,
 			},
-			{ path: "pricing", element: <MdxPage Component={PricingMdx} /> },
-			{ path: "credits", element: <MdxPage Component={CreditsMdx} /> },
+
 			{
-				path: "authentication",
-				element: <MdxPage Component={AuthenticationMdx} />,
+				path: "/dashboard",
+				element: (
+					<AuthGuard fallback={<Navigate to="/login" replace />}>
+						<Suspense fallback={<PageLoader />}>
+							<SidebarLayout />
+						</Suspense>
+					</AuthGuard>
+				),
+				children: dashboardChildren,
 			},
-			{ path: "openai-api", element: <MdxPage Component={OpenaiApiMdx} /> },
+
+			...(isPlatform
+				? [
+						{
+							path: "/admin",
+							element: (
+								<AuthGuard fallback={<Navigate to="/login" replace />}>
+									<Suspense fallback={<PageLoader />}>
+										<AdminLayout />
+									</Suspense>
+								</AuthGuard>
+							),
+							children: [
+								{ index: true, element: <Overview /> },
+								{ path: "users", element: <Users /> },
+								{ path: "data", element: <Data /> },
+							],
+						},
+					]
+				: []),
+
 			{
-				path: "anthropic-api",
-				element: <MdxPage Component={AnthropicApiMdx} />,
+				path: "/design",
+				element: (
+					<Suspense fallback={<PageLoader />}>
+						<DesignSystem />
+					</Suspense>
+				),
 			},
-			{ path: "models-api", element: <MdxPage Component={ModelsApiMdx} /> },
-			{ path: "credits-api", element: <MdxPage Component={CreditsApiMdx} /> },
-			{
-				path: "error-codes",
-				element: <MdxPage Component={ErrorCodesMdx} />,
-			},
-			{
-				path: "privacy-policy",
-				element: <MdxPage Component={PrivacyPolicyMdx} />,
-			},
-			{
-				path: "terms-of-service",
-				element: <MdxPage Component={TermsOfServiceMdx} />,
-			},
-			{ path: "contact", element: <MdxPage Component={ContactMdx} /> },
+
+			{ path: "*", element: <NotFound /> },
 		],
 	},
-	{ path: "*", element: <NotFound /> },
 ]);

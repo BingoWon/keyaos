@@ -5,7 +5,7 @@ export function NotFound() {
 	const { t } = useTranslation();
 
 	return (
-		<main className="grid min-h-screen place-items-center bg-white px-6 py-24 sm:py-32 lg:px-8 dark:bg-gray-900">
+		<main className="grid min-h-dvh place-items-center px-6 pt-14 pb-24 sm:pb-32 lg:px-8">
 			<div className="text-center">
 				<p className="text-base font-semibold text-brand-600 dark:text-brand-400">
 					404

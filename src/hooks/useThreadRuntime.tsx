@@ -56,6 +56,28 @@ const _timestampMap = new Map<string, number>();
 export function getThreadTimestamp(remoteId: string): number | undefined {
 	return _timestampMap.get(remoteId);
 }
+
+// ---------------------------------------------------------------------------
+// In-memory message cache (LRU, module-level)
+// ---------------------------------------------------------------------------
+type RawMessage = {
+	id: string;
+	role: string;
+	parts: unknown[];
+	createdAt: string;
+};
+
+const _messageCache = new Map<string, RawMessage[]>();
+const MAX_CACHED_THREADS = 50;
+
+function setMessageCache(remoteId: string, messages: RawMessage[]) {
+	_messageCache.delete(remoteId);
+	_messageCache.set(remoteId, messages);
+	if (_messageCache.size > MAX_CACHED_THREADS) {
+		const oldest = _messageCache.keys().next().value;
+		if (oldest) _messageCache.delete(oldest);
+	}
+}
 let _activeModel: string | null = null;
 const _listeners = new Set<() => void>();
 
@@ -108,48 +130,81 @@ function useKeyaosHistoryAdapter(
 			withFormat<TMessage, TStorageFormat extends Record<string, unknown>>(
 				formatAdapter: MessageFormatAdapter<TMessage, TStorageFormat>,
 			): GenericThreadHistoryAdapter<TMessage> {
+				function decodeRaw(
+					raw: RawMessage[],
+				): MessageFormatRepository<TMessage> {
+					if (!raw.length) return { messages: [] };
+					let lastId: string | null = null;
+					const messages = raw.map((m) => {
+						const entry: MessageStorageEntry<TStorageFormat> = {
+							id: m.id,
+							parent_id: lastId,
+							format: formatAdapter.format,
+							content: {
+								role: m.role,
+								parts: m.parts,
+							} as unknown as TStorageFormat,
+						};
+						lastId = m.id;
+						return formatAdapter.decode(entry);
+					});
+					const lastMsg = messages.at(-1);
+					return {
+						headId: lastMsg ? formatAdapter.getId(lastMsg.message) : undefined,
+						messages,
+					};
+				}
+
 				return {
 					async load(): Promise<MessageFormatRepository<TMessage>> {
 						const remoteId = aui.threadListItem().getState().remoteId;
 						if (!remoteId) return { messages: [] };
 
-						const headers = await h();
-						const data = await fetchApi<{
-							messages: {
-								id: string;
-								role: string;
-								parts: unknown[];
-								createdAt: string;
-							}[];
-						}>(`${b()}/${remoteId}/messages`, headers);
-						if (!data.messages?.length) return { messages: [] };
+						const cached = _messageCache.get(remoteId);
 
-						let lastId: string | null = null;
-						const messages: MessageFormatItem<TMessage>[] = data.messages.map(
-							(m) => {
-								const entry: MessageStorageEntry<TStorageFormat> = {
-									id: m.id,
-									parent_id: lastId,
-									format: formatAdapter.format,
-									content: {
-										role: m.role,
-										parts: m.parts,
-									} as unknown as TStorageFormat,
-								};
-								lastId = m.id;
-								return formatAdapter.decode(entry);
-							},
-						);
-
-						const lastMsg = messages.at(-1);
-						return {
-							headId: lastMsg
-								? formatAdapter.getId(lastMsg.message)
-								: undefined,
-							messages,
+						const doFetch = async (): Promise<RawMessage[]> => {
+							const headers = await h();
+							const data = await fetchApi<{
+								messages: RawMessage[];
+							}>(`${b()}/${remoteId}/messages`, headers);
+							const raw = data.messages ?? [];
+							setMessageCache(remoteId, raw);
+							return raw;
 						};
+
+						if (cached) {
+							doFetch().catch(() => {});
+							return decodeRaw(cached);
+						}
+
+						return decodeRaw(await doFetch());
 					},
-					async append() {},
+
+					async append(item: MessageFormatItem<TMessage>) {
+						const remoteId = aui.threadListItem().getState().remoteId;
+						if (!remoteId) return;
+
+						const encoded = formatAdapter.encode(item);
+						const id = formatAdapter.getId(item.message);
+						const raw: RawMessage = {
+							id,
+							role: (encoded as Record<string, unknown>).role as string,
+							parts: (encoded as Record<string, unknown>).parts as unknown[],
+							createdAt: new Date().toISOString(),
+						};
+
+						const cached = _messageCache.get(remoteId);
+						if (cached) {
+							const idx = cached.findIndex((m) => m.id === id);
+							if (idx !== -1) {
+								cached[idx] = raw;
+							} else {
+								cached.push(raw);
+							}
+						} else {
+							setMessageCache(remoteId, [raw]);
+						}
+					},
 				};
 			},
 		};
@@ -243,6 +298,7 @@ export function useThreadListAdapter(
 				await fetchApi(`${b()}/${remoteId}`, await h(), {
 					method: "DELETE",
 				});
+				_messageCache.delete(remoteId);
 			},
 			generateTitle: async (remoteId, messages) => {
 				const condensed = (

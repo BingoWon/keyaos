@@ -16,6 +16,7 @@ import { Sparkline, type SparklineData } from "../components/Sparkline";
 import { Badge, DualPrice } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
+import { DirectionBadge } from "../pages/Logs";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
 import {
@@ -132,9 +133,9 @@ export function Dashboard() {
 
 	return (
 		<div className="space-y-6">
-			<h3 className="text-base font-semibold text-gray-900 dark:text-white">
+			<h1 className="text-xl font-semibold text-gray-900 dark:text-white">
 				{t("dashboard.title")}
-			</h3>
+			</h1>
 
 			{/* Stats Cards */}
 			<dl
@@ -352,30 +353,32 @@ export function Dashboard() {
 						</Link>
 					</div>
 					<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
-						<thead>
-							<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500">
-								<th className="py-2.5 pl-5 pr-2">{t("logs.time")}</th>
-								<th className="px-2">{t("logs.model")}</th>
-								<th className="px-2">{t("logs.provider")}</th>
-								<th className="py-2.5 pl-2 pr-5 text-right">
-									{t("logs.credits")}
-								</th>
-							</tr>
-						</thead>
 						<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 							{recentLogs.map((tx) => (
-								<tr key={tx.id}>
-									<td className="py-2.5 pl-5 pr-2 text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
+								<tr
+									key={tx.id}
+									className="even:bg-gray-50/50 dark:even:bg-white/[0.015]"
+								>
+									<td className="whitespace-nowrap py-2.5 pl-4 pr-2 text-sm text-gray-500 dark:text-gray-400 sm:pl-5">
 										{formatDateTime(tx.createdAt)}
 									</td>
-									<td className="px-2 py-2.5 text-sm text-gray-900 dark:text-white">
+									<td className="whitespace-nowrap px-2 py-2.5">
+										<DirectionBadge direction={tx.direction} />
+									</td>
+									<td className="whitespace-nowrap px-2 py-2.5 text-sm font-medium text-gray-900 dark:text-white">
 										{tx.model_id}
 									</td>
-									<td className="px-2 py-2.5 text-sm text-gray-500 dark:text-gray-400">
+									<td className="whitespace-nowrap px-2 py-2.5 text-sm text-gray-500 dark:text-gray-400">
 										{tx.provider_id}
 									</td>
+									<td className="whitespace-nowrap px-2 py-2.5 text-sm text-right text-gray-500 dark:text-gray-400">
+										{tx.inputTokens.toLocaleString()}
+									</td>
+									<td className="whitespace-nowrap px-2 py-2.5 text-sm text-right text-gray-500 dark:text-gray-400">
+										{tx.outputTokens.toLocaleString()}
+									</td>
 									<td
-										className={`py-2.5 pl-2 pr-5 text-sm text-right font-medium whitespace-nowrap ${
+										className={`whitespace-nowrap py-2.5 pl-2 pr-4 text-sm text-right font-medium sm:pr-5 ${
 											tx.netCredits > 0
 												? "text-green-600 dark:text-green-400"
 												: tx.netCredits < 0

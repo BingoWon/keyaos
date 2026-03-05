@@ -276,7 +276,7 @@ export function Byok() {
 		<div>
 			<div className="sm:flex sm:items-center">
 				<div className="sm:flex-auto">
-					<h1 className="text-base font-semibold text-gray-900 dark:text-white">
+					<h1 className="text-xl font-semibold text-gray-900 dark:text-white">
 						{t("credentials.title")}
 					</h1>
 					<p className="mt-2 text-sm text-gray-700 dark:text-gray-300">

@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { Trans, useTranslation } from "react-i18next";
 import { useSearchParams } from "react-router-dom";
 import { useAuth } from "../auth";
+import { Pagination } from "../components/Pagination";
 import { Badge, Button, Input, PromoBanner } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
@@ -263,9 +264,9 @@ export function Credits() {
 		<div>
 			<div className="sm:flex sm:items-center sm:justify-between">
 				<div>
-					<h3 className="text-base font-semibold text-gray-900 dark:text-white">
+					<h1 className="text-xl font-semibold text-gray-900 dark:text-white">
 						{t("credits.title")}
-					</h3>
+					</h1>
 					<p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
 						{t("credits.subtitle")}
 					</p>
@@ -608,14 +609,20 @@ function TransactionsTable({
 	formatDateTime: (ts: number) => string;
 }) {
 	const { t } = useTranslation();
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(20);
+
+	const totalPages = Math.max(1, Math.ceil((entries?.length ?? 0) / pageSize));
+	const safePage = Math.min(page, totalPages);
+	const paged = entries?.slice((safePage - 1) * pageSize, safePage * pageSize);
 
 	if (loading)
 		return (
 			<div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
-				<div className="divide-y divide-gray-200 dark:divide-white/10">
+				<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 					{Array.from({ length: 6 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-						<div key={i} className="flex items-center gap-4 px-6 py-3.5">
+						<div key={i} className="flex items-center gap-4 px-5 py-2.5">
 							<div className="h-4 w-24 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
 							<div className="h-4 w-32 rounded bg-gray-100 dark:bg-white/5 animate-pulse flex-1" />
 							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
@@ -633,55 +640,69 @@ function TransactionsTable({
 		);
 
 	return (
-		<div className="mt-4 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
-			<table className="min-w-full divide-y divide-gray-200 dark:divide-white/10">
-				<thead className="bg-gray-50 dark:bg-white/5">
-					<tr>
-						<th className="py-3 pl-4 pr-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 sm:pl-6">
-							{t("credits.time")}
-						</th>
-						<th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-							{t("credits.type")}
-						</th>
-						<th className="px-3 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-							{t("credits.description")}
-						</th>
-						<th className="px-3 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 sm:pr-6">
-							{t("credits.amount")}
-						</th>
-					</tr>
-				</thead>
-				<tbody className="divide-y divide-gray-200 dark:divide-white/5">
-					{entries.map((e) => (
-						<tr key={`${e.type}-${e.id}`}>
-							<td className="whitespace-nowrap py-3 pl-4 pr-3 text-sm text-gray-500 dark:text-gray-400 sm:pl-6">
-								{formatDateTime(e.created_at)}
-							</td>
-							<td className="whitespace-nowrap px-3 py-3">
-								<CategoryBadge category={e.category} />
-							</td>
-							<td className="whitespace-nowrap px-3 py-3 text-sm text-gray-900 dark:text-white">
-								{e.description ||
-									(e.type === "adjustment"
-										? t("credits.admin_adjustment")
-										: "—")}
-							</td>
-							<td
-								className={`whitespace-nowrap px-3 py-3 text-sm text-right font-medium sm:pr-6 ${
-									e.amount > 0
-										? "text-green-600 dark:text-green-400"
-										: e.amount < 0
-											? "text-red-600 dark:text-red-400"
-											: "text-gray-400 dark:text-gray-500"
-								}`}
-							>
-								{formatSignedUSD(e.amount)}
-							</td>
+		<>
+			<div className="mt-4 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+					<thead>
+						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+							<th className="py-2.5 pl-4 pr-2 sm:pl-5">{t("credits.time")}</th>
+							<th className="px-2 py-2.5">{t("credits.type")}</th>
+							<th className="px-2 py-2.5">{t("credits.description")}</th>
+							<th className="py-2.5 pl-2 pr-4 text-right sm:pr-5">
+								{t("credits.amount")}
+							</th>
 						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
+					</thead>
+					<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+						{paged?.map((e) => (
+							<tr
+								key={`${e.type}-${e.id}`}
+								className="even:bg-gray-50/50 dark:even:bg-white/[0.015]"
+							>
+								<td className="whitespace-nowrap py-2.5 pl-4 pr-2 text-sm text-gray-500 dark:text-gray-400 sm:pl-5">
+									{formatDateTime(e.created_at)}
+								</td>
+								<td className="whitespace-nowrap px-2 py-2.5">
+									<CategoryBadge category={e.category} />
+								</td>
+								<td className="whitespace-nowrap px-2 py-2.5 text-sm text-gray-900 dark:text-white">
+									{e.description ||
+										(e.type === "adjustment"
+											? t("credits.admin_adjustment")
+											: "—")}
+								</td>
+								<td
+									className={`whitespace-nowrap py-2.5 pl-2 pr-4 text-sm text-right font-medium sm:pr-5 ${
+										e.amount > 0
+											? "text-green-600 dark:text-green-400"
+											: e.amount < 0
+												? "text-red-600 dark:text-red-400"
+												: "text-gray-400 dark:text-gray-500"
+									}`}
+								>
+									{formatSignedUSD(e.amount)}
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+			<div className="mt-3 flex items-center justify-between">
+				<span className="text-xs text-gray-500 dark:text-gray-400">
+					{entries.length} {t("credits.tab_transactions").toLowerCase()}
+				</span>
+				<Pagination
+					page={safePage}
+					totalPages={totalPages}
+					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={(s) => {
+						setPageSize(s);
+						setPage(1);
+					}}
+				/>
+			</div>
+		</>
 	);
 }
 
@@ -697,14 +718,20 @@ function PaymentsTable({
 	formatDateTime: (ts: number) => string;
 }) {
 	const { t } = useTranslation();
+	const [page, setPage] = useState(1);
+	const [pageSize, setPageSize] = useState(20);
+
+	const totalPages = Math.max(1, Math.ceil((entries?.length ?? 0) / pageSize));
+	const safePage = Math.min(page, totalPages);
+	const paged = entries?.slice((safePage - 1) * pageSize, safePage * pageSize);
 
 	if (loading)
 		return (
 			<div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
-				<div className="divide-y divide-gray-200 dark:divide-white/10">
+				<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 					{Array.from({ length: 5 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-						<div key={i} className="flex items-center gap-4 px-6 py-3.5">
+						<div key={i} className="flex items-center gap-4 px-5 py-2.5">
 							<div className="h-4 w-20 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
 							<div className="h-4 w-16 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
 							<div className="h-5 w-14 rounded-full bg-gray-100 dark:bg-white/5 animate-pulse" />
@@ -723,57 +750,71 @@ function PaymentsTable({
 		);
 
 	return (
-		<div className="mt-4 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
-			<table className="min-w-full divide-y divide-gray-200 dark:divide-white/10">
-				<thead className="bg-gray-50 dark:bg-white/5">
-					<tr>
-						<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-							{t("credits.time")}
-						</th>
-						<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-							{t("credits.amount")}
-						</th>
-						<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-							{t("credits.type")}
-						</th>
-						<th className="px-4 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400">
-							{t("credits.status")}
-						</th>
-					</tr>
-				</thead>
-				<tbody className="divide-y divide-gray-200 dark:divide-white/10">
-					{entries.map((p) => (
-						<tr key={p.id}>
-							<td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700 dark:text-gray-300">
-								{formatDateTime(p.created_at)}
-							</td>
-							<td className="whitespace-nowrap px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
-								{formatSignedUSD(p.credits)}
-							</td>
-							<td className="whitespace-nowrap px-4 py-3 text-sm">
-								<Badge variant={p.type === "auto" ? "accent" : "brand"}>
-									{t(`credits.type_${p.type || "manual"}`)}
-								</Badge>
-							</td>
-							<td className="whitespace-nowrap px-4 py-3 text-sm">
-								<span
-									className={
-										p.status === "completed"
-											? "text-green-600 dark:text-green-400"
-											: p.status === "pending"
-												? "text-yellow-600 dark:text-yellow-400"
-												: p.status === "failed"
-													? "text-red-600 dark:text-red-400"
-													: "text-gray-400 dark:text-gray-500"
-									}
-								>
-									{t(`credits.status_${p.status}`)}
-								</span>
-							</td>
+		<>
+			<div className="mt-4 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+					<thead>
+						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+							<th className="py-2.5 pl-4 pr-2 sm:pl-5">{t("credits.time")}</th>
+							<th className="px-2 py-2.5">{t("credits.amount")}</th>
+							<th className="px-2 py-2.5">{t("credits.type")}</th>
+							<th className="py-2.5 pl-2 pr-4 sm:pr-5">
+								{t("credits.status")}
+							</th>
 						</tr>
-					))}
-				</tbody>
-			</table>
-		</div>
+					</thead>
+					<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+						{paged?.map((p) => (
+							<tr
+								key={p.id}
+								className="even:bg-gray-50/50 dark:even:bg-white/[0.015]"
+							>
+								<td className="whitespace-nowrap py-2.5 pl-4 pr-2 text-sm text-gray-700 dark:text-gray-300 sm:pl-5">
+									{formatDateTime(p.created_at)}
+								</td>
+								<td className="whitespace-nowrap px-2 py-2.5 text-sm font-medium text-gray-900 dark:text-white">
+									{formatSignedUSD(p.credits)}
+								</td>
+								<td className="whitespace-nowrap px-2 py-2.5 text-sm">
+									<Badge variant={p.type === "auto" ? "accent" : "brand"}>
+										{t(`credits.type_${p.type || "manual"}`)}
+									</Badge>
+								</td>
+								<td className="whitespace-nowrap py-2.5 pl-2 pr-4 text-sm sm:pr-5">
+									<span
+										className={
+											p.status === "completed"
+												? "text-green-600 dark:text-green-400"
+												: p.status === "pending"
+													? "text-yellow-600 dark:text-yellow-400"
+													: p.status === "failed"
+														? "text-red-600 dark:text-red-400"
+														: "text-gray-400 dark:text-gray-500"
+										}
+									>
+										{t(`credits.status_${p.status}`)}
+									</span>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+			<div className="mt-3 flex items-center justify-between">
+				<span className="text-xs text-gray-500 dark:text-gray-400">
+					{entries.length} {t("credits.tab_payments").toLowerCase()}
+				</span>
+				<Pagination
+					page={safePage}
+					totalPages={totalPages}
+					onChange={setPage}
+					pageSize={pageSize}
+					onPageSizeChange={(s) => {
+						setPageSize(s);
+						setPage(1);
+					}}
+				/>
+			</div>
+		</>
 	);
 }

@@ -275,6 +275,7 @@ export function Credits() {
 
 			{/* Promo Banner */}
 			<PromoBanner
+				id="credits"
 				title={t("credits.promo_title")}
 				description={
 					<Trans

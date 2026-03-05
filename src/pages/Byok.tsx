@@ -309,6 +309,7 @@ export function Byok() {
 
 			{/* Promo Banner */}
 			<PromoBanner
+				id="byok"
 				title={t("credentials.promo_title")}
 				description={
 					<Trans

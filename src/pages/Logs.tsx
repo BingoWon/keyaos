@@ -89,6 +89,7 @@ export function Logs() {
 			</p>
 
 			<PromoBanner
+				id="logs"
 				title={t("logs.promo_title")}
 				description={
 					<Trans

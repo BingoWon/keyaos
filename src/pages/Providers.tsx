@@ -1,5 +1,6 @@
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link, useNavigate } from "react-router-dom";
 import { CopyButton } from "../components/CopyButton";
 import { ProviderChip } from "../components/ProviderLogo";
 import { RefreshControl } from "../components/RefreshControl";
@@ -14,19 +15,13 @@ import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
-import { lazyWithRetry } from "../utils/lazyWithRetry";
-import { aggregateProviders, type ProviderGroup } from "../utils/providers";
-
-const ProviderDetailModal = lazyWithRetry(() =>
-	import("../components/ProviderDetailModal").then((m) => ({
-		default: m.ProviderDetailModal,
-	})),
-);
+import { aggregateProviders } from "../utils/providers";
 
 const fmtMultiplier = (v: number) => `×${v.toFixed(2)}`;
 
 export function Providers() {
 	const { t } = useTranslation();
+	const navigate = useNavigate();
 	const {
 		data: models,
 		loading: modelsLoading,
@@ -52,7 +47,6 @@ export function Providers() {
 	);
 
 	const [query, setQuery] = useState("");
-	const [selected, setSelected] = useState<ProviderGroup | null>(null);
 
 	const filtered = useMemo(() => {
 		if (!query.trim()) return groups;
@@ -166,18 +160,25 @@ export function Providers() {
 							<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 								{filtered.map((g) => {
 									const spark = providerSparks?.[g.provider.id];
+									const href = `/providers/${g.provider.id}`;
 									return (
 										<tr
 											key={g.provider.id}
-											onClick={() => setSelected(g)}
+											onClick={(e) => {
+												if ((e.target as HTMLElement).closest("a, button"))
+													return;
+												navigate(href);
+											}}
 											className="even:bg-gray-50/50 hover:bg-gray-100/60 dark:even:bg-white/[0.015] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
 										>
 											<td className="py-2.5 pl-4 pr-2 sm:pl-5 whitespace-nowrap">
-												<ProviderChip
-													src={g.provider.logoUrl}
-													name={g.provider.name}
-													size={20}
-												/>
+												<Link to={href}>
+													<ProviderChip
+														src={g.provider.logoUrl}
+														name={g.provider.name}
+														size={20}
+													/>
+												</Link>
 											</td>
 											<td className="px-2 py-2.5 whitespace-nowrap">
 												<div className="flex items-center gap-1">
@@ -234,15 +235,6 @@ export function Providers() {
 						</p>
 					)}
 				</>
-			)}
-
-			{selected && (
-				<Suspense fallback={null}>
-					<ProviderDetailModal
-						group={selected}
-						onClose={() => setSelected(null)}
-					/>
-				</Suspense>
 			)}
 		</div>
 	);

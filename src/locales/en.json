@@ -214,7 +214,9 @@
 		"no_data": "No provider data available yet.",
 		"search_placeholder": "Search providers…",
 		"result_count": "{{count}} of {{total}} providers",
-		"no_match": "No providers matching \"{{query}}\""
+		"no_match": "No providers matching \"{{query}}\"",
+		"not_found": "Provider not found",
+		"back_to_list": "Back to providers"
 	},
 	"common_updated_at": "Updated at {{time}}",
 	"common_refresh": "Refresh",

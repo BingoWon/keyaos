@@ -211,7 +211,9 @@
 		"no_data": "暂无供应商数据。",
 		"search_placeholder": "搜索供应商…",
 		"result_count": "{{count}} / {{total}} 个供应商",
-		"no_match": "没有匹配 \"{{query}}\" 的供应商"
+		"no_match": "没有匹配 \"{{query}}\" 的供应商",
+		"not_found": "未找到供应商",
+		"back_to_list": "返回供应商列表"
 	},
 	"common_updated_at": "更新于 {{time}}",
 	"common_refresh": "刷新",

@@ -30,6 +30,11 @@ const ModelDetail = lazyWithRetry(() =>
 const Providers = lazyWithRetry(() =>
 	import("./pages/Providers").then((m) => ({ default: m.Providers })),
 );
+const ProviderDetail = lazyWithRetry(() =>
+	import("./pages/ProviderDetail").then((m) => ({
+		default: m.ProviderDetail,
+	})),
+);
 const ApiKeys = lazyWithRetry(() =>
 	import("./pages/ApiKeys").then((m) => ({ default: m.ApiKeys })),
 );
@@ -218,6 +223,10 @@ export const router = createBrowserRouter([
 				children: [
 					{ path: "/models", element: <Models /> },
 					{ path: "/providers", element: <Providers /> },
+					{
+						path: "/providers/:providerId",
+						element: <ProviderDetail />,
+					},
 					{ path: "/:org/:model", element: <ModelDetail /> },
 				],
 			},

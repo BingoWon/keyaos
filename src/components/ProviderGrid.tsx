@@ -1,14 +1,7 @@
-import { Suspense, useState } from "react";
-import { lazyWithRetry } from "../utils/lazyWithRetry";
+import { useNavigate } from "react-router-dom";
 import type { ProviderGroup } from "../utils/providers";
 import { ProviderChip } from "./ProviderLogo";
 import { Badge } from "./ui";
-
-const ProviderDetailModal = lazyWithRetry(() =>
-	import("./ProviderDetailModal").then((m) => ({
-		default: m.ProviderDetailModal,
-	})),
-);
 
 interface ProviderGridProps {
 	groups: ProviderGroup[];
@@ -16,31 +9,19 @@ interface ProviderGridProps {
 }
 
 export function ProviderGrid({ groups, center }: ProviderGridProps) {
-	const [selected, setSelected] = useState<ProviderGroup | null>(null);
+	const navigate = useNavigate();
 
 	return (
-		<>
-			<div
-				className={`flex flex-wrap gap-2.5 ${center ? "justify-center" : ""}`}
-			>
-				{groups.map((g) => (
-					<ProviderChip
-						key={g.provider.id}
-						src={g.provider.logoUrl}
-						name={g.provider.name}
-						badge={<Badge variant="brand">{g.models.length}</Badge>}
-						onClick={() => setSelected(g)}
-					/>
-				))}
-			</div>
-			{selected && (
-				<Suspense fallback={null}>
-					<ProviderDetailModal
-						group={selected}
-						onClose={() => setSelected(null)}
-					/>
-				</Suspense>
-			)}
-		</>
+		<div className={`flex flex-wrap gap-2.5 ${center ? "justify-center" : ""}`}>
+			{groups.map((g) => (
+				<ProviderChip
+					key={g.provider.id}
+					src={g.provider.logoUrl}
+					name={g.provider.name}
+					badge={<Badge variant="brand">{g.models.length}</Badge>}
+					onClick={() => navigate(`/providers/${g.provider.id}`)}
+				/>
+			))}
+		</div>
 	);
 }

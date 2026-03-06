@@ -166,39 +166,50 @@ export function Models() {
 					{t("models.no_data")}
 				</p>
 			) : (
-				<div className="mt-5 flex gap-6">
-					{/* Sidebar filters */}
-					<ModelFilters
-						groups={groups}
-						providerMap={providerMap}
-						filters={filters}
-						onChange={handleFiltersChange}
-					/>
+				<>
+					{/* Filter bar */}
+					<div className="mt-4">
+						<ModelFilters
+							groups={groups}
+							providerMap={providerMap}
+							filters={filters}
+							onChange={handleFiltersChange}
+						/>
+					</div>
 
-					{/* Main table */}
-					<div className="min-w-0 flex-1">
-						<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
-							<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
-								<thead>
-									<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
-										<th className="py-2.5 pl-4 pr-2 sm:pl-5">
-											{t("models.model")}
-										</th>
-										<th className="px-2 hidden lg:table-cell">Modalities</th>
-										<th className="px-2 hidden md:table-cell">24h Chart</th>
-										<th className="px-2 hidden md:table-cell">24h Range</th>
-										<th className="px-2 text-right">Input /1M</th>
-										<th className="px-2 text-right">Output /1M</th>
-										<th className="px-2 text-right hidden sm:table-cell">
-											{t("models.context")}
-										</th>
-										<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
-											Providers
-										</th>
+					{/* Table */}
+					<div className="mt-3 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
+						<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+							<thead>
+								<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+									<th className="py-2.5 pl-4 pr-2 sm:pl-5">
+										{t("models.model")}
+									</th>
+									<th className="px-2 hidden lg:table-cell">Modalities</th>
+									<th className="px-2 hidden md:table-cell">24h Chart</th>
+									<th className="px-2 hidden md:table-cell">24h Range</th>
+									<th className="px-2 text-right">Input /1M</th>
+									<th className="px-2 text-right">Output /1M</th>
+									<th className="px-2 text-right hidden sm:table-cell">
+										{t("models.context")}
+									</th>
+									<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
+										Providers
+									</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+								{paged.length === 0 ? (
+									<tr>
+										<td
+											colSpan={8}
+											className="py-12 text-center text-sm text-gray-400 dark:text-gray-500"
+										>
+											{t("models.no_match", { query: query || "—" })}
+										</td>
 									</tr>
-								</thead>
-								<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-									{paged.map((g) => {
+								) : (
+									paged.map((g) => {
 										const best = g.providers[0];
 										const maxCtx = Math.max(
 											...g.providers.map((p) => p.contextLength),
@@ -294,30 +305,31 @@ export function Models() {
 												</td>
 											</tr>
 										);
-									})}
-								</tbody>
-							</table>
-						</div>
-
-						<div className="mt-3 flex items-center justify-between">
-							<span className="text-xs text-gray-500 dark:text-gray-400">
-								{query || filtersActive
-									? t("models.result_count", {
-											count: filtered.length,
-											total: groups.length,
-										})
-									: t("models.total_count", { count: filtered.length })}
-							</span>
-							<Pagination
-								page={safePage}
-								totalPages={totalPages}
-								onChange={setPage}
-								pageSize={pageSize}
-								onPageSizeChange={handlePageSizeChange}
-							/>
-						</div>
+									})
+								)}
+							</tbody>
+						</table>
 					</div>
-				</div>
+
+					{/* Footer */}
+					<div className="mt-3 flex items-center justify-between">
+						<span className="text-xs text-gray-500 dark:text-gray-400">
+							{query || filtersActive
+								? t("models.result_count", {
+										count: filtered.length,
+										total: groups.length,
+									})
+								: t("models.total_count", { count: filtered.length })}
+						</span>
+						<Pagination
+							page={safePage}
+							totalPages={totalPages}
+							onChange={setPage}
+							pageSize={pageSize}
+							onPageSizeChange={handlePageSizeChange}
+						/>
+					</div>
+				</>
 			)}
 		</div>
 	);

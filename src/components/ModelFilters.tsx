@@ -1,5 +1,6 @@
+import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import {
-	AdjustmentsHorizontalIcon,
+	CheckIcon,
 	ChevronDownIcon,
 	XMarkIcon,
 } from "@heroicons/react/20/solid";
@@ -12,7 +13,7 @@ import { getOrgName, getOrgSlug } from "../utils/orgMeta";
 import { OrgLogo } from "./OrgLogo";
 import { ProviderLogo } from "./ProviderLogo";
 
-// ─── Types ───────────────────────────────────────────────
+// ─── Types & helpers ─────────────────────────────────────
 
 export interface ModelFiltersState {
 	inputModalities: Set<Modality>;
@@ -73,24 +74,20 @@ export function applyFilters(
 
 const ALL_MODALITIES: Modality[] = ["text", "image", "file", "audio", "video"];
 
-const CONTEXT_STEPS = [
-	{ value: 0, label: "Any" },
-	{ value: 4_096, label: "4K" },
-	{ value: 16_384, label: "16K" },
-	{ value: 32_768, label: "32K" },
-	{ value: 65_536, label: "64K" },
-	{ value: 131_072, label: "128K" },
-	{ value: 262_144, label: "256K" },
-	{ value: 524_288, label: "512K" },
-	{ value: 1_048_576, label: "1M" },
-	{ value: 2_097_152, label: "2M" },
+const CONTEXT_PRESETS: { value: number; label: string }[] = [
+	{ value: 4_096, label: "4K+" },
+	{ value: 16_384, label: "16K+" },
+	{ value: 32_768, label: "32K+" },
+	{ value: 65_536, label: "64K+" },
+	{ value: 131_072, label: "128K+" },
+	{ value: 262_144, label: "256K+" },
+	{ value: 524_288, label: "512K+" },
+	{ value: 1_048_576, label: "1M+" },
 ];
 
-const COLLAPSED_LIMIT = 5;
+// ─── Main component ─────────────────────────────────────
 
-// ─── Component ───────────────────────────────────────────
-
-interface ModelFiltersProps {
+interface Props {
 	groups: ModelGroup[];
 	providerMap: Map<string, ProviderMeta>;
 	filters: ModelFiltersState;
@@ -102,9 +99,8 @@ export function ModelFilters({
 	providerMap,
 	filters,
 	onChange,
-}: ModelFiltersProps) {
+}: Props) {
 	const { t } = useTranslation();
-	const [mobileOpen, setMobileOpen] = useState(false);
 
 	const orgOptions = useMemo(() => {
 		const counts = new Map<string, number>();
@@ -157,172 +153,244 @@ export function ModelFilters({
 	);
 
 	const setContextMin = useCallback(
-		(v: number) => onChange({ ...filters, contextMin: v }),
+		(v: number) =>
+			onChange({ ...filters, contextMin: v === filters.contextMin ? 0 : v }),
 		[filters, onChange],
 	);
 
-	const activeCount =
-		filters.inputModalities.size +
-		filters.outputModalities.size +
-		(filters.contextMin > 0 ? 1 : 0) +
-		filters.orgs.size +
-		filters.providers.size;
+	const empty = isFiltersEmpty(filters);
 
-	const contextIdx = CONTEXT_STEPS.findIndex(
-		(s) => s.value === filters.contextMin,
-	);
-	const contextLabel = CONTEXT_STEPS[contextIdx >= 0 ? contextIdx : 0].label;
-
-	const panel = (
-		<div className="space-y-5">
-			{activeCount > 0 && (
-				<button
-					type="button"
-					onClick={() => onChange(EMPTY_FILTERS)}
-					className="flex items-center gap-1 text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
-				>
-					<XMarkIcon className="size-3.5" />
-					{t("filters.clear_all")}
-				</button>
-			)}
-
-			<Section title={t("filters.input_modalities")}>
-				{ALL_MODALITIES.map((m) => (
-					<Checkbox
-						key={m}
-						label={<span className="capitalize">{m}</span>}
-						checked={filters.inputModalities.has(m)}
-						onChange={() => toggleModality("inputModalities", m)}
-					/>
-				))}
-			</Section>
-
-			<Section title={t("filters.output_modalities")}>
-				{ALL_MODALITIES.map((m) => (
-					<Checkbox
-						key={m}
-						label={<span className="capitalize">{m}</span>}
-						checked={filters.outputModalities.has(m)}
-						onChange={() => toggleModality("outputModalities", m)}
-					/>
-				))}
-			</Section>
-
-			<Section title={t("filters.context_length")}>
-				<div className="mb-1 text-xs text-gray-500 dark:text-gray-400">
-					≥ {contextLabel}
-				</div>
-				<input
-					type="range"
-					min={0}
-					max={CONTEXT_STEPS.length - 1}
-					step={1}
-					value={contextIdx >= 0 ? contextIdx : 0}
-					onChange={(e) =>
-						setContextMin(CONTEXT_STEPS[Number(e.target.value)].value)
-					}
-					className="w-full accent-brand-600"
-				/>
-				<div className="mt-0.5 flex justify-between text-[10px] text-gray-400 dark:text-gray-500">
-					<span>Any</span>
-					<span>2M</span>
-				</div>
-			</Section>
-
-			<Section title={t("filters.organization")}>
-				<CheckboxList
-					items={orgOptions}
-					selected={filters.orgs}
-					onToggle={(id) => toggleSet("orgs", id)}
-					renderIcon={(item) => <OrgLogo modelId={`${item.id}/`} size={14} />}
-					t={t}
-				/>
-			</Section>
-
-			<Section title={t("filters.provider")}>
-				<CheckboxList
-					items={providerOptions}
-					selected={filters.providers}
-					onToggle={(id) => toggleSet("providers", id)}
-					renderIcon={(item) =>
-						item.logoUrl ? (
-							<ProviderLogo src={item.logoUrl} name={item.name} size={14} />
-						) : null
-					}
-					t={t}
-				/>
-			</Section>
-		</div>
-	);
+	// Collect active tags for display
+	const tags: { key: string; label: string; onRemove: () => void }[] = [];
+	for (const m of filters.inputModalities) {
+		tags.push({
+			key: `in:${m}`,
+			label: `In: ${m}`,
+			onRemove: () => toggleModality("inputModalities", m),
+		});
+	}
+	for (const m of filters.outputModalities) {
+		tags.push({
+			key: `out:${m}`,
+			label: `Out: ${m}`,
+			onRemove: () => toggleModality("outputModalities", m),
+		});
+	}
+	if (filters.contextMin > 0) {
+		const preset = CONTEXT_PRESETS.find((p) => p.value === filters.contextMin);
+		tags.push({
+			key: "ctx",
+			label: `≥ ${preset?.label ?? `${filters.contextMin}`}`,
+			onRemove: () => onChange({ ...filters, contextMin: 0 }),
+		});
+	}
+	for (const slug of filters.orgs) {
+		tags.push({
+			key: `org:${slug}`,
+			label: getOrgName(slug),
+			onRemove: () => toggleSet("orgs", slug),
+		});
+	}
+	for (const pid of filters.providers) {
+		const name = providerMap.get(pid)?.name ?? pid;
+		tags.push({
+			key: `prov:${pid}`,
+			label: name,
+			onRemove: () => toggleSet("providers", pid),
+		});
+	}
 
 	return (
-		<>
-			{/* Mobile toggle */}
-			<button
-				type="button"
-				onClick={() => setMobileOpen((v) => !v)}
-				className="lg:hidden mb-3 inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-50 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
-			>
-				<AdjustmentsHorizontalIcon className="size-4" />
-				{t("filters.title")}
-				{activeCount > 0 && (
-					<span className="ml-0.5 inline-flex size-5 items-center justify-center rounded-full bg-brand-600 text-[10px] font-bold text-white">
-						{activeCount}
-					</span>
+		<div className="space-y-2.5">
+			{/* Filter buttons row */}
+			<div className="flex flex-wrap items-center gap-2">
+				{/* Input Modalities */}
+				<FilterPopover
+					label={t("filters.input_modalities")}
+					count={filters.inputModalities.size}
+				>
+					<div className="grid grid-cols-2 gap-1 p-2">
+						{ALL_MODALITIES.map((m) => (
+							<ToggleChip
+								key={m}
+								active={filters.inputModalities.has(m)}
+								onClick={() => toggleModality("inputModalities", m)}
+							>
+								<span className="capitalize">{m}</span>
+							</ToggleChip>
+						))}
+					</div>
+				</FilterPopover>
+
+				{/* Output Modalities */}
+				<FilterPopover
+					label={t("filters.output_modalities")}
+					count={filters.outputModalities.size}
+				>
+					<div className="grid grid-cols-2 gap-1 p-2">
+						{ALL_MODALITIES.map((m) => (
+							<ToggleChip
+								key={m}
+								active={filters.outputModalities.has(m)}
+								onClick={() => toggleModality("outputModalities", m)}
+							>
+								<span className="capitalize">{m}</span>
+							</ToggleChip>
+						))}
+					</div>
+				</FilterPopover>
+
+				{/* Context Length */}
+				<FilterPopover
+					label={t("filters.context_length")}
+					count={filters.contextMin > 0 ? 1 : 0}
+				>
+					<div className="grid grid-cols-2 gap-1 p-2">
+						{CONTEXT_PRESETS.map((p) => (
+							<ToggleChip
+								key={p.value}
+								active={filters.contextMin === p.value}
+								onClick={() => setContextMin(p.value)}
+							>
+								{p.label}
+							</ToggleChip>
+						))}
+					</div>
+				</FilterPopover>
+
+				{/* Organization */}
+				<FilterPopover
+					label={t("filters.organization")}
+					count={filters.orgs.size}
+					wide
+				>
+					<SearchableList
+						items={orgOptions}
+						selected={filters.orgs}
+						onToggle={(id) => toggleSet("orgs", id)}
+						renderIcon={(item) => <OrgLogo modelId={`${item.id}/`} size={16} />}
+					/>
+				</FilterPopover>
+
+				{/* Provider */}
+				<FilterPopover
+					label={t("filters.provider")}
+					count={filters.providers.size}
+					wide
+				>
+					<SearchableList
+						items={providerOptions}
+						selected={filters.providers}
+						onToggle={(id) => toggleSet("providers", id)}
+						renderIcon={(item) =>
+							item.logoUrl ? (
+								<ProviderLogo src={item.logoUrl} name={item.name} size={16} />
+							) : null
+						}
+					/>
+				</FilterPopover>
+
+				{/* Clear all */}
+				{!empty && (
+					<button
+						type="button"
+						onClick={() => onChange(EMPTY_FILTERS)}
+						className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:text-red-600 dark:text-gray-400 dark:hover:text-red-400"
+					>
+						<XMarkIcon className="size-3.5" />
+						{t("filters.clear_all")}
+					</button>
 				)}
-			</button>
+			</div>
 
-			{/* Mobile panel */}
-			{mobileOpen && <div className="lg:hidden mb-4">{panel}</div>}
-
-			{/* Desktop sidebar */}
-			<aside className="hidden lg:block w-56 shrink-0 sticky top-24">
-				{panel}
-			</aside>
-		</>
+			{/* Active filter tags */}
+			{tags.length > 0 && (
+				<div className="flex flex-wrap items-center gap-1.5">
+					{tags.map((tag) => (
+						<span
+							key={tag.key}
+							className="inline-flex items-center gap-1 rounded-full bg-brand-50 py-0.5 pl-2.5 pr-1 text-xs font-medium text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
+						>
+							{tag.label}
+							<button
+								type="button"
+								onClick={tag.onRemove}
+								className="rounded-full p-0.5 transition-colors hover:bg-brand-200/60 dark:hover:bg-brand-500/20"
+							>
+								<XMarkIcon className="size-3" />
+							</button>
+						</span>
+					))}
+				</div>
+			)}
+		</div>
 	);
 }
 
-// ─── Sub-components ──────────────────────────────────────
+// ─── Filter popover trigger ──────────────────────────────
 
-function Section({
-	title,
+function FilterPopover({
+	label,
+	count,
+	wide,
 	children,
 }: {
-	title: string;
+	label: string;
+	count: number;
+	wide?: boolean;
 	children: React.ReactNode;
 }) {
 	return (
-		<div>
-			<h3 className="mb-2 text-[11px] font-semibold tracking-wider text-gray-400 uppercase dark:text-gray-500">
-				{title}
-			</h3>
-			{children}
-		</div>
+		<Popover className="relative">
+			<PopoverButton className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow focus:outline-none data-[open]:border-brand-400 data-[open]:ring-1 data-[open]:ring-brand-400/30 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:border-white/20 dark:data-[open]:border-brand-500 dark:data-[open]:ring-brand-500/20">
+				{label}
+				{count > 0 && (
+					<span className="inline-flex size-4 items-center justify-center rounded-full bg-brand-600 text-[9px] font-bold text-white leading-none">
+						{count}
+					</span>
+				)}
+				<ChevronDownIcon className="size-3.5 text-gray-400 transition-transform ui-open:rotate-180" />
+			</PopoverButton>
+
+			<PopoverPanel
+				anchor="bottom start"
+				transition
+				className={`z-50 mt-1.5 rounded-xl border border-gray-200 bg-white shadow-lg ring-1 ring-black/5 transition duration-150 ease-out data-[closed]:scale-95 data-[closed]:opacity-0 dark:border-white/10 dark:bg-gray-900 dark:ring-white/5 ${wide ? "w-64" : "w-52"}`}
+			>
+				{children}
+			</PopoverPanel>
+		</Popover>
 	);
 }
 
-function Checkbox({
-	label,
-	checked,
-	onChange,
+// ─── Toggle chip (modalities & context) ──────────────────
+
+function ToggleChip({
+	active,
+	onClick,
+	children,
 }: {
-	label: React.ReactNode;
-	checked: boolean;
-	onChange: () => void;
+	active: boolean;
+	onClick: () => void;
+	children: React.ReactNode;
 }) {
 	return (
-		<label className="flex items-center gap-2 py-0.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none hover:text-gray-900 dark:hover:text-white">
-			<input
-				type="checkbox"
-				checked={checked}
-				onChange={onChange}
-				className="size-3.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500/30 dark:border-white/20 dark:bg-white/5"
-			/>
-			{label}
-		</label>
+		<button
+			type="button"
+			onClick={onClick}
+			className={`flex items-center justify-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-medium transition-all ${
+				active
+					? "bg-brand-600 text-white shadow-sm dark:bg-brand-500"
+					: "bg-gray-50 text-gray-600 hover:bg-gray-100 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10"
+			}`}
+		>
+			{active && <CheckIcon className="size-3" />}
+			{children}
+		</button>
 	);
 }
+
+// ─── Searchable list (org & provider) ────────────────────
 
 interface ListItem {
 	id: string;
@@ -331,61 +399,79 @@ interface ListItem {
 	[key: string]: unknown;
 }
 
-function CheckboxList<T extends ListItem>({
+function SearchableList<T extends ListItem>({
 	items,
 	selected,
 	onToggle,
 	renderIcon,
-	t,
 }: {
 	items: T[];
 	selected: Set<string>;
 	onToggle: (id: string) => void;
 	renderIcon: (item: T) => React.ReactNode;
-	t: (key: string, opts?: Record<string, unknown>) => string;
 }) {
-	const [expanded, setExpanded] = useState(false);
-	const visible = expanded ? items : items.slice(0, COLLAPSED_LIMIT);
-	const hasMore = items.length > COLLAPSED_LIMIT;
+	const [search, setSearch] = useState("");
+	const filtered = useMemo(() => {
+		if (!search.trim()) return items;
+		const q = search.toLowerCase();
+		return items.filter(
+			(i) => i.name.toLowerCase().includes(q) || i.id.toLowerCase().includes(q),
+		);
+	}, [items, search]);
 
 	return (
 		<div>
-			{visible.map((item) => (
-				<label
-					key={item.id}
-					className="flex items-center gap-2 py-0.5 text-sm text-gray-700 dark:text-gray-300 cursor-pointer select-none hover:text-gray-900 dark:hover:text-white"
-				>
+			{items.length > 6 && (
+				<div className="border-b border-gray-100 px-2 pt-2 pb-1.5 dark:border-white/5">
 					<input
-						type="checkbox"
-						checked={selected.has(item.id)}
-						onChange={() => onToggle(item.id)}
-						className="size-3.5 rounded border-gray-300 text-brand-600 focus:ring-brand-500/30 dark:border-white/20 dark:bg-white/5"
+						type="text"
+						value={search}
+						onChange={(e) => setSearch(e.target.value)}
+						placeholder="Search…"
+						className="w-full rounded-md border-0 bg-gray-50 px-2.5 py-1 text-xs text-gray-900 placeholder:text-gray-400 outline-none focus:ring-1 focus:ring-brand-400/40 dark:bg-white/5 dark:text-white dark:placeholder:text-gray-500"
 					/>
-					<span className="inline-flex min-w-0 flex-1 items-center gap-1.5 truncate">
-						{renderIcon(item)}
-						<span className="truncate">{item.name}</span>
-					</span>
-					<span className="text-[11px] tabular-nums text-gray-400 dark:text-gray-500">
-						{item.count}
-					</span>
-				</label>
-			))}
-			{hasMore && (
-				<button
-					type="button"
-					onClick={() => setExpanded((v) => !v)}
-					className="mt-1 flex items-center gap-0.5 text-xs font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
-				>
-					<ChevronDownIcon
-						className={`size-3.5 transition-transform ${expanded ? "rotate-180" : ""}`}
-					/>
-					{expanded
-						? t("filters.show_less")
-						: t("filters.show_more", {
-								count: items.length - COLLAPSED_LIMIT,
-							})}
-				</button>
+				</div>
 			)}
+			<div className="max-h-56 overflow-y-auto overscroll-contain py-1">
+				{filtered.length === 0 ? (
+					<p className="px-3 py-2 text-xs text-gray-400 dark:text-gray-500">
+						No match
+					</p>
+				) : (
+					filtered.map((item) => {
+						const active = selected.has(item.id);
+						return (
+							<button
+								key={item.id}
+								type="button"
+								onClick={() => onToggle(item.id)}
+								className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs transition-colors ${
+									active
+										? "bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
+										: "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
+								}`}
+							>
+								<span
+									className={`flex size-4 shrink-0 items-center justify-center rounded border transition-colors ${
+										active
+											? "border-brand-600 bg-brand-600 dark:border-brand-500 dark:bg-brand-500"
+											: "border-gray-300 dark:border-white/20"
+									}`}
+								>
+									{active && <CheckIcon className="size-3 text-white" />}
+								</span>
+								<span className="inline-flex min-w-0 flex-1 items-center gap-1.5 truncate">
+									{renderIcon(item)}
+									<span className="truncate">{item.name}</span>
+								</span>
+								<span className="tabular-nums text-[10px] text-gray-400 dark:text-gray-500">
+									{item.count}
+								</span>
+							</button>
+						);
+					})
+				)}
+			</div>
 		</div>
 	);
 }

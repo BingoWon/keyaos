@@ -18,21 +18,21 @@ const OUTPUT_DIR = "public/pagefind";
 
 // Section mapping: filename → { section, title fallback }
 const SECTION_MAP = {
-    quickstart: "User Guide",
-    "models-routing": "User Guide",
-    "credentials-sharing": "User Guide",
-    pricing: "User Guide",
-    billing: "User Guide",
-    authentication: "API Reference",
+    introduction: "Getting Started",
+    quickstart: "Getting Started",
+    authentication: "Getting Started",
+    "models-routing": "Concepts",
+    "credentials-sharing": "Concepts",
+    pricing: "Concepts",
+    credits: "Concepts",
     "openai-api": "API Reference",
     "anthropic-api": "API Reference",
-    "error-codes": "API Reference",
     "models-api": "API Reference",
     "credits-api": "API Reference",
-    "terms-of-service": "Support",
-    "privacy-policy": "Support",
-    contact: "Support",
-    introduction: "About",
+    "error-codes": "API Reference",
+    "terms-of-service": "Legal",
+    "privacy-policy": "Legal",
+    contact: "Legal",
 };
 
 /** Strip MDX/JSX syntax → plain text for indexing */

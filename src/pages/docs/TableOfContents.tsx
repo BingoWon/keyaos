@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "react-router-dom";
 import { classNames } from "../../utils/classNames";
 
@@ -11,6 +12,7 @@ interface TocItem {
 const SCROLL_OFFSET = 80;
 
 export function TableOfContents() {
+	const { t } = useTranslation();
 	const [items, setItems] = useState<TocItem[]>([]);
 	const [activeId, setActiveId] = useState<string>("");
 	const headingsRef = useRef<HTMLElement[]>([]);
@@ -64,7 +66,7 @@ export function TableOfContents() {
 	return (
 		<nav className="border-l border-gray-200 pl-4 text-sm dark:border-white/10">
 			<h4 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-900 dark:text-gray-200">
-				On this page
+				{t("docs.on_this_page")}
 			</h4>
 			<ul className="space-y-1.5">
 				{items.map((item) => (

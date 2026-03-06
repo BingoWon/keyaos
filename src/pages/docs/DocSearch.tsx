@@ -46,39 +46,45 @@ interface DocEntry {
 function buildFallbackIndex(t: (key: string) => string): DocEntry[] {
 	return [
 		{
+			url: "/docs/introduction",
+			title: t("docs.nav_introduction"),
+			section: t("docs.section_getting_started"),
+			excerpt: "",
+		},
+		{
 			url: "/docs/quickstart",
 			title: t("docs.nav_quickstart"),
-			section: t("docs.section_user_guide"),
-			excerpt: "",
-		},
-		{
-			url: "/docs/models-routing",
-			title: t("docs.nav_models_routing"),
-			section: t("docs.section_user_guide"),
-			excerpt: "",
-		},
-		{
-			url: "/docs/credentials-sharing",
-			title: t("docs.nav_credentials_sharing"),
-			section: t("docs.section_user_guide"),
-			excerpt: "",
-		},
-		{
-			url: "/docs/pricing",
-			title: t("docs.nav_pricing"),
-			section: t("docs.section_user_guide"),
-			excerpt: "",
-		},
-		{
-			url: "/docs/credits",
-			title: t("docs.nav_credits"),
-			section: t("docs.section_user_guide"),
+			section: t("docs.section_getting_started"),
 			excerpt: "",
 		},
 		{
 			url: "/docs/authentication",
 			title: t("docs.nav_authentication"),
-			section: t("docs.section_api_reference"),
+			section: t("docs.section_getting_started"),
+			excerpt: "",
+		},
+		{
+			url: "/docs/models-routing",
+			title: t("docs.nav_models_routing"),
+			section: t("docs.section_concepts"),
+			excerpt: "",
+		},
+		{
+			url: "/docs/credentials-sharing",
+			title: t("docs.nav_credentials_sharing"),
+			section: t("docs.section_concepts"),
+			excerpt: "",
+		},
+		{
+			url: "/docs/pricing",
+			title: t("docs.nav_pricing"),
+			section: t("docs.section_concepts"),
+			excerpt: "",
+		},
+		{
+			url: "/docs/credits",
+			title: t("docs.nav_credits"),
+			section: t("docs.section_concepts"),
 			excerpt: "",
 		},
 		{
@@ -90,12 +96,6 @@ function buildFallbackIndex(t: (key: string) => string): DocEntry[] {
 		{
 			url: "/docs/anthropic-api",
 			title: t("docs.nav_anthropic_api"),
-			section: t("docs.section_api_reference"),
-			excerpt: "",
-		},
-		{
-			url: "/docs/error-codes",
-			title: t("docs.nav_error_codes"),
 			section: t("docs.section_api_reference"),
 			excerpt: "",
 		},
@@ -112,21 +112,27 @@ function buildFallbackIndex(t: (key: string) => string): DocEntry[] {
 			excerpt: "",
 		},
 		{
+			url: "/docs/error-codes",
+			title: t("docs.nav_error_codes"),
+			section: t("docs.section_api_reference"),
+			excerpt: "",
+		},
+		{
 			url: "/docs/terms-of-service",
 			title: t("docs.nav_terms"),
-			section: t("docs.section_support"),
+			section: t("docs.section_legal"),
 			excerpt: "",
 		},
 		{
 			url: "/docs/privacy-policy",
 			title: t("docs.nav_privacy"),
-			section: t("docs.section_support"),
+			section: t("docs.section_legal"),
 			excerpt: "",
 		},
 		{
 			url: "/docs/contact",
 			title: t("docs.nav_contact"),
-			section: t("docs.section_support"),
+			section: t("docs.section_legal"),
 			excerpt: "",
 		},
 	];

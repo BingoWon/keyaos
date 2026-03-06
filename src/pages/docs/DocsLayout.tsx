@@ -5,7 +5,6 @@ import {
 	TransitionChild,
 } from "@headlessui/react";
 import {
-	BanknotesIcon,
 	Bars3Icon,
 	BookOpenIcon,
 	ChatBubbleLeftRightIcon,
@@ -26,7 +25,6 @@ import {
 	XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
-	BanknotesIcon as BanknotesIconSolid,
 	BookOpenIcon as BookOpenIconSolid,
 	ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
 	CodeBracketIcon as CodeBracketIconSolid,
@@ -56,6 +54,7 @@ type HeroIcon = ComponentType<SVGProps<SVGSVGElement>>;
 /* ── Page Copy Button ──────────────────────────────────── */
 
 function PageCopyButton() {
+	const { t } = useTranslation();
 	const [copied, setCopied] = useState(false);
 
 	const handleCopy = async () => {
@@ -75,12 +74,12 @@ function PageCopyButton() {
 			{copied ? (
 				<>
 					<CheckIcon className="size-3.5 text-green-500" />
-					<span>Copied</span>
+					<span>{t("docs.copied")}</span>
 				</>
 			) : (
 				<>
 					<ClipboardDocumentIcon className="size-3.5" />
-					<span>Copy page</span>
+					<span>{t("docs.copy_page")}</span>
 				</>
 			)}
 		</button>
@@ -168,7 +167,7 @@ export function DocsLayout() {
 
 	const navSections: NavSection[] = [
 		{
-			label: t("docs.section_about"),
+			label: t("docs.section_getting_started"),
 			items: [
 				{
 					name: t("docs.nav_introduction"),
@@ -176,17 +175,23 @@ export function DocsLayout() {
 					icon: SparklesIcon,
 					activeIcon: SparklesIconSolid,
 				},
-			],
-		},
-		{
-			label: t("docs.section_user_guide"),
-			items: [
 				{
 					name: t("docs.nav_quickstart"),
 					href: "/docs/quickstart",
 					icon: BookOpenIcon,
 					activeIcon: BookOpenIconSolid,
 				},
+				{
+					name: t("docs.nav_authentication"),
+					href: "/docs/authentication",
+					icon: KeyIcon,
+					activeIcon: KeyIconSolid,
+				},
+			],
+		},
+		{
+			label: t("docs.section_concepts"),
+			items: [
 				{
 					name: t("docs.nav_models_routing"),
 					href: "/docs/models-routing",
@@ -217,12 +222,6 @@ export function DocsLayout() {
 			label: t("docs.section_api_reference"),
 			items: [
 				{
-					name: t("docs.nav_authentication"),
-					href: "/docs/authentication",
-					icon: KeyIcon,
-					activeIcon: KeyIconSolid,
-				},
-				{
 					name: t("docs.nav_openai_api"),
 					href: "/docs/openai-api",
 					icon: CodeBracketIcon,
@@ -243,8 +242,8 @@ export function DocsLayout() {
 				{
 					name: t("docs.nav_credits_api"),
 					href: "/docs/credits-api",
-					icon: BanknotesIcon,
-					activeIcon: BanknotesIconSolid,
+					icon: CreditCardIcon,
+					activeIcon: CreditCardIconSolid,
 				},
 				{
 					name: t("docs.nav_error_codes"),
@@ -255,7 +254,7 @@ export function DocsLayout() {
 			],
 		},
 		{
-			label: t("docs.section_support"),
+			label: t("docs.section_legal"),
 			items: [
 				{
 					name: t("docs.nav_terms"),
@@ -344,9 +343,9 @@ export function DocsLayout() {
 
 			{/* Content area — below top nav, right of sidebar */}
 			<main className="min-h-dvh pt-14 lg:pl-60">
-				<div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+				<div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 lg:px-8">
 					<div className="lg:grid lg:grid-cols-[minmax(0,1fr)_200px] lg:gap-8 xl:grid-cols-[minmax(0,1fr)_220px]">
-						<div className="max-w-3xl">
+						<div className="min-w-0">
 							<div className="mb-6 flex justify-end">
 								<PageCopyButton />
 							</div>

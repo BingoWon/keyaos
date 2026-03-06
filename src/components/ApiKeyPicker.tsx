@@ -14,6 +14,8 @@ import type { ApiKeyInfo } from "../types/api-key";
 import { CreateApiKeyModal } from "./CreateApiKeyModal";
 import { Button } from "./ui";
 
+const NONE_SENTINEL = "__none__";
+
 interface ApiKeyPickerProps {
 	onChange: (plainKey: string | null) => void;
 }
@@ -53,6 +55,11 @@ export function ApiKeyPicker({ onChange }: ApiKeyPickerProps) {
 	};
 
 	const handleSelect = (val: string) => {
+		if (val === NONE_SENTINEL) {
+			setSelectedId(null);
+			onChange(null);
+			return;
+		}
 		setSelectedId(val);
 		revealAndNotify(val);
 	};
@@ -71,9 +78,9 @@ export function ApiKeyPicker({ onChange }: ApiKeyPickerProps) {
 	return (
 		<div className="flex items-center gap-2">
 			{enabledKeys.length > 0 && (
-				<Listbox value={selectedId} onChange={handleSelect}>
+				<Listbox value={selectedId ?? NONE_SENTINEL} onChange={handleSelect}>
 					<div className="relative">
-						<ListboxButton className="relative w-44 cursor-pointer rounded-lg border border-gray-200 bg-white py-1.5 pl-3 pr-8 text-left text-sm shadow-sm transition-colors hover:border-gray-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20">
+						<ListboxButton className="relative w-64 cursor-pointer rounded-lg border border-gray-200 bg-white py-1.5 pl-3 pr-8 text-left text-sm shadow-sm transition-colors hover:border-gray-300 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:hover:border-white/20">
 							<span
 								className={`block truncate ${
 									selectedKey
@@ -88,6 +95,12 @@ export function ApiKeyPicker({ onChange }: ApiKeyPickerProps) {
 							</span>
 						</ListboxButton>
 						<ListboxOptions className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border border-gray-200 bg-white py-1 text-sm shadow-lg focus:outline-none dark:border-white/10 dark:bg-gray-800">
+							<ListboxOption
+								value={NONE_SENTINEL}
+								className="cursor-pointer truncate px-3 py-1.5 text-gray-400 italic data-[focus]:bg-gray-50 dark:text-gray-500 dark:data-[focus]:bg-white/5"
+							>
+								{t("api_keys.none")}
+							</ListboxOption>
 							{enabledKeys.map((k) => (
 								<ListboxOption
 									key={k.id}

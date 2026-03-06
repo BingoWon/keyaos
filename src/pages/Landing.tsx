@@ -434,9 +434,7 @@ function CodeExample() {
 								<span className="text-gray-300">{"    "}</span>
 								<span className="text-orange-300">base_url</span>
 								<span className="text-gray-500">=</span>
-								<span className="text-amber-300">
-									"https://your-gateway.workers.dev/v1"
-								</span>
+								<span className="text-amber-300">"https://keyaos.com/v1"</span>
 								<span className="text-gray-500">,</span>
 								<span className="ml-2 text-gray-600">{"# ← just this"}</span>
 								{"\n"}

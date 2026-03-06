@@ -13,6 +13,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 
 /* ── Slug generation ──────────────────────────────────── */
@@ -115,6 +116,7 @@ function extractText(node: unknown): string {
 }
 
 function CodeBlock(props: ComponentPropsWithoutRef<"pre">) {
+	const { t } = useTranslation();
 	const [copied, setCopied] = useState(false);
 
 	// Extract language from child <code className="language-*">
@@ -151,12 +153,12 @@ function CodeBlock(props: ComponentPropsWithoutRef<"pre">) {
 					{copied ? (
 						<>
 							<CheckIcon className="size-3.5 text-green-400" />
-							<span>Copied</span>
+							<span>{t("docs.copied")}</span>
 						</>
 					) : (
 						<>
 							<ClipboardDocumentIcon className="size-3.5" />
-							<span>Copy</span>
+							<span>{t("common.copy")}</span>
 						</>
 					)}
 				</button>

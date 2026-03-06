@@ -83,3 +83,51 @@
 @utility animate-float-slow-reverse {
 	animation: float-slow-reverse 25s ease-in-out infinite;
 }
+
+/* Custom range slider for context length filter */
+.context-slider {
+	-webkit-appearance: none;
+	appearance: none;
+	height: 6px;
+	border-radius: 9999px;
+	background: linear-gradient(to right, #e0f2fe, #06b6d4, #0891b2);
+	outline: none;
+}
+.context-slider::-webkit-slider-thumb {
+	-webkit-appearance: none;
+	appearance: none;
+	width: 18px;
+	height: 18px;
+	border-radius: 9999px;
+	background: white;
+	border: 2px solid #0891b2;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+	cursor: pointer;
+	transition:
+		box-shadow 0.15s,
+		border-color 0.15s;
+}
+.context-slider::-webkit-slider-thumb:hover {
+	border-color: #0e7490;
+	box-shadow: 0 0 0 4px rgb(8 145 178 / 0.15);
+}
+.context-slider::-moz-range-thumb {
+	width: 18px;
+	height: 18px;
+	border-radius: 9999px;
+	background: white;
+	border: 2px solid #0891b2;
+	box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+	cursor: pointer;
+}
+:is(.dark) .context-slider {
+	background: linear-gradient(to right, #164e63, #0891b2, #22d3ee);
+}
+:is(.dark) .context-slider::-webkit-slider-thumb {
+	background: #1e293b;
+	border-color: #22d3ee;
+}
+:is(.dark) .context-slider::-moz-range-thumb {
+	background: #1e293b;
+	border-color: #22d3ee;
+}

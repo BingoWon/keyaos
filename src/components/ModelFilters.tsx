@@ -75,64 +75,105 @@ export function applyFilters(
 	});
 }
 
-// ─── Modality theme ──────────────────────────────────────
+// ─── Per-dropdown color themes (Tailwind official palette) ─
 
-const MODALITY_THEME: Record<
-	Modality,
-	{
-		icon: React.FC<{ className?: string }>;
-		active: string;
-		inactive: string;
-		tag: string;
-	}
-> = {
-	text: {
-		icon: ({ className }) => (
-			<Icon icon="solar:text-square-bold" className={className} />
-		),
-		active:
-			"bg-blue-600 text-white shadow-sm dark:bg-blue-500 ring-blue-600/20",
-		inactive:
-			"bg-blue-50 text-blue-700 hover:bg-blue-100 dark:bg-blue-500/10 dark:text-blue-300 dark:hover:bg-blue-500/20",
-		tag: "bg-blue-50 text-blue-700 dark:bg-blue-500/10 dark:text-blue-300",
-	},
-	image: {
-		icon: PhotoIcon,
-		active:
-			"bg-emerald-600 text-white shadow-sm dark:bg-emerald-500 ring-emerald-600/20",
-		inactive:
-			"bg-emerald-50 text-emerald-700 hover:bg-emerald-100 dark:bg-emerald-500/10 dark:text-emerald-300 dark:hover:bg-emerald-500/20",
-		tag: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-300",
-	},
-	file: {
-		icon: DocumentArrowUpIcon,
-		active:
-			"bg-amber-600 text-white shadow-sm dark:bg-amber-500 ring-amber-600/20",
-		inactive:
-			"bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20",
-		tag: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-	},
-	audio: {
-		icon: MicrophoneIcon,
-		active:
-			"bg-violet-600 text-white shadow-sm dark:bg-violet-500 ring-violet-600/20",
-		inactive:
-			"bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/20",
-		tag: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
-	},
-	video: {
-		icon: VideoCameraIcon,
-		active:
-			"bg-rose-600 text-white shadow-sm dark:bg-rose-500 ring-rose-600/20",
-		inactive:
-			"bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/20",
-		tag: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
-	},
+interface ColorTheme {
+	badge: string;
+	openBorder: string;
+	openRing: string;
+	chipActive: string;
+	chipInactive: string;
+	checkboxActive: string;
+	tag: string;
+	tagX: string;
+}
+
+const SKY: ColorTheme = {
+	badge: "bg-sky-500 text-white",
+	openBorder: "data-[open]:border-sky-400 dark:data-[open]:border-sky-500",
+	openRing:
+		"data-[open]:ring-1 data-[open]:ring-sky-400/30 dark:data-[open]:ring-sky-500/20",
+	chipActive: "bg-sky-500 text-white shadow-sm dark:bg-sky-500",
+	chipInactive:
+		"bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/15",
+	checkboxActive:
+		"border-sky-500 bg-sky-500 dark:border-sky-400 dark:bg-sky-500",
+	tag: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
+	tagX: "hover:bg-sky-200/60 dark:hover:bg-sky-500/20",
+};
+
+const VIOLET: ColorTheme = {
+	badge: "bg-violet-500 text-white",
+	openBorder:
+		"data-[open]:border-violet-400 dark:data-[open]:border-violet-500",
+	openRing:
+		"data-[open]:ring-1 data-[open]:ring-violet-400/30 dark:data-[open]:ring-violet-500/20",
+	chipActive: "bg-violet-500 text-white shadow-sm dark:bg-violet-500",
+	chipInactive:
+		"bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/15",
+	checkboxActive:
+		"border-violet-500 bg-violet-500 dark:border-violet-400 dark:bg-violet-500",
+	tag: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
+	tagX: "hover:bg-violet-200/60 dark:hover:bg-violet-500/20",
+};
+
+const TEAL: ColorTheme = {
+	badge: "bg-teal-500 text-white",
+	openBorder: "data-[open]:border-teal-400 dark:data-[open]:border-teal-500",
+	openRing:
+		"data-[open]:ring-1 data-[open]:ring-teal-400/30 dark:data-[open]:ring-teal-500/20",
+	chipActive: "bg-teal-500 text-white shadow-sm dark:bg-teal-500",
+	chipInactive:
+		"bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-500/10 dark:text-teal-300 dark:hover:bg-teal-500/15",
+	checkboxActive:
+		"border-teal-500 bg-teal-500 dark:border-teal-400 dark:bg-teal-500",
+	tag: "bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300",
+	tagX: "hover:bg-teal-200/60 dark:hover:bg-teal-500/20",
+};
+
+const AMBER: ColorTheme = {
+	badge: "bg-amber-500 text-white",
+	openBorder: "data-[open]:border-amber-400 dark:data-[open]:border-amber-500",
+	openRing:
+		"data-[open]:ring-1 data-[open]:ring-amber-400/30 dark:data-[open]:ring-amber-500/20",
+	chipActive: "bg-amber-500 text-white shadow-sm dark:bg-amber-500",
+	chipInactive:
+		"bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15",
+	checkboxActive:
+		"border-amber-500 bg-amber-500 dark:border-amber-400 dark:bg-amber-500",
+	tag: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
+	tagX: "hover:bg-amber-200/60 dark:hover:bg-amber-500/20",
+};
+
+const ROSE: ColorTheme = {
+	badge: "bg-rose-500 text-white",
+	openBorder: "data-[open]:border-rose-400 dark:data-[open]:border-rose-500",
+	openRing:
+		"data-[open]:ring-1 data-[open]:ring-rose-400/30 dark:data-[open]:ring-rose-500/20",
+	chipActive: "bg-rose-500 text-white shadow-sm dark:bg-rose-500",
+	chipInactive:
+		"bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15",
+	checkboxActive:
+		"border-rose-500 bg-rose-500 dark:border-rose-400 dark:bg-rose-500",
+	tag: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
+	tagX: "hover:bg-rose-200/60 dark:hover:bg-rose-500/20",
+};
+
+// ─── Modality icons ──────────────────────────────────────
+
+const MODALITY_ICON: Record<Modality, React.FC<{ className?: string }>> = {
+	text: ({ className }) => (
+		<Icon icon="solar:text-square-bold" className={className} />
+	),
+	image: PhotoIcon,
+	file: DocumentArrowUpIcon,
+	audio: MicrophoneIcon,
+	video: VideoCameraIcon,
 };
 
 const ALL_MODALITIES: Modality[] = ["text", "image", "file", "audio", "video"];
 
-// ─── Context ─────────────────────────────────────────────
+// ─── Context steps ───────────────────────────────────────
 
 const CONTEXT_STEPS = [
 	{ value: 0, label: "Any" },
@@ -226,18 +267,18 @@ export function ModelFilters({
 	);
 	const contextLabel = CONTEXT_STEPS[contextIdx >= 0 ? contextIdx : 0].label;
 
-	// ─── Active tags ─────────────────────────────────────
+	// ─── Build active tags ───────────────────────────────
 	const tags: {
 		key: string;
 		label: string;
-		color: string;
+		theme: ColorTheme;
 		onRemove: () => void;
 	}[] = [];
 	for (const m of filters.inputModalities) {
 		tags.push({
 			key: `in:${m}`,
 			label: `In: ${m}`,
-			color: MODALITY_THEME[m].tag,
+			theme: SKY,
 			onRemove: () => toggleModality("inputModalities", m),
 		});
 	}
@@ -245,7 +286,7 @@ export function ModelFilters({
 		tags.push({
 			key: `out:${m}`,
 			label: `Out: ${m}`,
-			color: MODALITY_THEME[m].tag,
+			theme: VIOLET,
 			onRemove: () => toggleModality("outputModalities", m),
 		});
 	}
@@ -254,7 +295,7 @@ export function ModelFilters({
 		tags.push({
 			key: "ctx",
 			label: `Context ≥ ${preset?.label ?? "?"}`,
-			color: "bg-cyan-50 text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300",
+			theme: TEAL,
 			onRemove: () => onChange({ ...filters, contextMin: 0 }),
 		});
 	}
@@ -262,17 +303,15 @@ export function ModelFilters({
 		tags.push({
 			key: `org:${slug}`,
 			label: getOrgName(slug),
-			color:
-				"bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300",
+			theme: AMBER,
 			onRemove: () => toggleSet("orgs", slug),
 		});
 	}
 	for (const pid of filters.providers) {
-		const name = providerMap.get(pid)?.name ?? pid;
 		tags.push({
 			key: `prov:${pid}`,
-			label: name,
-			color: "bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-300",
+			label: providerMap.get(pid)?.name ?? pid,
+			theme: ROSE,
 			onRemove: () => toggleSet("providers", pid),
 		});
 	}
@@ -281,55 +320,44 @@ export function ModelFilters({
 		<div className="space-y-2.5">
 			{/* Filter buttons row */}
 			<div className="flex flex-wrap items-center gap-2">
-				{/* Input Modalities */}
 				<FilterPopover
 					label={t("filters.input_modalities")}
 					count={filters.inputModalities.size}
+					theme={SKY}
 				>
 					<div className="flex flex-col gap-1 p-2">
-						{ALL_MODALITIES.map((m) => {
-							const theme = MODALITY_THEME[m];
-							const active = filters.inputModalities.has(m);
-							return (
-								<ModalityChip
-									key={m}
-									modality={m}
-									icon={theme.icon}
-									active={active}
-									activeClass={theme.active}
-									inactiveClass={theme.inactive}
-									onClick={() => toggleModality("inputModalities", m)}
-								/>
-							);
-						})}
+						{ALL_MODALITIES.map((m) => (
+							<ModalityChip
+								key={m}
+								modality={m}
+								icon={MODALITY_ICON[m]}
+								active={filters.inputModalities.has(m)}
+								theme={SKY}
+								onClick={() => toggleModality("inputModalities", m)}
+							/>
+						))}
 					</div>
 				</FilterPopover>
 
-				{/* Output Modalities */}
 				<FilterPopover
 					label={t("filters.output_modalities")}
 					count={filters.outputModalities.size}
+					theme={VIOLET}
 				>
 					<div className="flex flex-col gap-1 p-2">
-						{ALL_MODALITIES.map((m) => {
-							const theme = MODALITY_THEME[m];
-							const active = filters.outputModalities.has(m);
-							return (
-								<ModalityChip
-									key={m}
-									modality={m}
-									icon={theme.icon}
-									active={active}
-									activeClass={theme.active}
-									inactiveClass={theme.inactive}
-									onClick={() => toggleModality("outputModalities", m)}
-								/>
-							);
-						})}
+						{ALL_MODALITIES.map((m) => (
+							<ModalityChip
+								key={m}
+								modality={m}
+								icon={MODALITY_ICON[m]}
+								active={filters.outputModalities.has(m)}
+								theme={VIOLET}
+								onClick={() => toggleModality("outputModalities", m)}
+							/>
+						))}
 					</div>
 				</FilterPopover>
 
-				{/* Context Length — slider */}
 				<FilterPopover
 					label={
 						filters.contextMin > 0
@@ -337,11 +365,12 @@ export function ModelFilters({
 							: t("filters.context_length")
 					}
 					count={filters.contextMin > 0 ? 1 : 0}
+					theme={TEAL}
 					width="w-72"
 				>
 					<div className="px-4 pt-3 pb-4">
 						<div className="mb-3 text-center">
-							<span className="inline-block rounded-full bg-cyan-50 px-3 py-1 text-sm font-semibold tabular-nums text-cyan-700 dark:bg-cyan-500/10 dark:text-cyan-300">
+							<span className="inline-block rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold tabular-nums text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
 								≥ {contextLabel}
 							</span>
 						</div>
@@ -367,30 +396,32 @@ export function ModelFilters({
 					</div>
 				</FilterPopover>
 
-				{/* Organization */}
 				<FilterPopover
 					label={t("filters.organization")}
 					count={filters.orgs.size}
+					theme={AMBER}
 					width="w-64"
 				>
 					<SearchableList
 						items={orgOptions}
 						selected={filters.orgs}
 						onToggle={(id) => toggleSet("orgs", id)}
+						theme={AMBER}
 						renderIcon={(item) => <OrgLogo modelId={`${item.id}/`} size={16} />}
 					/>
 				</FilterPopover>
 
-				{/* Provider */}
 				<FilterPopover
 					label={t("filters.provider")}
 					count={filters.providers.size}
+					theme={ROSE}
 					width="w-64"
 				>
 					<SearchableList
 						items={providerOptions}
 						selected={filters.providers}
 						onToggle={(id) => toggleSet("providers", id)}
+						theme={ROSE}
 						renderIcon={(item) =>
 							item.logoUrl ? (
 								<ProviderLogo src={item.logoUrl} name={item.name} size={16} />
@@ -399,7 +430,6 @@ export function ModelFilters({
 					/>
 				</FilterPopover>
 
-				{/* Clear all */}
 				{!empty && (
 					<button
 						type="button"
@@ -418,13 +448,13 @@ export function ModelFilters({
 					{tags.map((tag) => (
 						<span
 							key={tag.key}
-							className={`inline-flex items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-xs font-medium ${tag.color}`}
+							className={`inline-flex items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-xs font-medium ${tag.theme.tag}`}
 						>
 							{tag.label}
 							<button
 								type="button"
 								onClick={tag.onRemove}
-								className="rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100"
+								className={`rounded-full p-0.5 opacity-60 transition-opacity hover:opacity-100 ${tag.theme.tagX}`}
 							>
 								<XMarkIcon className="size-3" />
 							</button>
@@ -441,20 +471,26 @@ export function ModelFilters({
 function FilterPopover({
 	label,
 	count,
+	theme,
 	width = "w-52",
 	children,
 }: {
 	label: string;
 	count: number;
+	theme: ColorTheme;
 	width?: string;
 	children: React.ReactNode;
 }) {
 	return (
 		<Popover className="relative">
-			<PopoverButton className="inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow focus:outline-none data-[open]:border-brand-400 data-[open]:ring-1 data-[open]:ring-brand-400/30 dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:border-white/20 dark:data-[open]:border-brand-500 dark:data-[open]:ring-brand-500/20">
+			<PopoverButton
+				className={`inline-flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-all hover:border-gray-300 hover:shadow focus:outline-none dark:border-white/10 dark:bg-white/5 dark:text-gray-300 dark:hover:border-white/20 ${theme.openBorder} ${theme.openRing}`}
+			>
 				{label}
 				{count > 0 && (
-					<span className="inline-flex size-4 items-center justify-center rounded-full bg-brand-600 text-[9px] font-bold text-white leading-none">
+					<span
+						className={`inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold leading-none ${theme.badge}`}
+					>
 						{count}
 					</span>
 				)}
@@ -472,28 +508,26 @@ function FilterPopover({
 	);
 }
 
-// ─── Modality chip with icon + color ─────────────────────
+// ─── Modality chip ───────────────────────────────────────
 
 function ModalityChip({
 	modality,
 	icon: IconComp,
 	active,
-	activeClass,
-	inactiveClass,
+	theme,
 	onClick,
 }: {
 	modality: Modality;
 	icon: React.FC<{ className?: string }>;
 	active: boolean;
-	activeClass: string;
-	inactiveClass: string;
+	theme: ColorTheme;
 	onClick: () => void;
 }) {
 	return (
 		<button
 			type="button"
 			onClick={onClick}
-			className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${active ? activeClass : inactiveClass}`}
+			className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${active ? theme.chipActive : theme.chipInactive}`}
 		>
 			<IconComp className="size-4" />
 			<span className="flex-1 text-left capitalize">{modality}</span>
@@ -515,11 +549,13 @@ function SearchableList<T extends ListItem>({
 	items,
 	selected,
 	onToggle,
+	theme,
 	renderIcon,
 }: {
 	items: T[];
 	selected: Set<string>;
 	onToggle: (id: string) => void;
+	theme: ColorTheme;
 	renderIcon: (item: T) => React.ReactNode;
 }) {
 	const [search, setSearch] = useState("");
@@ -559,14 +595,14 @@ function SearchableList<T extends ListItem>({
 								onClick={() => onToggle(item.id)}
 								className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs transition-colors ${
 									active
-										? "bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-300"
+										? `${theme.tag}`
 										: "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
 								}`}
 							>
 								<span
 									className={`flex size-4 shrink-0 items-center justify-center rounded border transition-colors ${
 										active
-											? "border-brand-600 bg-brand-600 dark:border-brand-500 dark:bg-brand-500"
+											? theme.checkboxActive
 											: "border-gray-300 dark:border-white/20"
 									}`}
 								>

@@ -9,15 +9,9 @@ import {
 	SignalIcon,
 	UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import {
-	type ComponentType,
-	Suspense,
-	type SVGProps,
-	useMemo,
-	useState,
-} from "react";
+import { type ComponentType, type SVGProps, useMemo } from "react";
 import { useTranslation } from "react-i18next";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../auth";
 import { CopyButton } from "../components/CopyButton";
 import { Logo } from "../components/Logo";
@@ -29,15 +23,8 @@ import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
 import { formatContext, formatRelativeTime } from "../utils/format";
-import { lazyWithRetry } from "../utils/lazyWithRetry";
-import { aggregateModels, type ModelGroup } from "../utils/models";
+import { aggregateModels } from "../utils/models";
 import { aggregateProviders } from "../utils/providers";
-
-const ModelDetailModal = lazyWithRetry(() =>
-	import("../components/ModelDetailModal").then((m) => ({
-		default: m.ModelDetailModal,
-	})),
-);
 
 const GITHUB_URL = "https://github.com/BingoWon/Keyaos";
 
@@ -129,6 +116,7 @@ const LANDING_MODELS_LIMIT = 8;
 
 function PlatformShowcase() {
 	const { t, i18n } = useTranslation();
+	const navigate = useNavigate();
 
 	const { data: providers } = useFetch<ProviderMeta[]>("/api/providers", {
 		requireAuth: false,
@@ -155,8 +143,6 @@ function PlatformShowcase() {
 		() => aggregateModels(models ?? []).slice(0, LANDING_MODELS_LIMIT),
 		[models],
 	);
-
-	const [selectedModel, setSelectedModel] = useState<ModelGroup | null>(null);
 
 	if (!providerGroups.length && !modelGroups.length) return null;
 
@@ -191,7 +177,7 @@ function PlatformShowcase() {
 										return (
 											<tr
 												key={g.id}
-												onClick={() => setSelectedModel(g)}
+												onClick={() => navigate(`/${g.id}`)}
 												className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
 											>
 												<td className="py-3 pl-5 pr-2">
@@ -268,16 +254,6 @@ function PlatformShowcase() {
 						</div>
 					</div>
 				</section>
-			)}
-
-			{selectedModel && (
-				<Suspense fallback={null}>
-					<ModelDetailModal
-						group={selectedModel}
-						providerMap={providerMap}
-						onClose={() => setSelectedModel(null)}
-					/>
-				</Suspense>
 			)}
 		</>
 	);

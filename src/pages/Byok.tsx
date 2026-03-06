@@ -28,6 +28,7 @@ import { Button, Input, PromoBanner } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
 import type { CredentialGuide, ProviderMeta } from "../types/provider";
+import { TOKENS } from "../utils/colors";
 import { formatUSD } from "../utils/format";
 
 interface CredentialInfo {
@@ -449,8 +450,8 @@ export function Byok() {
 							<p
 								className={`mt-1.5 flex items-center gap-1 text-xs ${
 									secretHint.type === "json"
-										? "text-green-600 dark:text-green-400"
-										: "text-amber-600 dark:text-amber-400"
+										? TOKENS.green.text
+										: TOKENS.amber.text
 								}`}
 							>
 								<InformationCircleIcon className="size-4 shrink-0" />
@@ -688,7 +689,7 @@ export function Byok() {
 															<button
 																type="button"
 																onClick={() => handleUpdateQuota(cred.id)}
-																className="text-green-600 hover:text-green-900 dark:text-green-400"
+																className={`${TOKENS.green.text} ${TOKENS.green.textHover}`}
 																title={t("common.save")}
 															>
 																<CheckIcon className="size-5" />
@@ -696,7 +697,7 @@ export function Byok() {
 															<button
 																type="button"
 																onClick={() => setEditingId(null)}
-																className="text-red-500 hover:text-red-700 dark:text-red-400"
+																className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
 																title={t("common.cancel")}
 															>
 																<XMarkIcon className="size-5" />
@@ -710,8 +711,8 @@ export function Byok() {
 																	: cred.quota == null
 																		? "text-gray-400 dark:text-gray-500"
 																		: cred.quota > 0
-																			? "text-green-600 dark:text-green-400"
-																			: "text-red-500 dark:text-red-400"
+																			? TOKENS.green.text
+																			: TOKENS.red.text
 															}`}
 														>
 															{formatQuota(cred)}
@@ -769,7 +770,7 @@ export function Byok() {
 																	);
 																	setEditingSettingsId(null);
 																}}
-																className="text-green-600 hover:text-green-900 dark:text-green-400"
+																className={`${TOKENS.green.text} ${TOKENS.green.textHover}`}
 																title={t("common.save")}
 															>
 																<CheckIcon className="size-5" />
@@ -777,8 +778,7 @@ export function Byok() {
 															<button
 																type="button"
 																onClick={() => setEditingSettingsId(null)}
-																className="text-red-500 hover:text-red-700 dark:text-red-400"
-																title={t("common.cancel")}
+																className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
 															>
 																<XMarkIcon className="size-5" />
 															</button>
@@ -837,7 +837,7 @@ export function Byok() {
 													<button
 														type="button"
 														onClick={() => handleDelete(cred.id)}
-														className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+														className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
 													>
 														{t("common.delete")}
 													</button>
@@ -995,7 +995,7 @@ function CopyPromptButton({ providerId }: { providerId: string }) {
 					navigator.clipboard.writeText(prompt);
 					toast.success(t("credentials.copied"));
 				}}
-				className="shrink-0 inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100 dark:border-amber-500/20 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/20"
+				className={`shrink-0 inline-flex items-center gap-1 rounded-lg border px-2 py-1 text-xs font-medium transition-colors ${TOKENS.amber.outline} ${TOKENS.amber.softHover}`}
 			>
 				<ClipboardDocumentIcon className="size-3.5" />
 				{t("credentials.copy_prompt")}

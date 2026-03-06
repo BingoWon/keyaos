@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { Modality } from "../../worker/core/db/schema";
 import { useAuth } from "../auth";
+import { TOKENS } from "../utils/colors";
 import { ApiKeyPicker } from "./ApiKeyPicker";
 
 /* ── Types ──────────────────────────────────────────── */
@@ -446,7 +447,7 @@ export function CodeSamples({ modelId, variant }: CodeSamplesProps) {
 						>
 							{copied ? (
 								<>
-									<CheckIcon className="size-3.5 text-green-400" />
+									<CheckIcon className={`size-3.5 ${TOKENS.green.text}`} />
 									<span>{t("api_keys.copied")}</span>
 								</>
 							) : (

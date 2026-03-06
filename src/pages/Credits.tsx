@@ -18,6 +18,7 @@ import { Pagination } from "../components/Pagination";
 import { Badge, Button, Input, PromoBanner } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
+import { TOKENS, type TokenName } from "../utils/colors";
 import { formatSignedUSD, formatUSD } from "../utils/format";
 
 const PRESETS = [500, 1000, 2000, 5000] as const;
@@ -56,47 +57,28 @@ type HistoryTab = "payments" | "transactions";
 
 const CATEGORY_CONFIG: Record<
 	string,
-	{
-		icon: typeof ArrowUpTrayIcon;
-		colorClass: string;
-		bgClass: string;
-		labelKey: string;
-	}
+	{ icon: typeof ArrowUpTrayIcon; color: TokenName; labelKey: string }
 > = {
 	api_spend: {
 		icon: ArrowUpTrayIcon,
-		colorClass: "text-red-700 dark:text-red-400",
-		bgClass: "bg-red-50 dark:bg-red-900/30",
+		color: "red",
 		labelKey: "credits.api_spend",
 	},
 	credential_earn: {
 		icon: ArrowDownTrayIcon,
-		colorClass: "text-green-700 dark:text-green-400",
-		bgClass: "bg-green-50 dark:bg-green-900/30",
+		color: "green",
 		labelKey: "credits.credential_earn",
 	},
-	top_up: {
-		icon: CreditCardIcon,
-		colorClass: "text-blue-700 dark:text-blue-400",
-		bgClass: "bg-blue-50 dark:bg-blue-900/30",
-		labelKey: "credits.top_up",
-	},
+	top_up: { icon: CreditCardIcon, color: "blue", labelKey: "credits.top_up" },
 	auto_topup: {
 		icon: ArrowPathIcon,
-		colorClass: "text-violet-700 dark:text-violet-400",
-		bgClass: "bg-violet-50 dark:bg-violet-900/30",
+		color: "violet",
 		labelKey: "credits.auto_topup_label",
 	},
-	grant: {
-		icon: BanknotesIcon,
-		colorClass: "text-emerald-700 dark:text-emerald-400",
-		bgClass: "bg-emerald-50 dark:bg-emerald-900/30",
-		labelKey: "credits.grant",
-	},
+	grant: { icon: BanknotesIcon, color: "teal", labelKey: "credits.grant" },
 	revoke: {
 		icon: WrenchScrewdriverIcon,
-		colorClass: "text-orange-700 dark:text-orange-400",
-		bgClass: "bg-orange-50 dark:bg-orange-900/30",
+		color: "amber",
 		labelKey: "credits.revoke",
 	},
 };
@@ -108,7 +90,7 @@ function CategoryBadge({ category }: { category: string }) {
 
 	return (
 		<span
-			className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${config.bgClass} ${config.colorClass}`}
+			className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${TOKENS[config.color].soft}`}
 		>
 			<Ic className="size-3" />
 			{t(config.labelKey)}
@@ -458,7 +440,9 @@ export function Credits() {
 					</div>
 
 					{autoConfig?.pausedReason && (
-						<div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+						<div
+							className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${TOKENS.amber.soft}`}
+						>
 							<ExclamationTriangleIcon className="size-4 shrink-0" />
 							{t("credits.auto_topup_paused", {
 								reason: autoConfig.pausedReason,
@@ -468,7 +452,9 @@ export function Credits() {
 
 					{!autoConfig?.pausedReason &&
 						(autoConfig?.consecutiveFailures ?? 0) > 0 && (
-							<div className="mt-3 flex items-center gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-700 dark:bg-amber-500/10 dark:text-amber-400">
+							<div
+								className={`mt-3 flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${TOKENS.amber.soft}`}
+							>
 								<ExclamationTriangleIcon className="size-4 shrink-0" />
 								{t("credits.auto_topup_failing", {
 									count: autoConfig?.consecutiveFailures,
@@ -483,7 +469,9 @@ export function Credits() {
 							<div className="h-10 w-full rounded-lg bg-gray-100 dark:bg-white/5 animate-pulse" />
 						</div>
 					) : !autoConfig?.hasCard ? (
-						<div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-500/30 dark:bg-amber-500/10 dark:text-amber-300">
+						<div
+							className={`mt-3 rounded-lg border px-4 py-3 text-sm ${TOKENS.amber.outline}`}
+						>
 							{t("credits.auto_topup_no_card")}
 						</div>
 					) : (
@@ -709,9 +697,9 @@ function TransactionsTable({
 								<td
 									className={`whitespace-nowrap py-2.5 pl-2 pr-4 text-sm text-right font-medium sm:pr-5 ${
 										e.amount > 0
-											? "text-green-600 dark:text-green-400"
+											? TOKENS.green.text
 											: e.amount < 0
-												? "text-red-600 dark:text-red-400"
+												? TOKENS.red.text
 												: "text-gray-400 dark:text-gray-500"
 									}`}
 								>
@@ -812,11 +800,11 @@ function PaymentsTable({
 									<span
 										className={
 											p.status === "completed"
-												? "text-green-600 dark:text-green-400"
+												? TOKENS.green.text
 												: p.status === "pending"
-													? "text-yellow-600 dark:text-yellow-400"
+													? TOKENS.yellow.text
 													: p.status === "failed"
-														? "text-red-600 dark:text-red-400"
+														? TOKENS.red.text
 														: "text-gray-400 dark:text-gray-500"
 										}
 									>

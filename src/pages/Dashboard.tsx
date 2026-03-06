@@ -21,6 +21,7 @@ import { useFormatDateTime } from "../hooks/useFormatDateTime";
 import type { LogEntry } from "../types/log";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
+import { TOKENS } from "../utils/colors";
 import {
 	formatContext,
 	formatRelativeTime,
@@ -378,9 +379,9 @@ export function Dashboard() {
 									<td
 										className={`whitespace-nowrap py-2.5 pl-2 pr-4 text-sm text-right font-medium sm:pr-5 ${
 											tx.netCredits > 0
-												? "text-green-600 dark:text-green-400"
+												? TOKENS.green.text
 												: tx.netCredits < 0
-													? "text-red-600 dark:text-red-400"
+													? TOKENS.red.text
 													: "text-gray-400 dark:text-gray-500"
 										}`}
 									>

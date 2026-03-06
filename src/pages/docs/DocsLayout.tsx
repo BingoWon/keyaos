@@ -46,6 +46,7 @@ import { useTranslation } from "react-i18next";
 import { NavLink, Outlet } from "react-router-dom";
 import { PageLoader } from "../../components/PageLoader";
 import { classNames } from "../../utils/classNames";
+import { TOKENS } from "../../utils/colors";
 import { DocSearch } from "./DocSearch";
 import { TableOfContents } from "./TableOfContents";
 
@@ -73,7 +74,7 @@ function PageCopyButton() {
 		>
 			{copied ? (
 				<>
-					<CheckIcon className="size-3.5 text-green-500" />
+					<CheckIcon className={`size-3.5 ${TOKENS.green.text}`} />
 					<span>{t("docs.copied")}</span>
 				</>
 			) : (

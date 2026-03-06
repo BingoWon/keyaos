@@ -4,6 +4,7 @@ import {
 	ArrowUpTrayIcon,
 } from "@heroicons/react/24/outline";
 import { useTranslation } from "react-i18next";
+import { TOKENS } from "../utils/colors";
 
 export function DirectionBadge({
 	direction,
@@ -14,7 +15,9 @@ export function DirectionBadge({
 
 	if (direction === "earned") {
 		return (
-			<span className="inline-flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+			<span
+				className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${TOKENS.green.soft}`}
+			>
 				<ArrowDownTrayIcon className="size-3" />
 				{t("logs.earned")}
 			</span>
@@ -22,7 +25,9 @@ export function DirectionBadge({
 	}
 	if (direction === "spent") {
 		return (
-			<span className="inline-flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-900/30 dark:text-red-400">
+			<span
+				className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${TOKENS.red.soft}`}
+			>
 				<ArrowUpTrayIcon className="size-3" />
 				{t("logs.spent")}
 			</span>

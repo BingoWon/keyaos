@@ -18,6 +18,7 @@ import { Button } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
 import type { ApiKeyInfo } from "../types/api-key";
+import { TOKENS } from "../utils/colors";
 
 export function ApiKeys() {
 	const { t } = useTranslation();
@@ -241,7 +242,7 @@ export function ApiKeys() {
 																onClick={() =>
 																	handleUpdate(k.id, { name: editName })
 																}
-																className="text-green-600 hover:text-green-900 dark:text-green-400"
+																className={`${TOKENS.green.text} ${TOKENS.green.textHover}`}
 																title={t("common.save")}
 															>
 																<CheckIcon className="size-5" />
@@ -249,7 +250,7 @@ export function ApiKeys() {
 															<button
 																type="button"
 																onClick={() => setEditingId(null)}
-																className="text-red-500 hover:text-red-700 dark:text-red-400"
+																className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
 																title={t("common.cancel")}
 															>
 																<XMarkIcon className="size-5" />
@@ -326,7 +327,7 @@ export function ApiKeys() {
 													<button
 														type="button"
 														onClick={() => handleDelete(k.id)}
-														className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
+														className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
 													>
 														{t("common.delete")}
 													</button>

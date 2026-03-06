@@ -34,7 +34,7 @@ export function RouteError() {
 	return (
 		<main className="grid min-h-screen place-items-center bg-white px-6 py-24 dark:bg-gray-900">
 			<div className="text-center max-w-lg">
-				<div className="mx-auto flex size-14 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30">
+				<div className="mx-auto flex size-14 items-center justify-center rounded-full bg-red-50 dark:bg-red-500/10">
 					<svg
 						className="size-6 text-red-600 dark:text-red-400"
 						fill="none"

@@ -1,6 +1,7 @@
 import { ArrowPathIcon, CheckIcon } from "@heroicons/react/20/solid";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { TOKENS } from "../utils/colors";
 import { formatTimestamp } from "../utils/format";
 import { Button } from "./ui";
 
@@ -49,7 +50,7 @@ export function RefreshControl({
 			)}
 			<Button onClick={handleClick} className="shrink-0">
 				{showCheck ? (
-					<CheckIcon className="-ml-0.5 size-5 text-emerald-500 dark:text-emerald-400" />
+					<CheckIcon className={`-ml-0.5 size-5 ${TOKENS.green.text}`} />
 				) : (
 					<ArrowPathIcon
 						className={`-ml-0.5 size-5 ${loading ? "animate-spin" : ""}`}

@@ -23,6 +23,7 @@ import {
 import type { FC } from "react";
 import { useTranslation } from "react-i18next";
 import { classNames } from "../../utils/classNames";
+import { TOKENS } from "../../utils/colors";
 import { ComposerAttachment, UserMessageAttachment } from "./ChatAttachment";
 import { ChatMarkdown } from "./ChatMarkdown";
 
@@ -153,7 +154,9 @@ const ComposerAction: FC<{ allowAttachments?: boolean }> = ({
 
 const MessageError: FC = () => (
 	<MessagePrimitive.Error>
-		<ErrorPrimitive.Root className="mt-2 rounded-md border border-red-300 bg-red-50 p-3 text-sm text-red-700 dark:border-red-500/30 dark:bg-red-500/5 dark:text-red-200">
+		<ErrorPrimitive.Root
+			className={`mt-2 rounded-md border p-3 text-sm ${TOKENS.red.outline}`}
+		>
 			<ErrorPrimitive.Message className="line-clamp-2" />
 		</ErrorPrimitive.Root>
 	</MessagePrimitive.Error>
@@ -202,7 +205,7 @@ const AssistantActionBar: FC = () => (
 				className="rounded-md p-1 transition-colors hover:bg-gray-100 dark:hover:bg-white/10"
 			>
 				<AuiIf condition={(s) => s.message.isCopied}>
-					<CheckIcon className="size-4 text-green-500" />
+					<CheckIcon className={`size-4 ${TOKENS.green.text}`} />
 				</AuiIf>
 				<AuiIf condition={(s) => !s.message.isCopied}>
 					<ClipboardDocumentIcon className="size-4" />

@@ -15,6 +15,7 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { TOKENS } from "../../utils/colors";
 
 /* ── Slug generation ──────────────────────────────────── */
 
@@ -71,7 +72,7 @@ function makeHeading(Tag: "h1" | "h2" | "h3" | "h4") {
 						aria-label={`Copy link to ${props.children}`}
 					>
 						{copied ? (
-							<CheckIcon className="size-5 text-green-500 dark:text-green-400" />
+							<CheckIcon className={`size-5 ${TOKENS.green.text}`} />
 						) : (
 							<LinkIcon className="size-5 text-gray-400 hover:text-brand-500 dark:text-gray-500 dark:hover:text-brand-400 transition-colors" />
 						)}
@@ -152,7 +153,7 @@ function CodeBlock(props: ComponentPropsWithoutRef<"pre">) {
 				>
 					{copied ? (
 						<>
-							<CheckIcon className="size-3.5 text-green-400" />
+							<CheckIcon className={`size-3.5 ${TOKENS.green.text}`} />
 							<span>{t("docs.copied")}</span>
 						</>
 					) : (

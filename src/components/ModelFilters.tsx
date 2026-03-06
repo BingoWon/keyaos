@@ -13,6 +13,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Modality } from "../../worker/core/db/schema";
 import type { ProviderMeta } from "../types/provider";
+import { type ColorToken, TOKENS, type TokenName } from "../utils/colors";
 import type { ModelGroup } from "../utils/models";
 import { getOrgName, getOrgSlug } from "../utils/orgMeta";
 import { OrgLogo } from "./OrgLogo";
@@ -75,89 +76,64 @@ export function applyFilters(
 	});
 }
 
-// ─── Per-dropdown color themes (Tailwind official palette) ─
+// ─── Filter color themes (derived from global tokens + Headless UI variants) ─
 
-interface ColorTheme {
-	badge: string;
+interface FilterTheme {
+	token: ColorToken;
 	openBorder: string;
 	openRing: string;
-	chipActive: string;
-	chipInactive: string;
-	checkboxActive: string;
-	tag: string;
 	tagX: string;
 }
 
-const SKY: ColorTheme = {
-	badge: "bg-sky-500 text-white",
-	openBorder: "data-[open]:border-sky-400 dark:data-[open]:border-sky-500",
-	openRing:
-		"data-[open]:ring-1 data-[open]:ring-sky-400/30 dark:data-[open]:ring-sky-500/20",
-	chipActive: "bg-sky-500 text-white shadow-sm dark:bg-sky-500",
-	chipInactive:
-		"bg-sky-50 text-sky-700 hover:bg-sky-100 dark:bg-sky-500/10 dark:text-sky-300 dark:hover:bg-sky-500/15",
-	checkboxActive:
-		"border-sky-500 bg-sky-500 dark:border-sky-400 dark:bg-sky-500",
-	tag: "bg-sky-50 text-sky-700 dark:bg-sky-500/10 dark:text-sky-300",
-	tagX: "hover:bg-sky-200/60 dark:hover:bg-sky-500/20",
+const FILTER_EXTRAS: Record<
+	"sky" | "violet" | "teal" | "amber" | "rose",
+	Omit<FilterTheme, "token">
+> = {
+	sky: {
+		openBorder: "data-[open]:border-sky-400 dark:data-[open]:border-sky-500",
+		openRing:
+			"data-[open]:ring-1 data-[open]:ring-sky-400/30 dark:data-[open]:ring-sky-500/20",
+		tagX: "hover:bg-sky-200/60 dark:hover:bg-sky-500/20",
+	},
+	violet: {
+		openBorder:
+			"data-[open]:border-violet-400 dark:data-[open]:border-violet-500",
+		openRing:
+			"data-[open]:ring-1 data-[open]:ring-violet-400/30 dark:data-[open]:ring-violet-500/20",
+		tagX: "hover:bg-violet-200/60 dark:hover:bg-violet-500/20",
+	},
+	teal: {
+		openBorder: "data-[open]:border-teal-400 dark:data-[open]:border-teal-500",
+		openRing:
+			"data-[open]:ring-1 data-[open]:ring-teal-400/30 dark:data-[open]:ring-teal-500/20",
+		tagX: "hover:bg-teal-200/60 dark:hover:bg-teal-500/20",
+	},
+	amber: {
+		openBorder:
+			"data-[open]:border-amber-400 dark:data-[open]:border-amber-500",
+		openRing:
+			"data-[open]:ring-1 data-[open]:ring-amber-400/30 dark:data-[open]:ring-amber-500/20",
+		tagX: "hover:bg-amber-200/60 dark:hover:bg-amber-500/20",
+	},
+	rose: {
+		openBorder: "data-[open]:border-rose-400 dark:data-[open]:border-rose-500",
+		openRing:
+			"data-[open]:ring-1 data-[open]:ring-rose-400/30 dark:data-[open]:ring-rose-500/20",
+		tagX: "hover:bg-rose-200/60 dark:hover:bg-rose-500/20",
+	},
 };
 
-const VIOLET: ColorTheme = {
-	badge: "bg-violet-500 text-white",
-	openBorder:
-		"data-[open]:border-violet-400 dark:data-[open]:border-violet-500",
-	openRing:
-		"data-[open]:ring-1 data-[open]:ring-violet-400/30 dark:data-[open]:ring-violet-500/20",
-	chipActive: "bg-violet-500 text-white shadow-sm dark:bg-violet-500",
-	chipInactive:
-		"bg-violet-50 text-violet-700 hover:bg-violet-100 dark:bg-violet-500/10 dark:text-violet-300 dark:hover:bg-violet-500/15",
-	checkboxActive:
-		"border-violet-500 bg-violet-500 dark:border-violet-400 dark:bg-violet-500",
-	tag: "bg-violet-50 text-violet-700 dark:bg-violet-500/10 dark:text-violet-300",
-	tagX: "hover:bg-violet-200/60 dark:hover:bg-violet-500/20",
-};
+function filterTheme(
+	name: TokenName & keyof typeof FILTER_EXTRAS,
+): FilterTheme {
+	return { token: TOKENS[name], ...FILTER_EXTRAS[name] };
+}
 
-const TEAL: ColorTheme = {
-	badge: "bg-teal-500 text-white",
-	openBorder: "data-[open]:border-teal-400 dark:data-[open]:border-teal-500",
-	openRing:
-		"data-[open]:ring-1 data-[open]:ring-teal-400/30 dark:data-[open]:ring-teal-500/20",
-	chipActive: "bg-teal-500 text-white shadow-sm dark:bg-teal-500",
-	chipInactive:
-		"bg-teal-50 text-teal-700 hover:bg-teal-100 dark:bg-teal-500/10 dark:text-teal-300 dark:hover:bg-teal-500/15",
-	checkboxActive:
-		"border-teal-500 bg-teal-500 dark:border-teal-400 dark:bg-teal-500",
-	tag: "bg-teal-50 text-teal-700 dark:bg-teal-500/10 dark:text-teal-300",
-	tagX: "hover:bg-teal-200/60 dark:hover:bg-teal-500/20",
-};
-
-const AMBER: ColorTheme = {
-	badge: "bg-amber-500 text-white",
-	openBorder: "data-[open]:border-amber-400 dark:data-[open]:border-amber-500",
-	openRing:
-		"data-[open]:ring-1 data-[open]:ring-amber-400/30 dark:data-[open]:ring-amber-500/20",
-	chipActive: "bg-amber-500 text-white shadow-sm dark:bg-amber-500",
-	chipInactive:
-		"bg-amber-50 text-amber-700 hover:bg-amber-100 dark:bg-amber-500/10 dark:text-amber-300 dark:hover:bg-amber-500/15",
-	checkboxActive:
-		"border-amber-500 bg-amber-500 dark:border-amber-400 dark:bg-amber-500",
-	tag: "bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-300",
-	tagX: "hover:bg-amber-200/60 dark:hover:bg-amber-500/20",
-};
-
-const ROSE: ColorTheme = {
-	badge: "bg-rose-500 text-white",
-	openBorder: "data-[open]:border-rose-400 dark:data-[open]:border-rose-500",
-	openRing:
-		"data-[open]:ring-1 data-[open]:ring-rose-400/30 dark:data-[open]:ring-rose-500/20",
-	chipActive: "bg-rose-500 text-white shadow-sm dark:bg-rose-500",
-	chipInactive:
-		"bg-rose-50 text-rose-700 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-300 dark:hover:bg-rose-500/15",
-	checkboxActive:
-		"border-rose-500 bg-rose-500 dark:border-rose-400 dark:bg-rose-500",
-	tag: "bg-rose-50 text-rose-700 dark:bg-rose-500/10 dark:text-rose-300",
-	tagX: "hover:bg-rose-200/60 dark:hover:bg-rose-500/20",
-};
+const SKY = filterTheme("sky");
+const VIOLET = filterTheme("violet");
+const TEAL = filterTheme("teal");
+const AMBER = filterTheme("amber");
+const ROSE = filterTheme("rose");
 
 // ─── Modality icons ──────────────────────────────────────
 
@@ -271,7 +247,7 @@ export function ModelFilters({
 	const tags: {
 		key: string;
 		label: string;
-		theme: ColorTheme;
+		theme: FilterTheme;
 		onRemove: () => void;
 	}[] = [];
 	for (const m of filters.inputModalities) {
@@ -370,7 +346,9 @@ export function ModelFilters({
 				>
 					<div className="px-4 pt-3 pb-4">
 						<div className="mb-3 text-center">
-							<span className="inline-block rounded-full bg-teal-50 px-3 py-1 text-sm font-semibold tabular-nums text-teal-700 dark:bg-teal-500/10 dark:text-teal-300">
+							<span
+								className={`inline-block rounded-full px-3 py-1 text-sm font-semibold tabular-nums ${TEAL.token.soft}`}
+							>
 								≥ {contextLabel}
 							</span>
 						</div>
@@ -448,7 +426,7 @@ export function ModelFilters({
 					{tags.map((tag) => (
 						<span
 							key={tag.key}
-							className={`inline-flex items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-xs font-medium ${tag.theme.tag}`}
+							className={`inline-flex items-center gap-1 rounded-full py-0.5 pl-2.5 pr-1 text-xs font-medium ${tag.theme.token.soft}`}
 						>
 							{tag.label}
 							<button
@@ -477,7 +455,7 @@ function FilterPopover({
 }: {
 	label: string;
 	count: number;
-	theme: ColorTheme;
+	theme: FilterTheme;
 	width?: string;
 	children: React.ReactNode;
 }) {
@@ -489,7 +467,7 @@ function FilterPopover({
 				{label}
 				{count > 0 && (
 					<span
-						className={`inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold leading-none ${theme.badge}`}
+						className={`inline-flex size-4 items-center justify-center rounded-full text-[9px] font-bold leading-none ${theme.token.solid}`}
 					>
 						{count}
 					</span>
@@ -520,14 +498,14 @@ function ModalityChip({
 	modality: Modality;
 	icon: React.FC<{ className?: string }>;
 	active: boolean;
-	theme: ColorTheme;
+	theme: FilterTheme;
 	onClick: () => void;
 }) {
 	return (
 		<button
 			type="button"
 			onClick={onClick}
-			className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${active ? theme.chipActive : theme.chipInactive}`}
+			className={`flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${active ? `${theme.token.solid} shadow-sm` : `${theme.token.soft} ${theme.token.softHover}`}`}
 		>
 			<IconComp className="size-4" />
 			<span className="flex-1 text-left capitalize">{modality}</span>
@@ -555,7 +533,7 @@ function SearchableList<T extends ListItem>({
 	items: T[];
 	selected: Set<string>;
 	onToggle: (id: string) => void;
-	theme: ColorTheme;
+	theme: FilterTheme;
 	renderIcon: (item: T) => React.ReactNode;
 }) {
 	const [search, setSearch] = useState("");
@@ -595,14 +573,14 @@ function SearchableList<T extends ListItem>({
 								onClick={() => onToggle(item.id)}
 								className={`flex w-full items-center gap-2 px-2.5 py-1.5 text-left text-xs transition-colors ${
 									active
-										? `${theme.tag}`
+										? theme.token.soft
 										: "text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-white/5"
 								}`}
 							>
 								<span
 									className={`flex size-4 shrink-0 items-center justify-center rounded border transition-colors ${
 										active
-											? theme.checkboxActive
+											? theme.token.control
 											: "border-gray-300 dark:border-white/20"
 									}`}
 								>

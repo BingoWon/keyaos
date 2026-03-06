@@ -27,6 +27,7 @@ import {
 	activateThreadModel,
 	getThreadTimestamp,
 } from "../../hooks/useThreadRuntime";
+import { TOKENS } from "../../utils/colors";
 
 const TIME_BUCKET_KEYS = [
 	"chat.time_today",
@@ -202,7 +203,7 @@ const ThreadListItem: FC = () => {
 							e.preventDefault();
 							confirmRename();
 						}}
-						className="flex size-5 items-center justify-center rounded text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-500/10"
+						className={`flex size-5 items-center justify-center rounded ${TOKENS.green.text} ${TOKENS.green.softHover}`}
 					>
 						<CheckIcon className="size-3" />
 					</button>
@@ -268,7 +269,7 @@ const ThreadListItem: FC = () => {
 						<button
 							type="button"
 							onClick={() => setShowMenu(false)}
-							className="flex w-full items-center gap-2 px-3 py-1.5 text-xs text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-500/10"
+							className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs ${TOKENS.red.text} ${TOKENS.red.softHover}`}
 						>
 							<TrashIcon className="size-3.5" />
 							Delete

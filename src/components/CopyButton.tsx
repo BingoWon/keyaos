@@ -1,5 +1,6 @@
 import { CheckIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { useState } from "react";
+import { TOKENS } from "../utils/colors";
 
 export function CopyButton({ text }: { text: string }) {
 	const [copied, setCopied] = useState(false);
@@ -18,7 +19,7 @@ export function CopyButton({ text }: { text: string }) {
 			className="inline-flex items-center text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
 		>
 			{copied ? (
-				<CheckIcon className="size-4 text-green-500" />
+				<CheckIcon className={`size-4 ${TOKENS.green.text}`} />
 			) : (
 				<ClipboardDocumentIcon className="size-4" />
 			)}

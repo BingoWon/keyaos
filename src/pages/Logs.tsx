@@ -7,6 +7,7 @@ import { PromoBanner } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
 import type { LogEntry } from "../types/log";
+import { TOKENS } from "../utils/colors";
 import { formatSignedUSD } from "../utils/format";
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -31,7 +32,7 @@ export function Logs() {
 
 	if (error) {
 		return (
-			<div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-900/20 dark:text-red-400">
+			<div className={`rounded-xl border p-4 text-sm ${TOKENS.red.outline}`}>
 				Failed to load logs: {error.message}
 			</div>
 		);
@@ -136,9 +137,9 @@ export function Logs() {
 										<td
 											className={`whitespace-nowrap py-2.5 pl-2 pr-4 text-sm text-right font-medium sm:pr-5 ${
 												tx.netCredits > 0
-													? "text-green-600 dark:text-green-400"
+													? TOKENS.green.text
 													: tx.netCredits < 0
-														? "text-red-600 dark:text-red-400"
+														? TOKENS.red.text
 														: "text-gray-400 dark:text-gray-500"
 											}`}
 										>

@@ -25,6 +25,7 @@ import { useAutoRefresh } from "../hooks/useAutoRefresh";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
+import { TOKENS } from "../utils/colors";
 import {
 	formatContext,
 	formatPrice,
@@ -122,7 +123,7 @@ export function Models() {
 
 	if (error) {
 		return (
-			<div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600 dark:border-red-500/20 dark:bg-red-900/20 dark:text-red-400">
+			<div className={`rounded-xl border p-4 text-sm ${TOKENS.red.outline}`}>
 				Failed to load models: {error.message}
 			</div>
 		);

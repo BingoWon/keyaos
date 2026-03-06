@@ -4,6 +4,7 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
+import { TOKENS } from "../utils/colors";
 import { Modal } from "./Modal";
 import { Button, Input } from "./ui";
 
@@ -80,7 +81,9 @@ export function CreateApiKeyModal({
 		>
 			{createdKey ? (
 				<div className="space-y-4">
-					<div className="rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs text-amber-700 dark:border-amber-500/20 dark:bg-amber-900/20 dark:text-amber-300">
+					<div
+						className={`rounded-xl border p-3 text-xs ${TOKENS.amber.outline}`}
+					>
 						⚠️ {t("api_keys.copy_warning")}
 					</div>
 					<div className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 p-3 font-mono text-sm text-gray-800 dark:border-white/10 dark:bg-white/5 dark:text-gray-200">

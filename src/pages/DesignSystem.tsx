@@ -10,6 +10,7 @@ import toast from "react-hot-toast";
 import { ThemeToggle } from "../components/ThemeToggle";
 import { ToggleSwitch } from "../components/ToggleSwitch";
 import { Badge, Button, Card, IconButton, Input } from "../components/ui";
+import { TOKEN_NAMES, TOKENS, type TokenName } from "../utils/colors";
 
 /* ── Color data ──────────────────────────────────────────── */
 
@@ -47,104 +48,18 @@ const accent: ColorDef[] = [
 	{ shade: "950", hex: "#311c0e" },
 ];
 
-/* Semantic filter colors — Tailwind official palette */
-const filterColors: {
-	name: string;
-	prefix: string;
-	usage: string;
-	colors: ColorDef[];
-}[] = [
-	{
-		name: "Sky",
-		prefix: "sky",
-		usage: "Input Modalities",
-		colors: [
-			{ shade: "50", hex: "#f0f9ff" },
-			{ shade: "100", hex: "#e0f2fe" },
-			{ shade: "200", hex: "#bae6fd" },
-			{ shade: "300", hex: "#7dd3fc" },
-			{ shade: "400", hex: "#38bdf8" },
-			{ shade: "500", hex: "#0ea5e9", label: "Primary" },
-			{ shade: "600", hex: "#0284c7" },
-			{ shade: "700", hex: "#0369a1" },
-			{ shade: "800", hex: "#075985" },
-			{ shade: "900", hex: "#0c4a6e" },
-			{ shade: "950", hex: "#082f49" },
-		],
-	},
-	{
-		name: "Violet",
-		prefix: "violet",
-		usage: "Output Modalities",
-		colors: [
-			{ shade: "50", hex: "#f5f3ff" },
-			{ shade: "100", hex: "#ede9fe" },
-			{ shade: "200", hex: "#ddd6fe" },
-			{ shade: "300", hex: "#c4b5fd" },
-			{ shade: "400", hex: "#a78bfa" },
-			{ shade: "500", hex: "#8b5cf6", label: "Primary" },
-			{ shade: "600", hex: "#7c3aed" },
-			{ shade: "700", hex: "#6d28d9" },
-			{ shade: "800", hex: "#5b21b6" },
-			{ shade: "900", hex: "#4c1d95" },
-			{ shade: "950", hex: "#2e1065" },
-		],
-	},
-	{
-		name: "Teal",
-		prefix: "teal",
-		usage: "Context Length",
-		colors: [
-			{ shade: "50", hex: "#f0fdfa" },
-			{ shade: "100", hex: "#ccfbf1" },
-			{ shade: "200", hex: "#99f6e4" },
-			{ shade: "300", hex: "#5eead4" },
-			{ shade: "400", hex: "#2dd4bf" },
-			{ shade: "500", hex: "#14b8a6", label: "Primary" },
-			{ shade: "600", hex: "#0d9488" },
-			{ shade: "700", hex: "#0f766e" },
-			{ shade: "800", hex: "#115e59" },
-			{ shade: "900", hex: "#134e4a" },
-			{ shade: "950", hex: "#042f2e" },
-		],
-	},
-	{
-		name: "Amber",
-		prefix: "amber",
-		usage: "Organization",
-		colors: [
-			{ shade: "50", hex: "#fffbeb" },
-			{ shade: "100", hex: "#fef3c7" },
-			{ shade: "200", hex: "#fde68a" },
-			{ shade: "300", hex: "#fcd34d" },
-			{ shade: "400", hex: "#fbbf24" },
-			{ shade: "500", hex: "#f59e0b", label: "Primary" },
-			{ shade: "600", hex: "#d97706" },
-			{ shade: "700", hex: "#b45309" },
-			{ shade: "800", hex: "#92400e" },
-			{ shade: "900", hex: "#78350f" },
-			{ shade: "950", hex: "#451a03" },
-		],
-	},
-	{
-		name: "Rose",
-		prefix: "rose",
-		usage: "Provider",
-		colors: [
-			{ shade: "50", hex: "#fff1f2" },
-			{ shade: "100", hex: "#ffe4e6" },
-			{ shade: "200", hex: "#fecdd3" },
-			{ shade: "300", hex: "#fda4af" },
-			{ shade: "400", hex: "#fb7185" },
-			{ shade: "500", hex: "#f43f5e", label: "Primary" },
-			{ shade: "600", hex: "#e11d48" },
-			{ shade: "700", hex: "#be123c" },
-			{ shade: "800", hex: "#9f1239" },
-			{ shade: "900", hex: "#881337" },
-			{ shade: "950", hex: "#4c0519" },
-		],
-	},
-];
+/* Semantic color usage — documents what each token is used for */
+const TOKEN_USAGE: Record<TokenName, string> = {
+	sky: "Filter: Input Modalities",
+	violet: "Filter: Output Modalities, auto-topup category",
+	teal: "Filter: Context Length, grant category",
+	amber: "Filter: Organization, warnings, info boxes",
+	rose: "Filter: Provider",
+	red: "Error, destructive, negative amounts, delete actions",
+	green: "Success, positive amounts, save actions, confirmations",
+	yellow: "Warning, pending status",
+	blue: "Info, cooldown, top-up category",
+};
 
 /* ── Helpers ─────────────────────────────────────────────── */
 
@@ -310,24 +225,51 @@ export function DesignSystem() {
 					</div>
 				</Section>
 
-				{/* Filter Colors */}
+				{/* Semantic Colors */}
 				<Section
-					title="Filter Palette"
-					desc="Five semantic colors for the model filter system. Each dropdown maps to one color — all elements inside share it."
+					title="Semantic Colors"
+					desc="Nine global color tokens (src/utils/colors.ts). Every colored UI element consumes from this system."
 				>
-					<div className="space-y-10">
-						{filterColors.map((fc) => (
-							<div key={fc.prefix}>
-								<ColorScale
-									name={fc.name}
-									prefix={fc.prefix}
-									colors={fc.colors}
-								/>
-								<p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
-									Used for: <span className="font-medium">{fc.usage}</span>
-								</p>
-							</div>
-						))}
+					<div className="space-y-6">
+						{TOKEN_NAMES.map((name) => {
+							const t = TOKENS[name];
+							return (
+								<div
+									key={name}
+									className="rounded-xl border border-gray-200 p-4 dark:border-white/10"
+								>
+									<div className="mb-3 flex flex-wrap items-center gap-2">
+										<h3 className="text-sm font-semibold capitalize text-gray-900 dark:text-white">
+											{name}
+										</h3>
+										<span className="rounded-full bg-gray-100 px-2 py-0.5 font-mono text-[10px] text-gray-500 dark:bg-white/10 dark:text-gray-400">
+											{name}
+										</span>
+										<span className="text-xs text-gray-400 dark:text-gray-500">
+											— {TOKEN_USAGE[name]}
+										</span>
+									</div>
+									<div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+										{(
+											[
+												["solid", t.solid],
+												["soft", t.soft],
+												["outline", `border ${t.outline}`],
+												["text", t.text],
+												["control", t.control],
+											] as const
+										).map(([label, cls]) => (
+											<div
+												key={label}
+												className={`flex items-center justify-center rounded-lg px-3 py-2.5 text-xs font-medium ${cls}`}
+											>
+												{label}
+											</div>
+										))}
+									</div>
+								</div>
+							);
+						})}
 					</div>
 				</Section>
 
@@ -489,6 +431,7 @@ export function DesignSystem() {
 							<Badge variant="success">Success</Badge>
 							<Badge variant="warning">Warning</Badge>
 							<Badge variant="error">Error</Badge>
+							<Badge variant="info">Info</Badge>
 						</div>
 					</Card>
 				</Section>

@@ -10,6 +10,7 @@ import { CheckIcon, ClipboardDocumentIcon } from "@heroicons/react/24/outline";
 import { type FC, memo, useState } from "react";
 import remarkGfm from "remark-gfm";
 import { classNames } from "../../utils/classNames";
+import { TOKENS } from "../../utils/colors";
 
 const MarkdownTextImpl = () => (
 	<MarkdownTextPrimitive
@@ -35,7 +36,7 @@ const CodeHeader: FC<CodeHeaderProps> = ({ language, code }) => {
 				className="rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600 dark:text-gray-500 dark:hover:bg-white/10 dark:hover:text-gray-300"
 			>
 				{isCopied ? (
-					<CheckIcon className="size-3.5 text-green-500" />
+					<CheckIcon className={`size-3.5 ${TOKENS.green.text}`} />
 				) : (
 					<ClipboardDocumentIcon className="size-3.5" />
 				)}

@@ -81,7 +81,7 @@
 	"api_keys": {
 		"title": "API Keys",
 		"subtitle": "Downstream access keys for your clients",
-		"add_new": "Create Key",
+		"add_new": "Create API key",
 		"name": "Name",
 		"key": "Key",
 		"created_at": "Created",

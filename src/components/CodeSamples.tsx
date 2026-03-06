@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import type { Modality } from "../../worker/core/db/schema";
+import { ApiKeyPicker } from "./ApiKeyPicker";
 
 /* ── Types ──────────────────────────────────────────── */
 
@@ -363,6 +364,15 @@ const INTRO: Record<CodeVariant, string> = {
 		'This model supports image generation. Set modalities to ["image", "text"] to receive generated images as base64 data URLs in the response.',
 };
 
+/* ── API key placeholder replacement ────────────────── */
+
+function applyApiKey(code: string, apiKey: string | null): string {
+	if (!apiKey) return code;
+	return code
+		.replace(/YOUR_API_KEY/g, apiKey)
+		.replace(/\$KEYAOS_API_KEY/g, apiKey);
+}
+
 /* ── Component ──────────────────────────────────────── */
 
 interface CodeSamplesProps {
@@ -375,6 +385,7 @@ export function CodeSamples({ modelId, variant }: CodeSamplesProps) {
 	const tabs = getSnippets(modelId, variant);
 	const [activeIndex, setActiveIndex] = useState(getInitialTab);
 	const [copied, setCopied] = useState(false);
+	const [apiKey, setApiKey] = useState<string | null>(null);
 
 	const handleTabChange = (index: number) => {
 		setActiveIndex(index);
@@ -385,7 +396,9 @@ export function CodeSamples({ modelId, variant }: CodeSamplesProps) {
 	};
 
 	const handleCopy = async () => {
-		await navigator.clipboard.writeText(tabs[activeIndex].code);
+		await navigator.clipboard.writeText(
+			applyApiKey(tabs[activeIndex].code, apiKey),
+		);
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	};
@@ -395,9 +408,13 @@ export function CodeSamples({ modelId, variant }: CodeSamplesProps) {
 			<h2 className="text-lg font-semibold text-gray-900 dark:text-white">
 				{t("models.api_integration", "API Integration")}
 			</h2>
-			<p className="mt-2 mb-4 text-sm text-gray-500 dark:text-gray-400">
+			<p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
 				{t(`models.code_intro_${variant}`, INTRO[variant])}
 			</p>
+
+			<div className="mt-4 mb-4">
+				<ApiKeyPicker onChange={setApiKey} />
+			</div>
 
 			<TabGroup selectedIndex={activeIndex} onChange={handleTabChange}>
 				<div className="overflow-hidden rounded-xl">
@@ -441,7 +458,7 @@ export function CodeSamples({ modelId, variant }: CodeSamplesProps) {
 						{tabs.map((tab) => (
 							<TabPanel key={tab.label}>
 								<pre className="overflow-x-auto bg-brand-950/95 p-4 font-mono text-[13px] leading-relaxed text-gray-100 dark:bg-brand-950/60">
-									<code>{tab.code}</code>
+									<code>{applyApiKey(tab.code, apiKey)}</code>
 								</pre>
 							</TabPanel>
 						))}

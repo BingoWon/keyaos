@@ -223,10 +223,10 @@ function DescriptionSection({ text }: { text: string }) {
 			type="button"
 			onClick={() => needsCollapse && setExpanded((v) => !v)}
 			aria-expanded={expanded}
-			className={`relative block w-full text-left ${needsCollapse ? "cursor-pointer" : "cursor-default"}`}
+			className={`relative flex w-full gap-4 text-left ${needsCollapse ? "cursor-pointer" : "cursor-default"}`}
 		>
 			<div
-				className="overflow-hidden transition-[max-height] duration-300 ease-out"
+				className="min-w-0 flex-1 overflow-hidden transition-[max-height] duration-300 ease-out"
 				style={{
 					maxHeight: expanded ? naturalHeight : COLLAPSED_HEIGHT,
 				}}
@@ -243,7 +243,7 @@ function DescriptionSection({ text }: { text: string }) {
 			)}
 			{needsCollapse && (
 				<ChevronDownIcon
-					className={`absolute right-0 top-1/2 size-4 -translate-y-1/2 text-gray-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
+					className={`mt-1 size-4 shrink-0 text-gray-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}
 				/>
 			)}
 		</button>

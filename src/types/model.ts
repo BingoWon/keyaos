@@ -14,4 +14,5 @@ export interface ModelEntry {
 	created_at?: number | null;
 	input_modalities?: Modality[];
 	output_modalities?: Modality[];
+	supported_parameters?: string[] | null;
 }

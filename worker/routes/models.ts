@@ -143,6 +143,7 @@ dashboardModelsRouter.get("/", edgeCache(), async (c) => {
 			output_modalities: m.output_modalities
 				? JSON.parse(m.output_modalities)
 				: null,
+			supported_parameters: (meta?.supported_parameters as string[]) ?? null,
 		};
 	});
 

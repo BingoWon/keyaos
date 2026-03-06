@@ -3,6 +3,7 @@ import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
+import { CodeSamples, detectCodeVariant } from "../components/CodeSamples";
 import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
 import { PriceChart } from "../components/PriceChart";
@@ -82,6 +83,10 @@ export function ModelDetail() {
 	}
 
 	const maxCtx = Math.max(...group.providers.map((p) => p.contextLength));
+	const codeVariant = detectCodeVariant(
+		group.outputModalities,
+		group.supportedParameters,
+	);
 
 	return (
 		<div className="space-y-8">
@@ -197,6 +202,9 @@ export function ModelDetail() {
 					</tbody>
 				</table>
 			</div>
+
+			{/* API Integration */}
+			<CodeSamples modelId={group.id} variant={codeVariant} />
 		</div>
 	);
 }

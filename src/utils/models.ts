@@ -10,6 +10,7 @@ export interface ModelGroup {
 	createdAt: number;
 	inputModalities: Modality[];
 	outputModalities: Modality[];
+	supportedParameters: string[];
 }
 
 export interface ProviderRow {
@@ -35,6 +36,7 @@ export function aggregateModels(entries: ModelEntry[]): ModelGroup[] {
 				createdAt: 0,
 				inputModalities: e.input_modalities ?? ["text"],
 				outputModalities: e.output_modalities ?? ["text"],
+				supportedParameters: [],
 			};
 			groups.set(e.id, group);
 		}
@@ -46,6 +48,13 @@ export function aggregateModels(entries: ModelEntry[]): ModelGroup[] {
 		}
 		mergeModalities(group.inputModalities, e.input_modalities);
 		mergeModalities(group.outputModalities, e.output_modalities);
+		if (e.supported_parameters) {
+			for (const p of e.supported_parameters) {
+				if (!group.supportedParameters.includes(p)) {
+					group.supportedParameters.push(p);
+				}
+			}
+		}
 		if (e.created_at && (!group.createdAt || e.created_at < group.createdAt)) {
 			group.createdAt = e.created_at;
 		}

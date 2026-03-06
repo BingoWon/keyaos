@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { CopyButton } from "../components/CopyButton";
 import { ModalityBadges } from "../components/Modalities";
 import { Pagination } from "../components/Pagination";
@@ -224,14 +224,21 @@ export function Models() {
 									return (
 										<tr
 											key={g.id}
-											onClick={() => navigate(`/${g.id}`)}
+											onClick={(e) => {
+												if ((e.target as HTMLElement).closest("a,button"))
+													return;
+												navigate(`/${g.id}`);
+											}}
 											className="even:bg-gray-50/50 hover:bg-gray-100/60 dark:even:bg-white/[0.015] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
 										>
 											<td className="py-2.5 pl-4 pr-2 sm:pl-5">
 												<div className="min-w-0">
-													<div className="text-sm font-semibold text-gray-900 dark:text-white">
+													<Link
+														to={`/${g.id}`}
+														className="text-sm font-semibold text-gray-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400 transition-colors"
+													>
 														{g.displayName}
-													</div>
+													</Link>
 													<div className="flex items-center gap-1.5 mt-0.5">
 														<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
 															{g.id}

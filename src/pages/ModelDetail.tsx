@@ -212,18 +212,19 @@ function DescriptionSection({ text }: { text: string }) {
 		<button
 			type="button"
 			onClick={() => setExpanded((v) => !v)}
+			aria-expanded={expanded}
 			className="relative block w-full cursor-pointer text-left"
 		>
 			<div
 				className="overflow-hidden transition-[max-height] duration-300 ease-in-out"
-				style={{ maxHeight: expanded ? 600 : COLLAPSED_HEIGHT }}
+				style={{ maxHeight: expanded ? 2000 : COLLAPSED_HEIGHT }}
 			>
 				<p className="text-sm leading-relaxed text-gray-600 dark:text-gray-400 whitespace-pre-line">
 					{text}
 				</p>
 			</div>
 			{!expanded && (
-				<div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white dark:from-gray-950" />
+				<div className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-white dark:from-gray-900" />
 			)}
 			<ChevronDownIcon
 				className={`absolute right-0 top-1/2 size-4 -translate-y-1/2 text-gray-400 transition-transform duration-200 ${expanded ? "rotate-180" : ""}`}

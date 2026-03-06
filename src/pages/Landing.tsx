@@ -177,14 +177,21 @@ function PlatformShowcase() {
 										return (
 											<tr
 												key={g.id}
-												onClick={() => navigate(`/${g.id}`)}
+												onClick={(e) => {
+													if ((e.target as HTMLElement).closest("a,button"))
+														return;
+													navigate(`/${g.id}`);
+												}}
 												className="hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
 											>
 												<td className="py-3 pl-5 pr-2">
 													<div className="min-w-0">
-														<div className="text-sm font-semibold text-gray-900 dark:text-white">
+														<Link
+															to={`/${g.id}`}
+															className="text-sm font-semibold text-gray-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400 transition-colors"
+														>
 															{g.displayName}
-														</div>
+														</Link>
 														<div className="flex items-center gap-1.5 mt-0.5">
 															<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
 																{g.id}

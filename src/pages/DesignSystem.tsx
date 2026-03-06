@@ -47,6 +47,105 @@ const accent: ColorDef[] = [
 	{ shade: "950", hex: "#311c0e" },
 ];
 
+/* Semantic filter colors — Tailwind official palette */
+const filterColors: {
+	name: string;
+	prefix: string;
+	usage: string;
+	colors: ColorDef[];
+}[] = [
+	{
+		name: "Sky",
+		prefix: "sky",
+		usage: "Input Modalities",
+		colors: [
+			{ shade: "50", hex: "#f0f9ff" },
+			{ shade: "100", hex: "#e0f2fe" },
+			{ shade: "200", hex: "#bae6fd" },
+			{ shade: "300", hex: "#7dd3fc" },
+			{ shade: "400", hex: "#38bdf8" },
+			{ shade: "500", hex: "#0ea5e9", label: "Primary" },
+			{ shade: "600", hex: "#0284c7" },
+			{ shade: "700", hex: "#0369a1" },
+			{ shade: "800", hex: "#075985" },
+			{ shade: "900", hex: "#0c4a6e" },
+			{ shade: "950", hex: "#082f49" },
+		],
+	},
+	{
+		name: "Violet",
+		prefix: "violet",
+		usage: "Output Modalities",
+		colors: [
+			{ shade: "50", hex: "#f5f3ff" },
+			{ shade: "100", hex: "#ede9fe" },
+			{ shade: "200", hex: "#ddd6fe" },
+			{ shade: "300", hex: "#c4b5fd" },
+			{ shade: "400", hex: "#a78bfa" },
+			{ shade: "500", hex: "#8b5cf6", label: "Primary" },
+			{ shade: "600", hex: "#7c3aed" },
+			{ shade: "700", hex: "#6d28d9" },
+			{ shade: "800", hex: "#5b21b6" },
+			{ shade: "900", hex: "#4c1d95" },
+			{ shade: "950", hex: "#2e1065" },
+		],
+	},
+	{
+		name: "Teal",
+		prefix: "teal",
+		usage: "Context Length",
+		colors: [
+			{ shade: "50", hex: "#f0fdfa" },
+			{ shade: "100", hex: "#ccfbf1" },
+			{ shade: "200", hex: "#99f6e4" },
+			{ shade: "300", hex: "#5eead4" },
+			{ shade: "400", hex: "#2dd4bf" },
+			{ shade: "500", hex: "#14b8a6", label: "Primary" },
+			{ shade: "600", hex: "#0d9488" },
+			{ shade: "700", hex: "#0f766e" },
+			{ shade: "800", hex: "#115e59" },
+			{ shade: "900", hex: "#134e4a" },
+			{ shade: "950", hex: "#042f2e" },
+		],
+	},
+	{
+		name: "Amber",
+		prefix: "amber",
+		usage: "Organization",
+		colors: [
+			{ shade: "50", hex: "#fffbeb" },
+			{ shade: "100", hex: "#fef3c7" },
+			{ shade: "200", hex: "#fde68a" },
+			{ shade: "300", hex: "#fcd34d" },
+			{ shade: "400", hex: "#fbbf24" },
+			{ shade: "500", hex: "#f59e0b", label: "Primary" },
+			{ shade: "600", hex: "#d97706" },
+			{ shade: "700", hex: "#b45309" },
+			{ shade: "800", hex: "#92400e" },
+			{ shade: "900", hex: "#78350f" },
+			{ shade: "950", hex: "#451a03" },
+		],
+	},
+	{
+		name: "Rose",
+		prefix: "rose",
+		usage: "Provider",
+		colors: [
+			{ shade: "50", hex: "#fff1f2" },
+			{ shade: "100", hex: "#ffe4e6" },
+			{ shade: "200", hex: "#fecdd3" },
+			{ shade: "300", hex: "#fda4af" },
+			{ shade: "400", hex: "#fb7185" },
+			{ shade: "500", hex: "#f43f5e", label: "Primary" },
+			{ shade: "600", hex: "#e11d48" },
+			{ shade: "700", hex: "#be123c" },
+			{ shade: "800", hex: "#9f1239" },
+			{ shade: "900", hex: "#881337" },
+			{ shade: "950", hex: "#4c0519" },
+		],
+	},
+];
+
 /* ── Helpers ─────────────────────────────────────────────── */
 
 function copy(hex: string) {
@@ -208,6 +307,27 @@ export function DesignSystem() {
 					<div className="space-y-10">
 						<ColorScale name="Brand Purple" prefix="brand" colors={brand} />
 						<ColorScale name="Accent Gold" prefix="accent" colors={accent} />
+					</div>
+				</Section>
+
+				{/* Filter Colors */}
+				<Section
+					title="Filter Palette"
+					desc="Five semantic colors for the model filter system. Each dropdown maps to one color — all elements inside share it."
+				>
+					<div className="space-y-10">
+						{filterColors.map((fc) => (
+							<div key={fc.prefix}>
+								<ColorScale
+									name={fc.name}
+									prefix={fc.prefix}
+									colors={fc.colors}
+								/>
+								<p className="mt-2 text-xs text-gray-400 dark:text-gray-500">
+									Used for: <span className="font-medium">{fc.usage}</span>
+								</p>
+							</div>
+						))}
 					</div>
 				</Section>
 

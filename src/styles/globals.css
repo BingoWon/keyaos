@@ -84,13 +84,18 @@
 	animation: float-slow-reverse 25s ease-in-out infinite;
 }
 
-/* Context length slider — teal palette */
+/* Context length slider — uses Tailwind teal CSS variables */
 .context-slider {
 	-webkit-appearance: none;
 	appearance: none;
 	height: 6px;
 	border-radius: 9999px;
-	background: linear-gradient(to right, #ccfbf1, #14b8a6, #0d9488);
+	background: linear-gradient(
+		to right,
+		var(--color-teal-100),
+		var(--color-teal-500),
+		var(--color-teal-600)
+	);
 	outline: none;
 }
 .context-slider::-webkit-slider-thumb {
@@ -100,7 +105,7 @@
 	height: 18px;
 	border-radius: 9999px;
 	background: white;
-	border: 2px solid #14b8a6;
+	border: 2px solid var(--color-teal-500);
 	box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
 	cursor: pointer;
 	transition:
@@ -108,26 +113,32 @@
 		border-color 0.15s;
 }
 .context-slider::-webkit-slider-thumb:hover {
-	border-color: #0d9488;
-	box-shadow: 0 0 0 4px rgb(20 184 166 / 0.15);
+	border-color: var(--color-teal-600);
+	box-shadow: 0 0 0 4px
+		color-mix(in srgb, var(--color-teal-500) 15%, transparent);
 }
 .context-slider::-moz-range-thumb {
 	width: 18px;
 	height: 18px;
 	border-radius: 9999px;
 	background: white;
-	border: 2px solid #14b8a6;
+	border: 2px solid var(--color-teal-500);
 	box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
 	cursor: pointer;
 }
 :is(.dark) .context-slider {
-	background: linear-gradient(to right, #134e4a, #14b8a6, #2dd4bf);
+	background: linear-gradient(
+		to right,
+		var(--color-teal-900),
+		var(--color-teal-500),
+		var(--color-teal-400)
+	);
 }
 :is(.dark) .context-slider::-webkit-slider-thumb {
-	background: #1e293b;
-	border-color: #2dd4bf;
+	background: var(--color-gray-800);
+	border-color: var(--color-teal-400);
 }
 :is(.dark) .context-slider::-moz-range-thumb {
-	background: #1e293b;
-	border-color: #2dd4bf;
+	background: var(--color-gray-800);
+	border-color: var(--color-teal-400);
 }

@@ -30,7 +30,7 @@ export function GameBackground({
 	const fadeDuration = isBlinking ? 0 : 1.5;
 	return (
 		<div className="fixed inset-0 -z-10 overflow-hidden">
-			{/* Day Background - Refined for Exquisite Look */}
+			{/* Day Background */}
 			<motion.div
 				className="absolute inset-0"
 				initial={false}
@@ -39,93 +39,93 @@ export function GameBackground({
 				style={{
 					backgroundColor: "var(--bg-day-main)",
 					backgroundImage: `
-              radial-gradient(circle at 50% 50%, rgba(197, 160, 89, 0.05), transparent 70%),
-              url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.08'/%3E%3C/svg%3E")
-            `,
-					willChange: "opacity",
-					transform: "translateZ(0)",
+						radial-gradient(circle at 50% 50%, rgba(197, 160, 89, 0.05), transparent 70%),
+						url("/game/noise-64.png")
+					`,
+					backgroundSize: "auto, 64px 64px",
+					backgroundRepeat: "no-repeat, repeat",
 				}}
 			>
-				{/* Subtle warm gradients for day */}
-				<div className="absolute inset-0 bg-gradient-to-br from-[var(--bg-day-from)]/80 via-[var(--bg-day-via)]/80 to-[var(--bg-day-to)]/80 mix-blend-overlay" />
+				<div
+					className="absolute inset-0"
+					style={{
+						background:
+							"linear-gradient(to bottom right, var(--bg-day-from), var(--bg-day-via), var(--bg-day-to))",
+						opacity: 0.8,
+						mixBlendMode: "overlay",
+					}}
+				/>
 			</motion.div>
 
-			{/* Night Background - 参考 style-unification-preview.html */}
+			{/* Night Background */}
 			<motion.div
 				className="absolute inset-0"
 				style={{
 					backgroundColor: "var(--bg-dark)",
 					backgroundImage: `
-            radial-gradient(circle at 50% 50%, rgba(138, 28, 28, 0.05), transparent 60%),
-            url("data:image/svg+xml,%3Csvg width='200' height='200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E")
-          `,
-					willChange: "opacity",
-					transform: "translateZ(0)",
+						radial-gradient(circle at 50% 50%, rgba(138, 28, 28, 0.05), transparent 60%),
+						url("/game/noise-64.png")
+					`,
+					backgroundSize: "auto, 64px 64px",
+					backgroundRepeat: "no-repeat, repeat",
 				}}
 				initial={false}
 				animate={{ opacity: isNight ? 1 : 0 }}
 				transition={{ duration: fadeDuration }}
 			/>
 
-			{/* 夜晚雾气效果 - 参考 waiting-preview.html */}
+			{/* 夜晚雾气效果 — shrunk from 4× viewport to 1.4× */}
 			{!isBlinking && (
 				<motion.div
-					className="absolute inset-[-50%] pointer-events-none"
+					className="absolute inset-[-10%] pointer-events-none"
 					style={{
 						background: `
-              radial-gradient(circle at 50% 50%, rgba(138, 28, 28, 0.05), transparent 60%),
-              radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.4), transparent 50%)
-            `,
-						willChange: "opacity, transform",
+							radial-gradient(circle at 50% 50%, rgba(138, 28, 28, 0.05), transparent 60%),
+							radial-gradient(circle at 20% 30%, rgba(0, 0, 0, 0.4), transparent 50%)
+						`,
 					}}
 					initial={false}
 					animate={{
 						opacity: isNight ? 0.8 : 0,
-						scale: isNight ? [1, 1.05, 1] : 1,
+						scale: isNight ? [1, 1.03, 1] : 1,
 					}}
 					transition={{
 						opacity: { duration: fadeDuration },
-						scale: { duration: 10, repeat: Infinity, ease: "easeInOut" },
+						scale: { duration: 14, repeat: Infinity, ease: "easeInOut" },
 					}}
 				/>
 			)}
 
-			{/* 白天柔和光晕 */}
+			{/* 白天柔和光晕 — static radial-gradients (no blur, no animate-pulse) */}
 			{!isBlinking && (
 				<motion.div
 					className="absolute inset-0 pointer-events-none"
 					initial={false}
 					animate={{ opacity: isNight ? 0 : 0.3 }}
 					transition={{ duration: fadeDuration }}
-				>
-					<div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-pulse" />
-					<div
-						className="absolute bottom-1/3 right-1/4 w-96 h-96 bg-amber-200/20 rounded-full mix-blend-overlay filter blur-3xl opacity-20 animate-pulse"
-						style={{ animationDelay: "1s" }}
-					/>
-				</motion.div>
+					style={{
+						background: `
+							radial-gradient(circle at 25% 25%, rgba(255,255,255,0.18), transparent 50%),
+							radial-gradient(circle at 75% 66%, rgba(217,194,120,0.12), transparent 55%)
+						`,
+					}}
+				/>
 			)}
 
-			{/* 夜晚血红光晕 */}
+			{/* 夜晚血红光晕 — static radial-gradients (no blur, no animate-pulse) */}
 			{!isBlinking && (
 				<motion.div
 					className="absolute inset-0 pointer-events-none"
 					initial={false}
 					animate={{ opacity: isNight ? 0.4 : 0 }}
 					transition={{ duration: fadeDuration }}
-				>
-					<div
-						className="absolute top-1/3 left-1/3 w-96 h-96 rounded-full filter blur-[100px] animate-pulse"
-						style={{ background: "rgba(138, 28, 28, 0.15)" }}
-					/>
-					<div
-						className="absolute bottom-1/4 right-1/3 w-64 h-64 rounded-full filter blur-[80px] animate-pulse"
-						style={{
-							background: "rgba(197, 160, 89, 0.08)",
-							animationDelay: "2s",
-						}}
-					/>
-				</motion.div>
+					style={{
+						background: `
+							radial-gradient(circle at 33% 33%, rgba(138,28,28,0.15), transparent 50%),
+							radial-gradient(circle at 66% 75%, rgba(197,160,89,0.08), transparent 50%)
+						`,
+					}}
+				/>
 			)}
 
 			{/* 装饰角纹 - 参考 style-unification-preview.html */}

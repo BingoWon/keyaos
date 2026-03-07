@@ -27,8 +27,21 @@ export default function WerewolfEntry() {
 
 	useEffect(() => {
 		if (hasCrisp) Crisp.chat.hide();
+
+		const root = document.documentElement;
+		const onVisChange = () => {
+			if (document.hidden) {
+				root.style.setProperty("--wc-paused", "paused");
+			} else {
+				root.style.removeProperty("--wc-paused");
+			}
+		};
+		document.addEventListener("visibilitychange", onVisChange);
+
 		return () => {
 			if (hasCrisp) Crisp.chat.show();
+			document.removeEventListener("visibilitychange", onVisChange);
+			root.style.removeProperty("--wc-paused");
 		};
 	}, []);
 

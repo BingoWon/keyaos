@@ -1,4 +1,5 @@
 :root {
+	--wc-paused: running;
 	--font-title: "Cinzel";
 	--font-chinese: "Noto Serif SC";
 	/* ========== 核心色板 (参考 style-unification-preview.html) ========== */
@@ -77,9 +78,9 @@
 	--glass-border: rgba(255, 255, 255, 0.6);
 	--glass-shadow: 0 8px 32px rgba(61, 46, 36, 0.08);
 	--glass-shadow-strong: 0 12px 48px rgba(61, 46, 36, 0.12);
-	--glass-blur: 16px;
-	--glass-blur-weak: 10px;
-	--glass-blur-strong: 24px;
+	--glass-blur: 10px;
+	--glass-blur-weak: 6px;
+	--glass-blur-strong: 16px;
 
 	/* 顶部栏 */
 	--topbar-bg: rgba(255, 255, 255, 0.85);
@@ -454,7 +455,7 @@ input[type="submit"]:not(:disabled),
 
 .wc-contract-fog {
 	position: absolute;
-	inset: -40%;
+	inset: -5%;
 	z-index: 0;
 	pointer-events: none;
 	background:
@@ -478,8 +479,8 @@ input[type="submit"]:not(:disabled),
 			rgba(0, 0, 0, 0.32),
 			rgba(0, 0, 0, 0) 62%
 		);
-	filter: blur(1px);
 	opacity: 0.85;
+	will-change: transform;
 	animation: wc-fog-drift 22s ease-in-out infinite;
 }
 
@@ -834,22 +835,57 @@ input[type="submit"]:not(:disabled),
 @keyframes wc-seal-breathe {
 	0% {
 		transform: scale(1);
-		filter: saturate(1);
 	}
 	50% {
 		transform: scale(1.05);
-		filter: saturate(1.15);
 	}
 	100% {
 		transform: scale(1);
-		filter: saturate(1);
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
-	.wc-wax-seal--auth {
-		animation: none;
+	.wc-wax-seal--auth,
+	.wc-contract-fog,
+	.wc-shine-effect::after,
+	.wc-wax-seal::before,
+	.wc-summoning-status,
+	.wc-circle-ring--1,
+	.wc-circle-ring--2,
+	.wc-circle-ring--3,
+	.wc-fog-container,
+	.wc-ring-1,
+	.wc-ring-2,
+	.wc-ring-3,
+	.wc-altar-core,
+	.wc-wolf-icon,
+	.wc-slot-loading-spinner,
+	.wc-status-title,
+	.wc-player-card--speaking,
+	.wc-player-card--selectable,
+	.wc-typing-cursor,
+	.typing-cursor,
+	.current-speaker-highlight,
+	.animate-pulse-glow,
+	.animate-pulse-glow-delayed {
+		animation: none !important;
 	}
+}
+
+.wc-contract-fog,
+.wc-fog-container,
+.wc-wax-seal--auth,
+.wc-wax-seal::before,
+.wc-shine-effect::after,
+.wc-altar-core,
+.wc-circle-ring--1,
+.wc-circle-ring--2,
+.wc-circle-ring--3,
+.wc-ring-1,
+.wc-ring-2,
+.wc-ring-3,
+.wc-summoning-status {
+	animation-play-state: var(--wc-paused) !important;
 }
 
 .wc-wax-seal-icon {
@@ -1126,7 +1162,7 @@ input[type="submit"]:not(:disabled),
 
 .wc-fog-container {
 	position: absolute;
-	inset: -50%;
+	inset: -10%;
 	background:
 		radial-gradient(circle at 50% 50%, rgba(138, 28, 28, 0.05), transparent 60%),
 		radial-gradient(
@@ -1134,7 +1170,8 @@ input[type="submit"]:not(:disabled),
 			rgba(197, 160, 89, 0.03),
 			transparent 50%
 		);
-	animation: wc-fog-drift 30s ease-in-out infinite alternate;
+	will-change: transform;
+	animation: wc-summoning-fog-drift 30s ease-in-out infinite alternate;
 	pointer-events: none;
 }
 
@@ -1149,12 +1186,12 @@ input[type="submit"]:not(:disabled),
 	pointer-events: none;
 }
 
-@keyframes wc-fog-drift {
+@keyframes wc-summoning-fog-drift {
 	0% {
 		transform: rotate(0deg) scale(1);
 	}
 	100% {
-		transform: rotate(5deg) scale(1.1);
+		transform: rotate(3deg) scale(1.05);
 	}
 }
 
@@ -1232,11 +1269,11 @@ input[type="submit"]:not(:disabled),
 
 .wc-altar-core {
 	position: absolute;
-	width: 120px;
-	height: 120px;
-	background: radial-gradient(circle, var(--color-gold-dim), transparent);
+	width: 200px;
+	height: 200px;
+	background: radial-gradient(circle, var(--color-gold-dim), transparent 65%);
 	border-radius: 50%;
-	filter: blur(20px);
+	will-change: transform, opacity;
 	animation: wc-summoning-breathe 4s ease-in-out infinite;
 }
 
@@ -4177,31 +4214,26 @@ input[type="submit"]:not(:disabled),
 	0% {
 		opacity: 0;
 		transform: scale(0.6);
-		filter: blur(10px);
 	}
 	45% {
-		opacity: 1;
+		opacity: 0.8;
 		transform: scale(1.35);
-		filter: blur(20px);
 	}
 	100% {
 		opacity: 0;
 		transform: scale(2.1);
-		filter: blur(40px);
 	}
 }
 
 @keyframes wc-night-ripple {
 	0% {
-		width: 14px;
-		height: 14px;
 		opacity: 0.7;
+		transform: scale(1.4);
 		border-width: 2px;
 	}
 	100% {
-		width: 680px;
-		height: 680px;
 		opacity: 0;
+		transform: scale(68);
 		border-width: 0;
 	}
 }
@@ -4209,7 +4241,7 @@ input[type="submit"]:not(:disabled),
 /* Witch poison (mist + distortion) */
 .wc-night-poison-mist {
 	position: absolute;
-	inset: -50%;
+	inset: -10%;
 	background:
 		radial-gradient(
 			circle at 30% 40%,
@@ -4226,7 +4258,6 @@ input[type="submit"]:not(:disabled),
 			rgba(180, 120, 255, 0.08),
 			transparent 50%
 		);
-	filter: blur(48px);
 	opacity: 0;
 	animation:
 		wc-night-mist-fade 0.7s ease-out forwards,

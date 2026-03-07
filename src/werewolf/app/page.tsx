@@ -1477,7 +1477,7 @@ export default function Home() {
 	const isWelcomeStage = !gameStarted;
 
 	return (
-		<div className="h-screen flex flex-col overflow-hidden bg-transparent">
+		<div className="h-dvh pt-14 flex flex-col overflow-hidden bg-transparent">
 			<GameBackground
 				isNight={visualIsNight}
 				isBlinking={!!dayNightBlinkPhase}

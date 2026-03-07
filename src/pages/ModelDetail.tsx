@@ -14,7 +14,7 @@ import { ModalityBadges } from "../components/Modalities";
 import { OrgLogo } from "../components/OrgLogo";
 import { PriceChart } from "../components/PriceChart";
 import { ProviderLogo } from "../components/ProviderLogo";
-import { Breadcrumb, buttonClass, DualPrice } from "../components/ui";
+import { Badge, Breadcrumb, buttonClass, DualPrice } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
@@ -121,7 +121,7 @@ export function ModelDetail() {
 					<div className="mt-3 flex flex-wrap items-center gap-2">
 						{group.createdAt > 0 && (
 							<span
-								className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.blue.soft}`}
+								className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.sky.soft}`}
 							>
 								<ClockIcon className="size-3.5" />
 								{formatRelativeTime(group.createdAt, i18n.language)}
@@ -129,14 +129,14 @@ export function ModelDetail() {
 						)}
 						{maxCtx > 0 && (
 							<span
-								className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.green.soft}`}
+								className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.amber.soft}`}
 							>
 								<CubeTransparentIcon className="size-3.5" />
 								{formatContext(maxCtx)} context
 							</span>
 						)}
 						<span
-							className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.amber.soft}`}
+							className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.teal.soft}`}
 						>
 							<ServerStackIcon className="size-3.5" />
 							{group.providers.length}{" "}

@@ -224,11 +224,27 @@ export async function executeCompletion(
 		} catch (err) {
 			await credDao.reportFailure(credential.id, undefined, isSub);
 			cb.recordFailure(provider.info.id, modelId);
+
+			const errMsg = err instanceof Error ? err.message : String(err);
 			rlog.warn("gateway", "Provider threw, retrying", {
 				attempt,
 				providerId: provider.info.id,
-				error: err instanceof Error ? err.message : String(err),
+				error: errMsg,
 			});
+
+			c.executionCtx.waitUntil(
+				recordFailureLog(c.env.DB, {
+					consumerId,
+					credentialId: credential.id,
+					credentialOwnerId: credential.owner_id,
+					providerId: credential.provider_id,
+					modelId,
+					priceMultiplier: credential.price_multiplier,
+					errorCode: 0,
+					errorDetail: errMsg.slice(0, 512) || null,
+				}),
+			);
+
 			lastError = err;
 		}
 	}

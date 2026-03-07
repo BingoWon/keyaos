@@ -39,10 +39,11 @@ export function recordFailure(providerId: string, modelId: string): void {
 
 /** Check if a (provider, model) pair is circuit-broken. */
 export function isOpen(providerId: string, modelId: string): boolean {
-    const entry = breakers.get(key(providerId, modelId));
+    const k = key(providerId, modelId);
+    const entry = breakers.get(k);
     if (!entry) return false;
     if (Date.now() - entry.lastFailure >= WINDOW_MS) {
-        breakers.delete(key(providerId, modelId));
+        breakers.delete(k);
         return false;
     }
     return entry.count >= THRESHOLD;

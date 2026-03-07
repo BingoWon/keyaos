@@ -34,8 +34,6 @@ export interface OpenAICompatibleConfig {
 	credentialGuide?: CredentialGuide;
 }
 
-
-
 function defaultParseModels(
 	raw: Record<string, unknown>,
 	providerId: string,

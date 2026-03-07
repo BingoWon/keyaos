@@ -70,112 +70,6 @@ export function useSpecialEvents(
 		getAccessToken: _getAccessToken,
 	} = callbacks;
 
-	/** 处理猎人死亡开枪 */
-	const handleHunterDeath = useCallback(
-		async (
-			state: GameState,
-			hunter: Player,
-			diedAtNight: boolean,
-			token: FlowToken,
-			afterHunter: (state: GameState) => Promise<void>,
-		) => {
-			const texts = getTexts();
-			let currentState = transitionPhase(state, "HUNTER_SHOOT");
-			setGameState(currentState);
-
-			if (hunter.isHuman) {
-				// 存储是否夜间死亡的信息，供后续 handleNightAction 使用
-				(
-					currentState as GameState & { _hunterDiedAtNight?: boolean }
-				)._hunterDiedAtNight = diedAtNight;
-				setGameState(currentState);
-				setDialogue(
-					texts.speakerSystem,
-					texts.t("specialEvents.hunterPrompt"),
-					false,
-				);
-				return;
-			}
-
-			// AI 猎人开枪
-			setIsWaitingForAI(true);
-			const targetSeat = await generateHunterShoot(currentState, hunter);
-			setIsWaitingForAI(false);
-
-			if (!isTokenValid(token)) return;
-
-			if (targetSeat !== null) {
-				currentState = killPlayer(currentState, targetSeat);
-				const target = currentState.players.find((p) => p.seat === targetSeat);
-				if (target) {
-					currentState = addSystemMessage(
-						currentState,
-						texts.systemMessages.hunterShoot(
-							hunter.seat + 1,
-							targetSeat + 1,
-							target.displayName,
-						),
-					);
-					setDialogue(
-						texts.speakerHost,
-						texts.systemMessages.hunterShoot(
-							hunter.seat + 1,
-							targetSeat + 1,
-							target.displayName,
-						),
-						false,
-					);
-				}
-
-				// 记录猎人开枪
-				const shot = { hunterSeat: hunter.seat, targetSeat };
-				if (diedAtNight) {
-					const prevNightRecord =
-						currentState.nightHistory?.[currentState.day] || {};
-					currentState = {
-						...currentState,
-						nightHistory: {
-							...(currentState.nightHistory || {}),
-							[currentState.day]: { ...prevNightRecord, hunterShot: shot },
-						},
-					};
-				} else {
-					const prevDayRecord =
-						currentState.dayHistory?.[currentState.day] || {};
-					currentState = {
-						...currentState,
-						dayHistory: {
-							...(currentState.dayHistory || {}),
-							[currentState.day]: { ...prevDayRecord, hunterShot: shot },
-						},
-					};
-				}
-				setGameState(currentState);
-			}
-
-			const winner = checkWinCondition(currentState);
-			if (winner) {
-				await endGame(currentState, winner);
-				return;
-			}
-
-			await delay(DELAY_CONFIG.LONG);
-			await waitForUnpause();
-			if (!isTokenValid(token)) return;
-
-			await afterHunter(currentState);
-		},
-		[
-			setGameState,
-			setDialogue,
-			setIsWaitingForAI,
-			waitForUnpause,
-			isTokenValid,
-			endGame,
-			getTexts,
-		],
-	);
-
 	/** 人类猎人开枪 */
 	const handleHumanHunterShoot = useCallback(
 		async (_targetSeat: number, _diedAtNight: boolean): Promise<GameState> => {
@@ -236,6 +130,109 @@ export function useSpecialEvents(
 			await playNarrator(winner === "village" ? "villageWin" : "wolfWin");
 		},
 		[setGameState, setDialogue, getTexts],
+	);
+
+	/** 处理猎人死亡开枪 */
+	const handleHunterDeath = useCallback(
+		async (
+			state: GameState,
+			hunter: Player,
+			diedAtNight: boolean,
+			token: FlowToken,
+			afterHunter: (state: GameState) => Promise<void>,
+		) => {
+			const texts = getTexts();
+			let currentState = transitionPhase(state, "HUNTER_SHOOT");
+			setGameState(currentState);
+
+			if (hunter.isHuman) {
+				(
+					currentState as GameState & { _hunterDiedAtNight?: boolean }
+				)._hunterDiedAtNight = diedAtNight;
+				setGameState(currentState);
+				setDialogue(
+					texts.speakerSystem,
+					texts.t("specialEvents.hunterPrompt"),
+					false,
+				);
+				return;
+			}
+
+			setIsWaitingForAI(true);
+			const targetSeat = await generateHunterShoot(currentState, hunter);
+			setIsWaitingForAI(false);
+
+			if (!isTokenValid(token)) return;
+
+			if (targetSeat !== null) {
+				currentState = killPlayer(currentState, targetSeat);
+				const target = currentState.players.find((p) => p.seat === targetSeat);
+				if (target) {
+					currentState = addSystemMessage(
+						currentState,
+						texts.systemMessages.hunterShoot(
+							hunter.seat + 1,
+							targetSeat + 1,
+							target.displayName,
+						),
+					);
+					setDialogue(
+						texts.speakerHost,
+						texts.systemMessages.hunterShoot(
+							hunter.seat + 1,
+							targetSeat + 1,
+							target.displayName,
+						),
+						false,
+					);
+				}
+
+				const shot = { hunterSeat: hunter.seat, targetSeat };
+				if (diedAtNight) {
+					const prevNightRecord =
+						currentState.nightHistory?.[currentState.day] || {};
+					currentState = {
+						...currentState,
+						nightHistory: {
+							...(currentState.nightHistory || {}),
+							[currentState.day]: { ...prevNightRecord, hunterShot: shot },
+						},
+					};
+				} else {
+					const prevDayRecord =
+						currentState.dayHistory?.[currentState.day] || {};
+					currentState = {
+						...currentState,
+						dayHistory: {
+							...(currentState.dayHistory || {}),
+							[currentState.day]: { ...prevDayRecord, hunterShot: shot },
+						},
+					};
+				}
+				setGameState(currentState);
+			}
+
+			const winner = checkWinCondition(currentState);
+			if (winner) {
+				await endGame(currentState, winner);
+				return;
+			}
+
+			await delay(DELAY_CONFIG.LONG);
+			await waitForUnpause();
+			if (!isTokenValid(token)) return;
+
+			await afterHunter(currentState);
+		},
+		[
+			setGameState,
+			setDialogue,
+			setIsWaitingForAI,
+			waitForUnpause,
+			isTokenValid,
+			endGame,
+			getTexts,
+		],
 	);
 
 	/** 结算夜晚 */

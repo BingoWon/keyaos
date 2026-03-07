@@ -4748,64 +4748,36 @@
  * To fine-tune: adjust top/bottom/left/right + width below.
  */
 
-/* Left column (3 cards) — OpenAI (large), Anthropic (small), Google (medium) */
+/* Left column — OpenAI (large circle), Anthropic (medium, shifted right), Google (large) */
 .wc-sponsor-card--left-top {
 	top: 10%;
 	left: 3%;
 	width: 192px;
 }
 
-.wc-sponsor-card--left-top .wc-sponsor-card__logo {
-	width: 62px;
-	height: 62px;
-}
-
 .wc-sponsor-card--left-mid {
-	top: 46%;
-	left: 8%;
-	width: 148px;
-}
-
-.wc-sponsor-card--left-mid .wc-sponsor-card__logo {
-	width: 42px;
-	height: 42px;
-}
-
-.wc-sponsor-card--left-mid .wc-sponsor-card__name {
-	font-size: 11px;
-}
-
-.wc-sponsor-card--left-bottom {
-	bottom: 10%;
-	left: 2%;
+	top: 40%;
+	left: 10%;
 	width: 168px;
 }
 
-/* Right column (2 cards) — DeepSeek (medium-large), Qwen (small) */
+.wc-sponsor-card--left-bottom {
+	bottom: 15%;
+	left: 2%;
+	width: 188px;
+}
+
+/* Right column — DeepSeek (large), Qwen (medium, shifted left-up) */
 .wc-sponsor-card--right-top {
 	top: 16%;
 	right: 3%;
-	width: 180px;
-}
-
-.wc-sponsor-card--right-top .wc-sponsor-card__logo {
-	width: 58px;
-	height: 58px;
+	width: 184px;
 }
 
 .wc-sponsor-card--right-bottom {
-	bottom: 16%;
-	right: 6%;
-	width: 152px;
-}
-
-.wc-sponsor-card--right-bottom .wc-sponsor-card__logo {
-	width: 44px;
-	height: 44px;
-}
-
-.wc-sponsor-card--right-bottom .wc-sponsor-card__name {
-	font-size: 11px;
+	bottom: 22%;
+	right: 8%;
+	width: 162px;
 }
 
 @media (max-width: 1280px) {
@@ -4815,13 +4787,13 @@
 	}
 
 	.wc-sponsor-card--left-mid {
-		left: 3%;
-		width: 130px;
+		left: 4%;
+		width: 140px;
 	}
 
 	.wc-sponsor-card--left-bottom {
 		left: 0%;
-		width: 145px;
+		width: 155px;
 	}
 
 	.wc-sponsor-card--right-top {
@@ -4830,8 +4802,8 @@
 	}
 
 	.wc-sponsor-card--right-bottom {
-		right: 2%;
-		width: 132px;
+		right: 3%;
+		width: 136px;
 	}
 }
 

@@ -1,14 +1,9 @@
 import {
-	DotsThreeOutlineVertical,
-	EnvelopeSimple,
 	FingerprintSimple,
 	GearSix,
 	GithubLogo,
-	Handshake,
 	Sparkle,
 	Star,
-	UserCircle,
-	Users,
 	UsersFour,
 	Wrench,
 } from "@phosphor-icons/react";
@@ -27,13 +22,7 @@ import { SharePanel } from "@wolf/components/game/SharePanel";
 import { UserProfileModal } from "@wolf/components/game/UserProfileModal";
 import { WerewolfIcon } from "@wolf/components/icons/FlatIcons";
 import { Button } from "@wolf/components/ui/button";
-import {
-	Dialog,
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@wolf/components/ui/dialog";
+import { Dialog, DialogContent } from "@wolf/components/ui/dialog";
 import { useCredits } from "@wolf/hooks/useCredits";
 import { useCustomCharacters } from "@wolf/hooks/useCustomCharacters";
 import { useAppLocale } from "@wolf/i18n/useAppLocale";
@@ -256,8 +245,6 @@ export function WelcomeScreen({
 }: WelcomeScreenProps) {
 	const t = useTranslations();
 	const { locale } = useAppLocale();
-	const discordInviteUrl = "https://discord.gg/ETkdZWgy";
-	const keyaosUrl = window.location.origin;
 
 	const {
 		user,
@@ -283,11 +270,7 @@ export function WelcomeScreen({
 	const [isShareOpen, setIsShareOpen] = useState(false);
 	const [isAccountOpen, setIsAccountOpen] = useState(false);
 	const [isUserProfileOpen, setIsUserProfileOpen] = useState(false);
-	const [isSponsorOpen, setIsSponsorOpen] = useState(false);
 	const [isSpringFestivalOpen, setIsSpringFestivalOpen] = useState(false);
-	const [isGroupOpen, setIsGroupOpen] = useState(false);
-	const [groupImgOk, setGroupImgOk] = useState<boolean | null>(null);
-	const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 	const [isCustomCharacterOpen, setIsCustomCharacterOpen] = useState(false);
 	const [isLowCreditOpen, setIsLowCreditOpen] = useState(false);
 	const [userProfileDefaultTab, setUserProfileDefaultTab] = useState<
@@ -350,10 +333,6 @@ export function WelcomeScreen({
 	const mayHaveUnclaimedSpringQuota =
 		springCampaignActiveNow && !isSpringCampaignForToday;
 	const springFestivalSeenKey = `wolfcha:${SPRING_CAMPAIGN_CODE}:welcome_seen`;
-
-	useEffect(() => {
-		if (locale === "en") setIsGroupOpen(false);
-	}, [locale]);
 
 	useEffect(() => {
 		if (
@@ -540,10 +519,7 @@ export function WelcomeScreen({
 		(REFERRAL_BONUS_ENABLED && isShareOpen) ||
 		isAccountOpen ||
 		isUserProfileOpen ||
-		isSponsorOpen ||
 		(SPRING_CAMPAIGN_ENABLED && isSpringFestivalOpen) ||
-		isGroupOpen ||
-		isMobileMenuOpen ||
 		isCustomCharacterOpen ||
 		isLowCreditOpen ||
 		isDevConsoleOpen;
@@ -623,17 +599,6 @@ export function WelcomeScreen({
 			);
 
 			window.setTimeout(() => particle.remove(), 1600);
-		}
-	};
-
-	const handleCopyKeyaosUrl = async () => {
-		try {
-			await navigator.clipboard.writeText(keyaosUrl);
-			toast.success(t("welcome.sponsor.copySuccess"), {
-				description: keyaosUrl,
-			});
-		} catch {
-			toast(t("welcome.sponsor.copyFallback"), { description: keyaosUrl });
 		}
 	};
 
@@ -801,27 +766,6 @@ export function WelcomeScreen({
 			});
 	};
 
-	const handleOpenGroup = () => {
-		if (locale === "en") {
-			if (typeof window !== "undefined") {
-				window.open(discordInviteUrl, "_blank", "noopener,noreferrer");
-			}
-			return;
-		}
-		setIsGroupOpen(true);
-	};
-
-	const groupIcon =
-		locale === "en" ? (
-			<img
-				src="/Discord-Symbol-Blurple.svg"
-				alt="Discord"
-				className="h-4 w-4"
-			/>
-		) : (
-			<Users size={16} />
-		);
-
 	return (
 		<>
 			<div className="wc-contract-screen selection:bg-[var(--color-accent)] selection:text-white">
@@ -905,88 +849,6 @@ export function WelcomeScreen({
 					onDeleteCharacter={customCharacters.deleteCharacter}
 				/>
 
-				<Dialog
-					open={locale === "en" ? false : isGroupOpen}
-					onOpenChange={(open) => {
-						if (locale === "en") return;
-						setIsGroupOpen(open);
-					}}
-				>
-					<DialogContent className="max-w-[420px]">
-						<DialogHeader>
-							<DialogTitle className="flex items-center gap-2">
-								<Users size={18} weight="duotone" />
-								{t("welcome.group.title")}
-							</DialogTitle>
-							<DialogDescription>
-								{t("welcome.group.description")}
-							</DialogDescription>
-						</DialogHeader>
-
-						<div className="mt-2 flex items-center justify-center">
-							{groupImgOk !== false && (
-								<img
-									src="/game/group.png"
-									alt={t("settings.about.group.alt")}
-									className="w-full max-w-[280px] max-h-[50vh] rounded-md border-2 border-[var(--border-color)] bg-white object-contain"
-									onLoad={() => setGroupImgOk(true)}
-									onError={() => setGroupImgOk(false)}
-								/>
-							)}
-							{groupImgOk === false && (
-								<div className="text-xs text-[var(--text-muted)]">
-									{t("settings.about.group.missing")}
-								</div>
-							)}
-						</div>
-					</DialogContent>
-				</Dialog>
-
-				<Dialog open={isSponsorOpen} onOpenChange={setIsSponsorOpen}>
-					<DialogContent className="max-w-[560px]">
-						<DialogHeader>
-							<DialogTitle className="flex items-center gap-2">
-								<Handshake size={18} weight="duotone" />
-								{t("welcome.sponsor.title")}
-							</DialogTitle>
-							<DialogDescription>
-								{t("welcome.sponsor.subtitle")}
-							</DialogDescription>
-						</DialogHeader>
-
-						<div className="space-y-3 text-sm leading-relaxed text-[var(--text-primary)]">
-							<p>{t("welcome.sponsor.description")}</p>
-							<ul className="list-disc pl-5 space-y-1 text-[var(--text-secondary)]">
-								<li>{t("welcome.sponsor.items.credits")}</li>
-								<li>{t("welcome.sponsor.items.media")}</li>
-								<li>{t("welcome.sponsor.items.collaboration")}</li>
-								<li>{t("welcome.sponsor.items.community")}</li>
-							</ul>
-							<p className="text-[var(--text-secondary)]">
-								{t("welcome.sponsor.note")}
-							</p>
-						</div>
-
-						<div className="flex flex-col sm:flex-row gap-2 sm:justify-end">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={handleCopyKeyaosUrl}
-								className="gap-2"
-							>
-								<EnvelopeSimple size={16} />
-								{t("welcome.sponsor.copyEmail")}
-							</Button>
-							<Button asChild className="gap-2">
-								<a href="/" rel="noopener noreferrer">
-									<EnvelopeSimple size={16} />
-									{t("welcome.sponsor.sendEmail")}
-								</a>
-							</Button>
-						</div>
-					</DialogContent>
-				</Dialog>
-
 				{SPRING_CAMPAIGN_ENABLED && (
 					<Dialog
 						open={isSpringFestivalOpen}
@@ -1051,81 +913,6 @@ export function WelcomeScreen({
 					</Dialog>
 				)}
 
-				<Dialog open={isMobileMenuOpen} onOpenChange={setIsMobileMenuOpen}>
-					<DialogContent className="max-w-[420px]">
-						<DialogHeader>
-							<DialogTitle>{t("welcome.mobileMenu.title")}</DialogTitle>
-							<DialogDescription>
-								{t("welcome.mobileMenu.description")}
-							</DialogDescription>
-						</DialogHeader>
-						<div className="grid gap-2">
-							<Button
-								type="button"
-								variant="outline"
-								className="justify-start"
-								onClick={() => {
-									setIsMobileMenuOpen(false);
-									setIsSponsorOpen(true);
-								}}
-							>
-								<Handshake size={16} />
-								{t("welcome.sponsor.action")}
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								className="justify-start"
-								onClick={() => {
-									setIsMobileMenuOpen(false);
-									setIsSetupOpen(true);
-								}}
-							>
-								<GearSix size={16} />
-								{t("welcome.settings")}
-							</Button>
-							{user ? (
-								<Button
-									type="button"
-									variant="outline"
-									className="justify-start"
-									onClick={() => {
-										setIsMobileMenuOpen(false);
-										setIsUserProfileOpen(true);
-									}}
-								>
-									<UserCircle size={16} />
-									{t("welcome.account.info")}
-								</Button>
-							) : (
-								<Button
-									type="button"
-									variant="outline"
-									className="justify-start"
-									onClick={() => {
-										setIsMobileMenuOpen(false);
-										setIsAuthOpen(true);
-									}}
-								>
-									<UserCircle size={16} />
-									{t("welcome.auth.signIn")}
-								</Button>
-							)}
-							<Button asChild variant="outline" className="justify-start">
-								<a
-									href="https://github.com/BingoWon/Keyaos"
-									target="_blank"
-									rel="noopener noreferrer"
-									onClick={() => setIsMobileMenuOpen(false)}
-								>
-									<GithubLogo size={16} />
-									{t("welcome.github.title")}
-								</a>
-							</Button>
-						</div>
-					</DialogContent>
-				</Dialog>
-
 				{/* AI Provider showcase cards */}
 				<div
 					className="wc-sponsor-cards"
@@ -1166,13 +953,13 @@ export function WelcomeScreen({
 				</div>
 
 				<div className="wc-welcome-actions absolute top-5 right-5 z-20 flex items-center gap-2">
-					<div className="hidden sm:flex items-center gap-2">
+					<div className="flex items-center gap-2">
 						<LocaleSwitcher className="shrink-0" />
 						<a
-							href="https://github.com/BingoWon/Keyaos"
+							href="https://github.com/oil-oil/wolfcha"
 							target="_blank"
 							rel="noopener noreferrer"
-							className="hidden sm:flex items-center gap-1.5 rounded-md border-2 border-[var(--border-color)] bg-[var(--bg-card)] px-2 py-1 text-[11px] text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all group"
+							className="flex items-center gap-1.5 rounded-md border-2 border-[var(--border-color)] bg-[var(--bg-card)] px-2 py-1 text-[11px] text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-all group"
 							title="View on GitHub"
 						>
 							<GithubLogo
@@ -1197,112 +984,11 @@ export function WelcomeScreen({
 						<Button
 							type="button"
 							variant="outline"
-							onClick={() => setIsSponsorOpen(true)}
-							className="h-8 text-xs gap-2"
-						>
-							<Handshake size={16} />
-							{t("welcome.sponsor.action")}
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={handleOpenGroup}
-							className="h-8 text-xs gap-2"
-						>
-							{groupIcon}
-							{t("welcome.group.title")}
-						</Button>
-
-						{user ? (
-							<button
-								type="button"
-								onClick={() => setIsUserProfileOpen(true)}
-								className="hidden md:flex items-center gap-2 rounded-md border-2 border-[var(--border-color)] bg-[var(--bg-card)] px-2.5 py-1.5 text-xs text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors"
-								title={t("welcome.account.viewInfo")}
-							>
-								<UserCircle size={16} />
-								<span className="truncate max-w-[160px]">
-									{user.email ?? t("userProfile.loggedIn")}
-								</span>
-								{customKeyEnabled ? (
-									<span className="opacity-70">{t("customKey.title")}</span>
-								) : (
-									<span className="opacity-70">
-										{springCampaignActiveNow
-											? t("welcome.account.tempQuotaShort", {
-													count: effectiveSpringRemainingQuota,
-												})
-											: null}
-										{springCampaignActiveNow ? " · " : null}
-										{t("welcome.account.remaining", {
-											count: creditsLoading ? "..." : (credits ?? 0),
-										})}
-									</span>
-								)}
-							</button>
-						) : (
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setIsAuthOpen(true)}
-								className="h-8 text-xs gap-2"
-							>
-								<UserCircle size={16} />
-								{t("welcome.auth.signIn")}
-							</Button>
-						)}
-
-						{user && (
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() => setIsUserProfileOpen(true)}
-								className="h-8 text-xs gap-2 md:hidden"
-							>
-								<UserCircle size={16} />
-								{t("welcome.account.info")}
-							</Button>
-						)}
-
-						<Button
-							type="button"
-							variant="outline"
 							onClick={() => setIsSetupOpen(true)}
 							className="h-8 text-xs gap-2"
 						>
 							<GearSix size={16} />
-							{t("welcome.settings")}
-						</Button>
-					</div>
-
-					<div className="flex sm:hidden items-center gap-2">
-						<LocaleSwitcher className="shrink-0" />
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setIsSponsorOpen(true)}
-							className="h-8 text-xs gap-2"
-						>
-							<Handshake size={16} />
-							{t("welcome.sponsor.short")}
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={handleOpenGroup}
-							className="h-8 text-xs gap-2"
-						>
-							{groupIcon}
-							{t("welcome.group.short")}
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setIsMobileMenuOpen(true)}
-							className="h-8 w-8 px-0"
-							aria-label={t("welcome.mobileMenu.more")}
-						>
-							<DotsThreeOutlineVertical size={18} />
+							<span className="hidden sm:inline">{t("welcome.settings")}</span>
 						</Button>
 					</div>
 				</div>

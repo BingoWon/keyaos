@@ -42,7 +42,7 @@ export function PostGameAnalysisPage({
 	};
 
 	return (
-		<div className="analysis-page min-h-screen pb-24" data-theme="dark">
+		<div className="wc-game analysis-page min-h-screen pb-24" data-theme="dark">
 			<AnalysisHeader gameId={data.gameId} />
 
 			<main className="max-w-md lg:max-w-5xl mx-auto px-4 py-8">

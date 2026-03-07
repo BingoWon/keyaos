@@ -269,8 +269,9 @@ export default function Home() {
 		return () => media.removeListener(update);
 	}, []);
 
+	const gameContainerRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		document.documentElement.setAttribute(
+		gameContainerRef.current?.setAttribute(
 			"data-theme",
 			visualIsNight ? "dark" : "light",
 		);
@@ -1477,7 +1478,11 @@ export default function Home() {
 	const isWelcomeStage = !gameStarted;
 
 	return (
-		<div className="h-dvh pt-14 flex flex-col overflow-hidden bg-transparent">
+		<div
+			ref={gameContainerRef}
+			className="wc-game h-dvh pt-14 flex flex-col overflow-hidden bg-transparent"
+			data-theme={visualIsNight ? "dark" : "light"}
+		>
 			<GameBackground
 				isNight={visualIsNight}
 				isBlinking={!!dayNightBlinkPhase}

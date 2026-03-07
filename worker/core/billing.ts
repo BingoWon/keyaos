@@ -74,6 +74,7 @@ export async function recordLog(
 			price_multiplier: priceMultiplier,
 			status: "ok",
 			error_code: null,
+			error_detail: null,
 		});
 
 		await new CredentialsDao(db, encryptionKey).deductQuota(
@@ -99,6 +100,7 @@ export async function recordFailureLog(
 		modelId: string;
 		priceMultiplier: number;
 		errorCode: number;
+		errorDetail: string | null;
 	},
 ): Promise<void> {
 	try {
@@ -117,6 +119,7 @@ export async function recordFailureLog(
 			price_multiplier: params.priceMultiplier,
 			status: "error",
 			error_code: params.errorCode,
+			error_detail: params.errorDetail,
 		});
 	} catch (err) {
 		log.error("billing", "Failure log write failed", {

@@ -63,6 +63,7 @@ export interface DbLogEntry {
 	price_multiplier: number;
 	status: "ok" | "error";
 	error_code: number | null;
+	error_detail: string | null;
 	created_at: number;
 }
 

@@ -78,6 +78,7 @@ CREATE TABLE IF NOT EXISTS logs (
     price_multiplier REAL NOT NULL DEFAULT 1.0,
     status TEXT NOT NULL DEFAULT 'ok',
     error_code INTEGER,
+    error_detail TEXT,
     created_at INTEGER NOT NULL
 );
 

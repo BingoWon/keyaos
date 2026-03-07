@@ -103,10 +103,14 @@ export async function executeCompletion(
 				await credDao.reportFailure(credential.id, response.status, isSub);
 				cb.recordFailure(provider.info.id, modelId);
 
+				// Capture error body for diagnostics (non-blocking read)
+				const errorBody = await response.text().catch(() => "");
+
 				rlog.warn("gateway", "Upstream error, retrying", {
 					attempt,
 					providerId: provider.info.id,
 					status: response.status,
+					detail: errorBody.slice(0, 200),
 				});
 
 				// Record failure log asynchronously
@@ -119,6 +123,7 @@ export async function executeCompletion(
 						modelId,
 						priceMultiplier: credential.price_multiplier,
 						errorCode: response.status,
+						errorDetail: errorBody.slice(0, 512) || null,
 					}),
 				);
 

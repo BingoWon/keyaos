@@ -14,8 +14,8 @@ export class LogsDao {
 					id, consumer_id, credential_id, credential_owner_id, provider_id, model_id,
 					input_tokens, output_tokens, base_cost,
 					consumer_charged, provider_earned, platform_fee, price_multiplier,
-					status, error_code, created_at
-				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+					status, error_code, error_detail, created_at
+				) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
 			)
 			.bind(
 				id,
@@ -33,6 +33,7 @@ export class LogsDao {
 				tx.price_multiplier,
 				tx.status,
 				tx.error_code,
+				tx.error_detail,
 				Date.now(),
 			)
 			.run();

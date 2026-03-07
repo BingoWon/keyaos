@@ -1,4 +1,9 @@
-import { ChevronDownIcon } from "@heroicons/react/24/outline";
+import {
+	ChevronDownIcon,
+	ClockIcon,
+	CubeTransparentIcon,
+	ServerStackIcon,
+} from "@heroicons/react/24/outline";
 import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -9,10 +14,11 @@ import { ModalityBadges } from "../components/Modalities";
 import { OrgLogo } from "../components/OrgLogo";
 import { PriceChart } from "../components/PriceChart";
 import { ProviderLogo } from "../components/ProviderLogo";
-import { Badge, Breadcrumb, buttonClass, DualPrice } from "../components/ui";
+import { Breadcrumb, buttonClass, DualPrice } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import type { ProviderMeta } from "../types/provider";
+import { TOKENS } from "../utils/colors";
 import { formatContext, formatRelativeTime } from "../utils/format";
 import { aggregateModels } from "../utils/models";
 
@@ -112,12 +118,27 @@ export function ModelDetail() {
 						</code>
 						<CopyButton text={group.id} />
 					</div>
-					<div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+					<div className="mt-3 flex flex-wrap items-center gap-2">
 						{group.createdAt > 0 && (
-							<span>{formatRelativeTime(group.createdAt, i18n.language)}</span>
+							<span
+								className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.blue.soft}`}
+							>
+								<ClockIcon className="size-3.5" />
+								{formatRelativeTime(group.createdAt, i18n.language)}
+							</span>
 						)}
-						{maxCtx > 0 && <span>{formatContext(maxCtx)} context</span>}
-						<span>
+						{maxCtx > 0 && (
+							<span
+								className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.green.soft}`}
+							>
+								<CubeTransparentIcon className="size-3.5" />
+								{formatContext(maxCtx)} context
+							</span>
+						)}
+						<span
+							className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${TOKENS.amber.soft}`}
+						>
+							<ServerStackIcon className="size-3.5" />
 							{group.providers.length}{" "}
 							{group.providers.length === 1 ? "provider" : "providers"}
 						</span>

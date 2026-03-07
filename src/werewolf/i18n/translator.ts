@@ -46,13 +46,14 @@ export const getI18n = (
 		return key;
 	};
 
-	// Attach `raw` method for compatibility with code that uses t.raw()
-	(t as TranslatorFn & { raw: TranslatorFn }).raw = (key: string) => {
+	(t as TranslatorFn & { raw: (key: string) => unknown }).raw = (
+		key: string,
+	) => {
 		const resolved = resolveKey(
 			messages as unknown as Record<string, unknown>,
 			key,
 		);
-		return typeof resolved === "string" ? resolved : key;
+		return resolved !== undefined ? resolved : key;
 	};
 
 	return { t, locale: activeLocale };

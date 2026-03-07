@@ -10,7 +10,7 @@ type TranslatorFn = ((
 	key: string,
 	values?: Record<string, unknown>,
 ) => string) & {
-	raw: (key: string) => string;
+	raw: (key: string) => unknown;
 	rich: (key: string, values?: Record<string, unknown>) => string;
 };
 
@@ -25,7 +25,7 @@ export function useTranslations(namespace?: string): TranslatorFn {
 	t.raw = (key: string) => {
 		const fullKey = namespace ? `${namespace}.${key}` : key;
 		return (
-			(rootT as unknown as { raw: (k: string) => string }).raw?.(fullKey) ??
+			(rootT as unknown as { raw: (k: string) => unknown }).raw?.(fullKey) ??
 			rootT(fullKey)
 		);
 	};

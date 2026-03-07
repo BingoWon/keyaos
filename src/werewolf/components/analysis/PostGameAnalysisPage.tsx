@@ -1,5 +1,5 @@
 import type { GameAnalysisData, PlayerSnapshot } from "@wolf/types/analysis";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnalysisFooter } from "./AnalysisFooter";
 import { AnalysisHeader } from "./AnalysisHeader";
 import { IdentityDashboard } from "./IdentityDashboard";
@@ -19,6 +19,13 @@ export function PostGameAnalysisPage({
 	data,
 	onReturn,
 }: PostGameAnalysisPageProps) {
+	useEffect(() => {
+		document.documentElement.setAttribute("data-theme", "dark");
+		return () => {
+			document.documentElement.removeAttribute("data-theme");
+		};
+	}, []);
+
 	const [selectedRoundIndex, setSelectedRoundIndex] = useState(0);
 	const [selectedPlayer, setSelectedPlayer] = useState<PlayerSnapshot | null>(
 		null,
@@ -42,7 +49,7 @@ export function PostGameAnalysisPage({
 	};
 
 	return (
-		<div className="wc-game analysis-page min-h-screen pb-24" data-theme="dark">
+		<div className="wc-game analysis-page min-h-screen pb-24">
 			<AnalysisHeader gameId={data.gameId} />
 
 			<main className="max-w-md lg:max-w-5xl mx-auto px-4 py-8">

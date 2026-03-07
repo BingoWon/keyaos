@@ -269,12 +269,14 @@ export default function Home() {
 		return () => media.removeListener(update);
 	}, []);
 
-	const gameContainerRef = useRef<HTMLDivElement>(null);
 	useEffect(() => {
-		gameContainerRef.current?.setAttribute(
+		document.documentElement.setAttribute(
 			"data-theme",
 			visualIsNight ? "dark" : "light",
 		);
+		return () => {
+			document.documentElement.removeAttribute("data-theme");
+		};
 	}, [visualIsNight]);
 
 	useEffect(() => {
@@ -1478,11 +1480,7 @@ export default function Home() {
 	const isWelcomeStage = !gameStarted;
 
 	return (
-		<div
-			ref={gameContainerRef}
-			className="wc-game h-dvh pt-14 flex flex-col overflow-hidden bg-transparent"
-			data-theme={visualIsNight ? "dark" : "light"}
-		>
+		<div className="wc-game h-dvh pt-14 flex flex-col overflow-hidden bg-transparent">
 			<GameBackground
 				isNight={visualIsNight}
 				isBlinking={!!dayNightBlinkPhase}
@@ -1551,7 +1549,7 @@ export default function Home() {
 						animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 						exit={{ opacity: 0, y: -10, filter: "blur(10px)" }}
 						transition={{ duration: 0.45, ease: "easeOut" }}
-						className="relative z-10 h-full w-full"
+						className="h-full w-full"
 					>
 						<WelcomeScreen
 							humanName={humanName}
@@ -1587,7 +1585,7 @@ export default function Home() {
 						animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
 						exit={{ opacity: 0, y: -10, filter: "blur(10px)" }}
 						transition={{ duration: 0.45, ease: "easeOut" }}
-						className="relative z-10 h-full w-full flex flex-col overflow-hidden"
+						className="h-full w-full flex flex-col overflow-hidden"
 					>
 						<AnimatePresence>
 							{ritualCue && !isRoleRevealOpen && showTable && (

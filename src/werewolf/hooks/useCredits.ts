@@ -4,15 +4,17 @@
  * Returns all fields expected by WelcomeScreen and UserProfileModal.
  */
 
-import type { SpringCampaignSnapshot } from "@wolf/lib/spring-campaign";
 import { useCallback, useState } from "react";
 
 export function useCredits() {
 	const [credits] = useState(Infinity);
 
 	return {
-		user: null as null,
-		session: null as null,
+		user: { id: "keyaos-user", email: "user@keyaos.ai" } as {
+			id: string;
+			email: string;
+		},
+		session: { access_token: "keyaos" } as { access_token: string },
 		credits,
 		referralCode: null as string | null,
 		totalReferrals: 0,
@@ -29,8 +31,8 @@ export function useCredits() {
 		refreshCredits: useCallback(async () => {}, []),
 		claimDailyBonus: useCallback(async () => false, []),
 		claimSpringBonus: useCallback(async () => false, []),
-		springCampaign: null as SpringCampaignSnapshot | null,
-		springSnapshot: null as SpringCampaignSnapshot | null,
+		springCampaign: null as Record<string, unknown> | null,
+		springSnapshot: null as Record<string, unknown> | null,
 		creditLoading: false,
 	};
 }

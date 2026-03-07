@@ -217,7 +217,7 @@ export function PlayerCardCompact({
 			{/* Loading Shimmer Effect */}
 			{!isReady && (
 				<div className="absolute inset-0 overflow-hidden rounded-lg z-0">
-					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[shimmer_2s_infinite]" />
+					<div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent -translate-x-full animate-[wc-shimmer_2s_infinite]" />
 					<div className="absolute inset-0 bg-[var(--bg-card)] opacity-50" />
 				</div>
 			)}

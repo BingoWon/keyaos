@@ -1480,7 +1480,10 @@ export default function Home() {
 	const isWelcomeStage = !gameStarted;
 
 	return (
-		<div className="wc-game h-dvh pt-14 flex flex-col overflow-hidden bg-transparent">
+		<div
+			className="wc-game h-dvh pt-14 flex flex-col overflow-hidden"
+			style={{ backgroundColor: "var(--bg-main)" }}
+		>
 			<GameBackground
 				isNight={visualIsNight}
 				isBlinking={!!dayNightBlinkPhase}

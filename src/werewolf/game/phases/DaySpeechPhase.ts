@@ -1,0 +1,860 @@
+import { getI18n } from "@wolf/i18n/translator";
+import { DELAY_CONFIG } from "@wolf/lib/game-constants";
+import type { FlowToken } from "@wolf/lib/game-flow-controller";
+import { delay } from "@wolf/lib/game-flow-controller";
+import {
+	addSystemMessage,
+	checkWinCondition,
+	getNextAliveSeat,
+	getSpeakingOrder,
+	killPlayer,
+	transitionPhase,
+} from "@wolf/lib/game-master";
+import { getSystemMessages, getUiText } from "@wolf/lib/game-texts";
+import { playNarrator } from "@wolf/lib/narrator-audio-player";
+import { getPlayerDiedKey } from "@wolf/lib/narrator-voice";
+import {
+	buildDifficultySpeechHint,
+	buildGameContext,
+	buildPersonaSection,
+	buildPlayerTodaySpeech,
+	buildSituationalStrategy,
+	buildSystemTextFromParts,
+	buildTodayTranscript,
+	getDayStartIndex,
+	getRoleKnowHow,
+	getRoleText,
+	getWinCondition,
+} from "@wolf/lib/prompt-utils";
+import type { GameState, Player } from "@wolf/types/game";
+import { isWolfRole } from "@wolf/types/game";
+import { GamePhase } from "../core/GamePhase";
+import type {
+	GameAction,
+	GameContext,
+	PromptResult,
+	SystemPromptPart,
+} from "../core/types";
+
+type DaySpeechRuntime = {
+	token: FlowToken;
+	setGameState: (value: GameState | ((prev: GameState) => GameState)) => void;
+	setDialogue: (speaker: string, text: string, isStreaming?: boolean) => void;
+	waitForUnpause: () => Promise<void>;
+	runAISpeech: (state: GameState, player: Player) => Promise<void>;
+	onBadgeTransfer: (
+		state: GameState,
+		sheriff: Player,
+		afterTransfer: (s: GameState) => Promise<void>,
+	) => Promise<void>;
+	onHunterDeath: (
+		state: GameState,
+		hunter: Player,
+		diedAtNight: boolean,
+	) => Promise<void>;
+	onGameEnd: (state: GameState, winner: "village" | "wolf") => Promise<void>;
+	onStartVote: (state: GameState, token: FlowToken) => Promise<void>;
+	onBadgeSpeechEnd: (state: GameState) => Promise<void>;
+	onPkSpeechEnd: (state: GameState) => Promise<void>;
+	/** AI白狼王自爆决策：返回 true 表示已自爆（由调用方处理后续），false 表示不自爆 */
+	onWhiteWolfKingBoomCheck: (state: GameState, wwk: Player) => Promise<boolean>;
+};
+
+export class DaySpeechPhase extends GamePhase {
+	private isMovingToNextSpeaker = false;
+
+	async onEnter(_context: GameContext): Promise<void> {
+		return;
+	}
+
+	getPrompt(context: GameContext, player: Player): PromptResult {
+		const { t } = getI18n();
+		const state = context.state;
+		const gameContext = buildGameContext(state, player);
+		const isGenshinMode = !!state.isGenshinMode;
+		const persona = buildPersonaSection(player, isGenshinMode);
+		const difficultyHint = buildDifficultySpeechHint(state.difficulty);
+		const _totalSeats = state.players.length;
+
+		const todayTranscript = buildTodayTranscript(state, 2000);
+		const selfSpeech = buildPlayerTodaySpeech(state, player, 1400);
+
+		const todaySpeakers = new Set<string>();
+		const dayStartIndex = getDayStartIndex(state);
+		const speakOrderPhase = state.phase;
+
+		for (let i = dayStartIndex; i < state.messages.length; i++) {
+			const m = state.messages[i];
+			if (
+				!m.isSystem &&
+				m.phase === speakOrderPhase &&
+				m.playerId &&
+				m.playerId !== player.playerId
+			) {
+				todaySpeakers.add(m.playerId);
+			}
+		}
+
+		const isLastWords = state.phase === "DAY_LAST_WORDS";
+		const isBadgeSpeech = state.phase === "DAY_BADGE_SPEECH";
+		const isPkSpeech = state.phase === "DAY_PK_SPEECH";
+		const isCampaignSpeech = isBadgeSpeech || isPkSpeech;
+
+		// Define valid speakers for this phase (campaign-only speakers)
+		const candidates =
+			isBadgeSpeech && Array.isArray(state.badge?.candidates)
+				? state.badge.candidates
+				: [];
+		const pkTargets =
+			isPkSpeech && Array.isArray(state.pkTargets) ? state.pkTargets : [];
+
+		const hasCandidateList = isBadgeSpeech && candidates.length > 0;
+
+		const validSpeakers = state.players.filter((p) => {
+			if (!p.alive) return false;
+			// If candidates list is unexpectedly empty, fallback to alive players to avoid division by zero.
+			if (isBadgeSpeech)
+				return hasCandidateList ? candidates.includes(p.seat) : true;
+			if (isPkSpeech) return pkTargets.includes(p.seat);
+			return true;
+		});
+
+		const totalSpeakers = validSpeakers.length;
+
+		// 获取完整的发言顺序（从起始座位开始，警长最后）
+		const startSeat = state.daySpeechStartSeat ?? 0;
+		const sheriffSeat = state.badge.holderSeat;
+		const isSheriffAlive =
+			sheriffSeat !== null &&
+			state.players.some((p) => p.seat === sheriffSeat && p.alive);
+		const fullSpeakingOrder = getSpeakingOrder(
+			state,
+			startSeat,
+			isSheriffAlive,
+		);
+
+		// 根据发言顺序，找出当前玩家在顺序中的位置
+		const playerIndex = fullSpeakingOrder.indexOf(player.seat);
+
+		// 已发言玩家：在当前玩家之前的所有玩家（按发言顺序）
+		const spokenSeats =
+			playerIndex > 0 ? fullSpeakingOrder.slice(0, playerIndex) : [];
+		// 未发言玩家：在当前玩家之后的所有玩家（按发言顺序）
+		const unspokenSeats =
+			playerIndex >= 0 ? fullSpeakingOrder.slice(playerIndex + 1) : [];
+
+		// 过滤出有效的发言者（针对竞选/PK阶段）
+		const validSpeakerSeats = new Set(validSpeakers.map((p) => p.seat));
+		const spokenPlayers = spokenSeats
+			.filter((seat) => validSpeakerSeats.has(seat))
+			.map((seat) => state.players.find((p) => p.seat === seat)!)
+			.filter(Boolean);
+		const unspokenPlayers = unspokenSeats
+			.filter((seat) => validSpeakerSeats.has(seat))
+			.map((seat) => state.players.find((p) => p.seat === seat)!)
+			.filter(Boolean);
+
+		const speakOrder = spokenPlayers.length + 1;
+		const isFirstSpeaker = speakOrder === 1;
+		const isLastSpeaker = speakOrder === totalSpeakers;
+
+		let speakOrderHint = "";
+		if (isFirstSpeaker) {
+			speakOrderHint = t("prompts.daySpeech.speakOrder.first");
+		} else if (isLastSpeaker) {
+			speakOrderHint = t("prompts.daySpeech.speakOrder.last", {
+				speakOrder,
+				totalSpeakers,
+			});
+		} else {
+			// 标记已过麦的玩家（在顺序中应该已发言但实际没有发言记录）
+			const spokenList = spokenPlayers
+				.map((p) => {
+					const hasSpoken = todaySpeakers.has(p.playerId);
+					const seatLabel = t("ui.seatNumber", { seat: p.seat + 1 });
+					return hasSpoken
+						? seatLabel
+						: t("prompts.daySpeech.speakOrder.skipped", { seat: seatLabel });
+				})
+				.join(t("common.listSeparator"));
+			const unspokenList = unspokenPlayers
+				.map((p) => t("ui.seatNumber", { seat: p.seat + 1 }))
+				.join(t("common.listSeparator"));
+			speakOrderHint = t("prompts.daySpeech.speakOrder.middle", {
+				speakOrder,
+				totalSpeakers,
+				spokenList: spokenList || t("common.none"),
+				unspokenList: unspokenList || t("common.none"),
+			});
+		}
+
+		const nonCandidateList = state.players
+			.filter((p) => p.alive && !candidates.includes(p.seat))
+			.map((p) => t("ui.seatNumber", { seat: p.seat + 1 }))
+			.join(t("common.listSeparator"));
+		const campaignRequirements = isBadgeSpeech
+			? t("prompts.daySpeech.campaign.badge") +
+				"\n" +
+				(hasCandidateList
+					? t("prompts.daySpeech.campaign.candidateNote", {
+							list: nonCandidateList,
+						})
+					: t("prompts.daySpeech.campaign.emptyCandidateNote"))
+			: isPkSpeech
+				? t("prompts.daySpeech.campaign.pk")
+				: "";
+
+		// Get role-specific strategy tips
+		const roleKnowHow = getRoleKnowHow(player.role);
+
+		// Get situational strategy based on current game state
+		const situationalStrategy = buildSituationalStrategy(state, player);
+
+		const baseCacheable = t("prompts.daySpeech.base", {
+			seat: player.seat + 1,
+			name: player.displayName,
+			role: getRoleText(player.role),
+			winCondition: getWinCondition(player.role),
+			persona,
+			difficultyHint,
+		});
+		const taskLine = isLastWords
+			? t("prompts.daySpeech.task.lastWords", {
+					seat: player.seat + 1,
+					name: player.displayName,
+				})
+			: isCampaignSpeech
+				? t("prompts.daySpeech.task.campaign")
+				: t("prompts.daySpeech.task.dayDiscussion");
+
+		// Add last words strategy for werewolves
+		const lastWordsStrategy =
+			isLastWords && isWolfRole(player.role)
+				? `\n${t("prompts.daySpeech.task.lastWordsWerewolfStrategy")}`
+				: "";
+
+		const taskSection =
+			t("prompts.daySpeech.task.section", {
+				taskLine,
+				campaignRequirements: campaignRequirements
+					? `\n${campaignRequirements}`
+					: "",
+			}) + lastWordsStrategy;
+		const roleHintLine = isWolfRole(player.role)
+			? t("prompts.daySpeech.roleHints.werewolf")
+			: player.role === "Seer"
+				? t("prompts.daySpeech.roleHints.seer")
+				: "";
+		const guidelinesSection = isGenshinMode
+			? t("prompts.daySpeech.guidelines.genshin")
+			: t("prompts.daySpeech.guidelines.default", {
+					playerName: player.displayName,
+					roleHintLine,
+				});
+		const systemParts: SystemPromptPart[] = [
+			{ text: baseCacheable, cacheable: true, ttl: "1h" },
+			{ text: taskSection },
+			{ text: roleKnowHow },
+			...(situationalStrategy ? [{ text: situationalStrategy }] : []),
+			{ text: guidelinesSection, cacheable: true, ttl: "1h" },
+		];
+		const system = buildSystemTextFromParts(systemParts);
+
+		const phaseHint = isBadgeSpeech
+			? t("prompts.daySpeech.phaseHint.badge")
+			: isPkSpeech
+				? t("prompts.daySpeech.phaseHint.pk")
+				: "";
+		const phaseHintSection = phaseHint
+			? t("prompts.daySpeech.phaseSection", { phaseHint })
+			: "";
+
+		const user = t("prompts.daySpeech.user", {
+			gameContext,
+			todayTranscript:
+				todayTranscript ||
+				t("prompts.daySpeech.userNoTranscript", { speakOrder }),
+			selfSpeech: selfSpeech || t("prompts.daySpeech.userNoSelfSpeech"),
+			phaseHintSection,
+			speakOrderHint,
+		});
+
+		return { system, user, systemParts };
+	}
+
+	async handleAction(
+		_context: GameContext,
+		_action: GameAction,
+	): Promise<void> {
+		const runtime = this.getRuntime(_context);
+		if (!runtime) return;
+
+		if (_action.type === "START_DAY_SPEECH_AFTER_BADGE") {
+			await this.startDaySpeechAfterBadge(
+				_context.state,
+				runtime,
+				_action.options,
+			);
+			return;
+		}
+		if (_action.type === "ADVANCE_SPEAKER") {
+			await this.advanceSpeaker(_context.state, runtime);
+		}
+	}
+
+	async onExit(_context: GameContext): Promise<void> {
+		return;
+	}
+
+	private getRuntime(context: GameContext): DaySpeechRuntime | null {
+		const raw = context.extras as DaySpeechRuntime | undefined;
+		if (!raw) return null;
+		if (!raw.setGameState || !raw.setDialogue || !raw.waitForUnpause)
+			return null;
+		if (
+			!raw.runAISpeech ||
+			!raw.onBadgeTransfer ||
+			!raw.onHunterDeath ||
+			!raw.onGameEnd
+		)
+			return null;
+		if (!raw.onStartVote || !raw.onBadgeSpeechEnd || !raw.onPkSpeechEnd)
+			return null;
+		// 提供默认的空实现以保持向后兼容
+		if (!raw.onWhiteWolfKingBoomCheck) {
+			raw.onWhiteWolfKingBoomCheck = async () => false;
+		}
+		return raw;
+	}
+
+	private async startDaySpeechAfterBadge(
+		state: GameState,
+		runtime: DaySpeechRuntime,
+		options?: { skipAnnouncements?: boolean },
+	): Promise<void> {
+		const { t } = getI18n();
+		const systemMessages = getSystemMessages();
+		const uiText = getUiText();
+		const speakerHost = t("speakers.host");
+		const speakerHint = t("speakers.hint");
+		let currentState = state;
+		const skipAnnouncements = options?.skipAnnouncements === true;
+
+		const { pendingWolfVictim, pendingPoisonVictim } =
+			currentState.nightActions;
+		let hasDeaths = false;
+		let wolfVictim: Player | undefined;
+		let poisonVictim: Player | undefined;
+
+		if (!skipAnnouncements) {
+			if (pendingWolfVictim !== undefined) {
+				hasDeaths = true;
+				currentState = killPlayer(currentState, pendingWolfVictim);
+				wolfVictim = currentState.players.find(
+					(p) => p.seat === pendingWolfVictim,
+				);
+				if (wolfVictim) {
+					currentState = addSystemMessage(
+						currentState,
+						systemMessages.playerKilled(
+							wolfVictim.seat + 1,
+							wolfVictim.displayName,
+						),
+					);
+					runtime.setDialogue(
+						speakerHost,
+						systemMessages.playerKilled(
+							wolfVictim.seat + 1,
+							wolfVictim.displayName,
+						),
+						false,
+					);
+					runtime.setGameState(currentState);
+
+					const diedKey = getPlayerDiedKey(wolfVictim.seat);
+					if (diedKey) await playNarrator(diedKey);
+
+					await delay(DELAY_CONFIG.LONG);
+					await runtime.waitForUnpause();
+				}
+			}
+
+			if (pendingPoisonVictim !== undefined) {
+				const sameTargetAsWolf =
+					pendingWolfVictim !== undefined &&
+					pendingPoisonVictim === pendingWolfVictim;
+
+				if (sameTargetAsWolf) {
+					const overlappedVictim = currentState.players.find(
+						(p) => p.seat === pendingPoisonVictim,
+					);
+					if (overlappedVictim?.role === "Hunter") {
+						currentState = {
+							...currentState,
+							roleAbilities: {
+								...currentState.roleAbilities,
+								hunterCanShoot: false,
+							},
+						};
+					}
+				} else {
+					hasDeaths = true;
+					currentState = killPlayer(currentState, pendingPoisonVictim);
+					poisonVictim = currentState.players.find(
+						(p) => p.seat === pendingPoisonVictim,
+					);
+					if (poisonVictim) {
+						if (poisonVictim.role === "Hunter") {
+							currentState = {
+								...currentState,
+								roleAbilities: {
+									...currentState.roleAbilities,
+									hunterCanShoot: false,
+								},
+							};
+						}
+						currentState = addSystemMessage(
+							currentState,
+							systemMessages.playerKilled(
+								poisonVictim.seat + 1,
+								poisonVictim.displayName,
+							),
+						);
+						runtime.setDialogue(
+							speakerHost,
+							systemMessages.playerKilled(
+								poisonVictim.seat + 1,
+								poisonVictim.displayName,
+							),
+							false,
+						);
+						runtime.setGameState(currentState);
+
+						const poisonDiedKey = getPlayerDiedKey(poisonVictim.seat);
+						if (poisonDiedKey) await playNarrator(poisonDiedKey);
+
+						await delay(DELAY_CONFIG.LONG);
+						await runtime.waitForUnpause();
+					}
+				}
+			}
+
+			if (!hasDeaths) {
+				currentState = addSystemMessage(
+					currentState,
+					systemMessages.peacefulNight,
+				);
+				runtime.setDialogue(speakerHost, systemMessages.peacefulNight, false);
+				runtime.setGameState(currentState);
+
+				await playNarrator("peacefulNight");
+
+				await delay(DELAY_CONFIG.NIGHT_RESOLVE);
+				await runtime.waitForUnpause();
+			}
+		}
+
+		currentState = {
+			...currentState,
+			nightActions: {
+				...currentState.nightActions,
+				pendingWolfVictim: undefined,
+				pendingPoisonVictim: undefined,
+			},
+		};
+		runtime.setGameState(currentState);
+
+		const currentSheriffSeat = currentState.badge.holderSeat;
+		const sheriffPlayer =
+			currentSheriffSeat !== null
+				? currentState.players.find((p) => p.seat === currentSheriffSeat)
+				: null;
+		const deadSheriff =
+			sheriffPlayer && !sheriffPlayer.alive ? sheriffPlayer : null;
+
+		if (deadSheriff) {
+			await runtime.onBadgeTransfer(
+				currentState,
+				deadSheriff,
+				async (afterTransferState) => {
+					if (
+						wolfVictim?.role === "Hunter" &&
+						afterTransferState.roleAbilities.hunterCanShoot
+					) {
+						await runtime.onHunterDeath(afterTransferState, wolfVictim, true);
+						return;
+					}
+
+					const winnerAfterTransfer = checkWinCondition(afterTransferState);
+					if (winnerAfterTransfer) {
+						await runtime.onGameEnd(afterTransferState, winnerAfterTransfer);
+						return;
+					}
+
+					let speechState = transitionPhase(afterTransferState, "DAY_SPEECH");
+					speechState = addSystemMessage(
+						speechState,
+						systemMessages.dayDiscussion,
+					);
+
+					await playNarrator("discussionStart");
+
+					const alivePlayers = speechState.players.filter((p) => p.alive);
+					const speechDirection: "clockwise" = "clockwise";
+
+					// 判断警徽是否移交成功
+					const newSheriffSeat = speechState.badge.holderSeat;
+					const isNewSheriffAlive =
+						newSheriffSeat !== null &&
+						alivePlayers.some((p) => p.seat === newSheriffSeat);
+
+					let startSeat: number | null;
+					if (isNewSheriffAlive) {
+						// 警徽移交成功：从新警长下一位开始，新警长最后发言
+						startSeat = getNextAliveSeat(
+							speechState,
+							newSheriffSeat,
+							true,
+							speechDirection,
+						);
+					} else {
+						// 警徽撕毁：从死者下一位开始
+						startSeat = getNextAliveSeat(
+							speechState,
+							deadSheriff.seat,
+							false,
+							speechDirection,
+						);
+					}
+
+					const firstSpeaker =
+						startSeat !== null
+							? alivePlayers.find((p) => p.seat === startSeat) || null
+							: null;
+					speechState = {
+						...speechState,
+						daySpeechStartSeat: startSeat,
+						currentSpeakerSeat: firstSpeaker?.seat ?? null,
+						speechDirection,
+					};
+
+					runtime.setDialogue(speakerHost, uiText.speechOrder, false);
+					runtime.setGameState(speechState);
+
+					await delay(1500);
+					await runtime.waitForUnpause();
+
+					if (firstSpeaker && !firstSpeaker.isHuman) {
+						await runtime.runAISpeech(speechState, firstSpeaker);
+					} else if (firstSpeaker?.isHuman) {
+						runtime.setDialogue(speakerHint, uiText.yourTurn, false);
+					}
+				},
+			);
+			return;
+		}
+
+		if (
+			wolfVictim?.role === "Hunter" &&
+			currentState.roleAbilities.hunterCanShoot
+		) {
+			await runtime.onHunterDeath(currentState, wolfVictim, true);
+			return;
+		}
+
+		const winner = checkWinCondition(currentState);
+		if (winner) {
+			await runtime.onGameEnd(currentState, winner);
+			return;
+		}
+
+		let speechState = transitionPhase(currentState, "DAY_SPEECH");
+		speechState = addSystemMessage(speechState, systemMessages.dayDiscussion);
+
+		await playNarrator("discussionStart");
+
+		const alivePlayers = speechState.players.filter((p) => p.alive);
+		const speechDirection: "clockwise" = "clockwise";
+		const sheriffSeat = speechState.badge.holderSeat;
+		const isSheriffAlive =
+			typeof sheriffSeat === "number" &&
+			alivePlayers.some((p) => p.seat === sheriffSeat);
+
+		// 确定发言起始位置
+		let startSeat: number | null;
+		if (isSheriffAlive) {
+			// 有警长存活：从警长下一位开始，警长最后发言
+			startSeat = getNextAliveSeat(
+				speechState,
+				sheriffSeat,
+				true,
+				speechDirection,
+			);
+		} else if (wolfVictim) {
+			// 无警长但有死者：从死者下一位开始
+			startSeat = getNextAliveSeat(
+				speechState,
+				wolfVictim.seat,
+				false,
+				speechDirection,
+			);
+		} else {
+			// 无警长无死者（和平夜）：从最小座位号开始
+			const aliveSeats = alivePlayers.map((p) => p.seat).sort((a, b) => a - b);
+			startSeat = aliveSeats[0] ?? null;
+		}
+
+		const firstSpeaker =
+			startSeat !== null
+				? alivePlayers.find((p) => p.seat === startSeat) || null
+				: null;
+		speechState = {
+			...speechState,
+			daySpeechStartSeat: startSeat,
+			currentSpeakerSeat: firstSpeaker?.seat ?? null,
+			speechDirection,
+		};
+
+		runtime.setDialogue(speakerHost, uiText.speechOrder, false);
+		runtime.setGameState(speechState);
+
+		await delay(1500);
+		await runtime.waitForUnpause();
+
+		if (firstSpeaker && !firstSpeaker.isHuman) {
+			await runtime.runAISpeech(speechState, firstSpeaker);
+		} else if (firstSpeaker?.isHuman) {
+			runtime.setDialogue(speakerHint, uiText.yourTurn, false);
+		}
+	}
+
+	private async advanceSpeaker(
+		state: GameState,
+		runtime: DaySpeechRuntime,
+	): Promise<void> {
+		const { t } = getI18n();
+		const uiText = getUiText();
+		const speakerHint = t("speakers.hint");
+		if (this.isMovingToNextSpeaker) return;
+		this.isMovingToNextSpeaker = true;
+
+		try {
+			// AI白狼王自爆决策：发言结束后检查是否自爆
+			if (state.phase === "DAY_SPEECH" || state.phase === "DAY_PK_SPEECH") {
+				const currentSpeaker = state.players.find(
+					(p) => p.seat === state.currentSpeakerSeat,
+				);
+				if (
+					currentSpeaker &&
+					!currentSpeaker.isHuman &&
+					currentSpeaker.role === "WhiteWolfKing" &&
+					currentSpeaker.alive &&
+					!state.roleAbilities.whiteWolfKingBoomUsed
+				) {
+					const boomed = await runtime.onWhiteWolfKingBoomCheck(
+						state,
+						currentSpeaker,
+					);
+					if (boomed) return; // 自爆已处理，不再继续发言流程
+				}
+			}
+
+			const getNextPkSeat = (): number | null => {
+				const pkTargets = state.pkTargets || [];
+				if (pkTargets.length === 0) return null;
+				const currentSeat = state.currentSpeakerSeat ?? -1;
+				const currentIndex = pkTargets.indexOf(currentSeat);
+				const nextIndex = currentIndex + 1;
+				if (currentIndex === -1) return pkTargets[0] ?? null;
+				if (nextIndex >= pkTargets.length) return null;
+				return pkTargets[nextIndex];
+			};
+
+			const getNextCandidateSeat = (): number | null => {
+				const candidates = state.badge.candidates || [];
+				const aliveCandidateSeats = candidates.filter((seat) =>
+					state.players.some((p) => p.seat === seat && p.alive),
+				);
+				if (aliveCandidateSeats.length === 0) return null;
+
+				const total = state.players.length;
+				const cursor = (state.currentSpeakerSeat ?? -1) + 1;
+				for (let step = 0; step < total; step++) {
+					const seat = (((cursor + step) % total) + total) % total;
+					if (aliveCandidateSeats.includes(seat)) return seat;
+				}
+				return null;
+			};
+
+			const isDaySpeech = state.phase === "DAY_SPEECH";
+			const sheriffSeat = state.badge.holderSeat;
+			const isSheriffAlive =
+				typeof sheriffSeat === "number" &&
+				state.players.some((p) => p.seat === sheriffSeat && p.alive);
+
+			// Check if sheriff has spoken as the final speaker
+			// Only transition to vote if sheriff spoke AND is not the starting speaker (meaning everyone else already spoke)
+			const sheriffIsStartSpeaker = state.daySpeechStartSeat === sheriffSeat;
+			if (
+				isDaySpeech &&
+				isSheriffAlive &&
+				state.currentSpeakerSeat === sheriffSeat &&
+				!sheriffIsStartSpeaker
+			) {
+				await runtime.onStartVote(state, runtime.token);
+				return;
+			}
+
+			// Build a set of players who have already spoken in DAY_SPEECH only
+			// (avoid relying on system message text and exclude badge/PK/last words)
+			const getTodaySpeakers = (): Set<number> => {
+				const spokenSeats = new Set<number>();
+				for (const m of state.messages) {
+					if (m.isSystem) continue;
+					if (m.day !== state.day) continue;
+					if (m.phase !== "DAY_SPEECH") continue;
+					if (!m.playerId) continue;
+					const player = state.players.find((p) => p.playerId === m.playerId);
+					if (player) spokenSeats.add(player.seat);
+				}
+				return spokenSeats;
+			};
+
+			let nextSeat: number | null;
+			if (state.phase === "DAY_PK_SPEECH") {
+				nextSeat = getNextPkSeat();
+			} else if (state.phase === "DAY_BADGE_SPEECH") {
+				nextSeat = getNextCandidateSeat();
+			} else {
+				const direction = state.speechDirection ?? "clockwise";
+
+				if (isDaySpeech && isSheriffAlive) {
+					nextSeat = getNextAliveSeat(
+						state,
+						state.currentSpeakerSeat ?? -1,
+						true,
+						direction,
+					);
+					// If we're about to loop back to the start, schedule sheriff as the final speaker.
+					// When sheriff is the starting speaker, check if nextSeat would loop back to a position
+					// that would mean all non-sheriff players have spoken.
+					if (sheriffIsStartSpeaker) {
+						// When sheriff started, check if we've looped back to the first non-sheriff speaker
+						const nonSheriffAliveSeats = state.players
+							.filter((p) => p.alive && p.seat !== sheriffSeat)
+							.map((p) => p.seat)
+							.sort((a, b) => a - b);
+						const firstNonSheriffSeat = nonSheriffAliveSeats[0];
+						if (
+							nextSeat !== null &&
+							nextSeat === firstNonSheriffSeat &&
+							state.currentSpeakerSeat !== sheriffSeat
+						) {
+							// All non-sheriff players have spoken, now it's sheriff's turn as final speaker
+							nextSeat = sheriffSeat;
+						}
+					} else {
+						// Normal case: sheriff is not the starting speaker
+						if (
+							nextSeat !== null &&
+							nextSeat === state.daySpeechStartSeat &&
+							state.currentSpeakerSeat !== sheriffSeat
+						) {
+							nextSeat = sheriffSeat;
+						}
+					}
+				} else {
+					nextSeat = getNextAliveSeat(
+						state,
+						state.currentSpeakerSeat ?? -1,
+						false,
+						direction,
+					);
+				}
+			}
+
+			const startSeat = state.daySpeechStartSeat;
+
+			if (nextSeat === null) {
+				if (state.phase === "DAY_PK_SPEECH") {
+					await runtime.onPkSpeechEnd(state);
+					return;
+				}
+				if (state.phase === "DAY_BADGE_SPEECH") {
+					await runtime.onBadgeSpeechEnd(state);
+					return;
+				}
+				await runtime.onStartVote(state, runtime.token);
+				return;
+			}
+
+			// Check if we've completed a full round of speeches
+			const shouldTransitionToVote =
+				isDaySpeech && isSheriffAlive && sheriffIsStartSpeaker
+					? nextSeat === sheriffSeat && state.currentSpeakerSeat === sheriffSeat // Sheriff spoke last after being first
+					: startSeat !== null && nextSeat === startSeat; // Normal loop detection
+
+			if (shouldTransitionToVote) {
+				if (state.phase === "DAY_PK_SPEECH") {
+					await runtime.onPkSpeechEnd(state);
+					return;
+				}
+				if (state.phase === "DAY_BADGE_SPEECH") {
+					await runtime.onBadgeSpeechEnd(state);
+					return;
+				}
+				await runtime.onStartVote(state, runtime.token);
+				return;
+			}
+
+			// Prevent duplicate speeches - skip already-spoken seats instead of jumping to vote
+			if (isDaySpeech) {
+				const todaySpeakers = getTodaySpeakers();
+				if (todaySpeakers.has(nextSeat)) {
+					const direction = state.speechDirection ?? "clockwise";
+					const excludeSheriff = isSheriffAlive;
+					let candidate = nextSeat;
+					let attempts = 0;
+					while (attempts < state.players.length) {
+						const nextCandidate = getNextAliveSeat(
+							state,
+							candidate,
+							excludeSheriff,
+							direction,
+						);
+						if (nextCandidate === null) break;
+						// If we're about to loop back to the start, schedule sheriff as the final speaker.
+						if (
+							isSheriffAlive &&
+							nextCandidate === state.daySpeechStartSeat &&
+							candidate !== sheriffSeat
+						) {
+							candidate = sheriffSeat;
+						} else {
+							candidate = nextCandidate;
+						}
+						if (!todaySpeakers.has(candidate)) break;
+						attempts += 1;
+					}
+					nextSeat = candidate;
+					if (todaySpeakers.has(nextSeat)) {
+						await runtime.onStartVote(state, runtime.token);
+						return;
+					}
+				}
+			}
+
+			const currentState = { ...state, currentSpeakerSeat: nextSeat };
+			runtime.setGameState(currentState);
+
+			const nextPlayer = currentState.players.find((p) => p.seat === nextSeat);
+			if (nextPlayer && !nextPlayer.isHuman) {
+				await runtime.runAISpeech(currentState, nextPlayer);
+			} else if (nextPlayer?.isHuman) {
+				runtime.setDialogue(speakerHint, uiText.yourTurn, false);
+			}
+		} finally {
+			this.isMovingToNextSpeaker = false;
+		}
+	}
+}

@@ -1,0 +1,51 @@
+/**
+ * Entry point for the Werewolf game within Keyaos.
+ * Injects auth token, fetches models, and renders the wolfcha page.
+ */
+
+import { loadLocaleFromStorage } from "@wolf/i18n/locale-store";
+import {
+	fetchKeyaosModels,
+	setModelTokenGetter,
+} from "@wolf/lib/keyaos-models";
+import { setAuthTokenGetter } from "@wolf/lib/llm";
+import { setModelPool } from "@wolf/types/game";
+import { useEffect, useState } from "react";
+import { Toaster } from "sonner";
+import { useAuth } from "@/auth";
+import "@wolf/app/globals.css";
+import WerewolfPage from "@wolf/app/page";
+
+loadLocaleFromStorage();
+
+export default function WerewolfEntry() {
+	const { getToken } = useAuth();
+	const [ready, setReady] = useState(false);
+
+	useEffect(() => {
+		setAuthTokenGetter(getToken);
+		setModelTokenGetter(getToken);
+
+		fetchKeyaosModels()
+			.then((models) => {
+				setModelPool(models);
+				setReady(true);
+			})
+			.catch(() => setReady(true));
+	}, [getToken]);
+
+	if (!ready) {
+		return (
+			<div className="flex h-screen items-center justify-center bg-gray-950">
+				<div className="h-8 w-8 animate-spin rounded-full border-2 border-white/20 border-t-white" />
+			</div>
+		);
+	}
+
+	return (
+		<>
+			<Toaster position="top-center" richColors />
+			<WerewolfPage />
+		</>
+	);
+}

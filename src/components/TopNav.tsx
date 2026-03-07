@@ -37,6 +37,7 @@ const NAV_LINKS = [
 	{ key: "nav.models", href: "/models", icon: CpuChipIcon },
 	{ key: "nav.providers", href: "/providers", icon: ServerStackIcon },
 	{ key: "nav.chat", href: "/chat", icon: ChatBubbleLeftRightIcon },
+	{ key: "nav.werewolf", href: "/werewolf", icon: CpuChipIcon },
 	{ key: "nav.docs", href: "/docs", icon: BookOpenIcon },
 ] as const;
 

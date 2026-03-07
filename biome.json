@@ -47,5 +47,44 @@
 				"organizeImports": "on"
 			}
 		}
-	}
+	},
+	"overrides": [
+		{
+			"includes": ["src/werewolf/**"],
+			"linter": {
+				"rules": {
+					"suspicious": {
+						"noExplicitAny": "off",
+						"noArrayIndexKey": "off",
+						"noAssignInExpressions": "off",
+						"noThenProperty": "off",
+						"noImplicitAnyLet": "off",
+						"noDocumentCookie": "off",
+						"useIterableCallbackReturn": "off"
+					},
+					"correctness": {
+						"useHookAtTopLevel": "off",
+						"useExhaustiveDependencies": "off",
+						"noUnsafeFinally": "off",
+						"noInvalidUseBeforeDeclaration": "off"
+					},
+					"a11y": {
+						"useButtonType": "off",
+						"noSvgWithoutTitle": "off",
+						"useKeyWithClickEvents": "off",
+						"noStaticElementInteractions": "off",
+						"noLabelWithoutControl": "off",
+						"useMediaCaption": "off",
+						"useAriaPropsSupportedByRole": "off"
+					},
+					"style": {
+						"noNonNullAssertion": "off"
+					},
+					"complexity": {
+						"noImportantStyles": "off"
+					}
+				}
+			}
+		}
+	]
 }

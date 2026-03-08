@@ -958,35 +958,33 @@ export function WelcomeScreen({
 				</div>
 
 				<div className="wc-welcome-actions absolute top-5 right-5 z-20 flex items-center gap-2">
-					<div className="flex items-center gap-2">
-						<LocaleSwitcher className="shrink-0" />
-						<Button asChild variant="outline" className="h-8 text-xs gap-2">
-							<a
-								href="https://github.com/oil-oil/wolfcha"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
+					<LocaleSwitcher className="shrink-0" />
+					<Button asChild variant="outline" className="h-8 text-xs gap-2">
+						<a
+							href="https://github.com/oil-oil/wolfcha"
+							target="_blank"
+							rel="noopener noreferrer"
+						>
 							<GithubLogo size={16} />
 							GitHub
-							</a>
-						</Button>
-						<Button
-							type="button"
-							variant="outline"
-							onClick={() => setIsSetupOpen(true)}
-							className="h-8 text-xs gap-2"
-						>
-							<GearSix size={16} />
+						</a>
+					</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onClick={() => setIsSetupOpen(true)}
+						className="h-8 text-xs gap-2"
+					>
+						<GearSix size={16} />
 						{t("welcome.settings")}
-						</Button>
-					</div>
+					</Button>
 				</div>
 
 				<motion.div
 					initial={{ opacity: 0, y: 14, scale: 0.99, filter: "blur(10px)" }}
 					animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
 					transition={{ duration: 0.65, ease: "easeOut" }}
-					className="relative z-10 w-full max-w-[460px]"
+					className="relative z-10"
 				>
 					<div ref={paperRef} className="wc-contract-paper">
 						<div className="wc-contract-borders" aria-hidden="true" />

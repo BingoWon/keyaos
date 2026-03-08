@@ -3,6 +3,7 @@ import type { AppLocale } from "@wolf/i18n/config";
 import { useAppLocale } from "@wolf/i18n/useAppLocale";
 import { useTranslations } from "next-intl";
 import { useEffect, useRef, useState } from "react";
+import { Button } from "../ui/button";
 
 const LOCALES: { value: AppLocale; label: string }[] = [
 	{ value: "zh", label: "中文" },
@@ -19,7 +20,6 @@ export function LocaleSwitcher({ className = "" }: LocaleSwitcherProps) {
 	const [isOpen, setIsOpen] = useState(false);
 	const containerRef = useRef<HTMLDivElement>(null);
 
-	// Close dropdown when clicking outside
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
 			if (
@@ -38,7 +38,6 @@ export function LocaleSwitcher({ className = "" }: LocaleSwitcherProps) {
 		};
 	}, [isOpen]);
 
-	// Close dropdown on Escape key
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.key === "Escape") {
@@ -63,19 +62,18 @@ export function LocaleSwitcher({ className = "" }: LocaleSwitcherProps) {
 
 	return (
 		<div ref={containerRef} className={`relative ${className}`}>
-			<button
+			<Button
 				type="button"
+				variant="outline"
 				onClick={() => setIsOpen(!isOpen)}
-				className="flex h-8 items-center justify-center gap-1.5 rounded-md border-2 border-[var(--border-color)] bg-[var(--bg-card)] px-2 text-[var(--text-primary)] hover:bg-[var(--bg-hover)] transition-colors focus:outline-none focus:ring-2 focus:ring-[var(--accent-color)] focus:ring-offset-1"
+				className="h-8 text-xs gap-2"
 				aria-label={t("locale.label")}
 				aria-expanded={isOpen}
 				aria-haspopup="listbox"
 			>
-				<Globe size={18} weight="regular" />
-				<span className="text-xs font-medium leading-none text-[var(--text-primary)]">
-					{currentLocale.value === "zh" ? t("locale.zh") : t("locale.en")}
-				</span>
-			</button>
+				<Globe size={16} />
+				{currentLocale.value === "zh" ? t("locale.zh") : t("locale.en")}
+			</Button>
 
 			{isOpen && (
 				<div

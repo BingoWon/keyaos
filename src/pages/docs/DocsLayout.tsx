@@ -218,7 +218,7 @@ export function DocsLayout() {
 			items: [
 				{
 					name: t("docs.nav_api_playground"),
-					href: "/docs/api-reference",
+					href: "/api-reference",
 					icon: CodeBracketIcon,
 					activeIcon: CodeBracketIconSolid,
 				},

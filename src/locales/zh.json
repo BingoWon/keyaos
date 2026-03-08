@@ -57,6 +57,7 @@
 		"chat": "对话",
 		"werewolf": "狼人杀",
 		"docs": "文档",
+		"api": "API",
 		"logout": "退出登录"
 	},
 	"theme": {

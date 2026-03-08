@@ -111,7 +111,7 @@ const TermsOfServiceMdx = lazyWithRetry(
 );
 const ContactMdx = lazyWithRetry(() => import("./pages/docs/contact.mdx"));
 const ApiReference = lazyWithRetry(() =>
-	import("./pages/docs/ApiReference").then((m) => ({
+	import("./pages/ApiReference").then((m) => ({
 		default: m.ApiReference,
 	})),
 );
@@ -186,7 +186,6 @@ const docsChildren = [
 		path: "authentication",
 		element: <MdxPage Component={AuthenticationMdx} />,
 	},
-	{ path: "api-reference", element: <ApiReference /> },
 	{
 		path: "privacy-policy",
 		element: <MdxPage Component={PrivacyPolicyMdx} />,
@@ -240,6 +239,15 @@ export const router = createBrowserRouter([
 							<WerewolfGame />
 						</Suspense>
 					</AuthGuard>
+				),
+			},
+
+			{
+				path: "/api-reference",
+				element: (
+					<Suspense fallback={<PageLoader />}>
+						<ApiReference />
+					</Suspense>
 				),
 			},
 

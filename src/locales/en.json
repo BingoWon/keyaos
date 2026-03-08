@@ -57,6 +57,7 @@
 		"chat": "Chat",
 		"werewolf": "Werewolf",
 		"docs": "Docs",
+		"api": "API",
 		"logout": "Log out"
 	},
 	"theme": {

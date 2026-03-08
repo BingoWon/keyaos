@@ -1,6 +1,7 @@
 import {
 	BookOpenIcon,
 	ChatBubbleLeftRightIcon,
+	CodeBracketIcon,
 	CpuChipIcon,
 	MagnifyingGlassIcon,
 	ServerStackIcon,
@@ -40,6 +41,7 @@ const NAV_LINKS = [
 	{ key: "nav.chat", href: "/chat", icon: ChatBubbleLeftRightIcon },
 	{ key: "nav.werewolf", href: "/werewolf", icon: UserGroupIcon },
 	{ key: "nav.docs", href: "/docs", icon: BookOpenIcon },
+	{ key: "nav.api", href: "/api-reference", icon: CodeBracketIcon },
 ] as const;
 
 const SEARCH_PREVIEW_LIMIT = 8;

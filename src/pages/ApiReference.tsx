@@ -19,7 +19,19 @@ export function ApiReference() {
 	}, []);
 
 	return (
-		<div className="fixed inset-0 top-14 overflow-hidden">
+		<div className="scalar-wrapper">
+			<style>{`
+				.scalar-wrapper {
+					position: fixed;
+					inset: 0;
+					top: 3.5rem;
+				}
+				.scalar-wrapper > .scalar-app,
+				.scalar-wrapper > div {
+					height: 100% !important;
+					max-height: 100% !important;
+				}
+			`}</style>
 			<ApiReferenceReact
 				key={String(darkMode)}
 				configuration={{

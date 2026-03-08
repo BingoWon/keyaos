@@ -116,20 +116,14 @@ function adaptBodyForProvider(
 
 	if (adapted.response_format) {
 		const rf = adapted.response_format as ResponseFormat;
-		if (rf.type === "json_object") {
-			adapted.output_config = {
-				format: { type: "json_schema", schema: { type: "object" } },
-			};
-		} else if (rf.type === "json_schema" && "json_schema" in rf) {
-			adapted.output_config = {
-				format: {
-					type: "json_schema",
-					schema: (rf as { json_schema: { schema: unknown } }).json_schema
-						.schema,
-				},
-			};
+		if (rf.type === "json_schema" && "json_schema" in rf) {
+			// Concrete json_schema with defined properties works through OpenRouter
+		} else {
+			// json_object is ineffective for Anthropic (returns markdown-wrapped JSON).
+			// Generic json_schema without concrete properties returns empty {}.
+			// Remove it — rely on prompt instructions + parseJsonTolerant.
+			delete adapted.response_format;
 		}
-		delete adapted.response_format;
 	}
 
 	return adapted;

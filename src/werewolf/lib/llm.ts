@@ -114,16 +114,11 @@ function adaptBodyForProvider(
 		adapted.temperature = 1.0;
 	}
 
-	if (adapted.response_format) {
-		const rf = adapted.response_format as ResponseFormat;
-		if (rf.type === "json_schema" && "json_schema" in rf) {
-			// Concrete json_schema with defined properties works through OpenRouter
-		} else {
-			// json_object is ineffective for Anthropic (returns markdown-wrapped JSON).
-			// Generic json_schema without concrete properties returns empty {}.
-			// Remove it — rely on prompt instructions + parseJsonTolerant.
-			delete adapted.response_format;
-		}
+	if (
+		adapted.response_format &&
+		(adapted.response_format as ResponseFormat).type !== "json_schema"
+	) {
+		delete adapted.response_format;
 	}
 
 	return adapted;

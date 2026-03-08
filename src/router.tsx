@@ -121,6 +121,11 @@ const TermsOfServiceMdx = lazyWithRetry(
 	() => import("./pages/docs/terms-of-service.mdx"),
 );
 const ContactMdx = lazyWithRetry(() => import("./pages/docs/contact.mdx"));
+const ApiReference = lazyWithRetry(() =>
+	import("./pages/docs/ApiReference").then((m) => ({
+		default: m.ApiReference,
+	})),
+);
 
 // ─── Shared layouts ──────────────────────────────────────
 
@@ -200,6 +205,7 @@ const docsChildren = [
 	{ path: "models-api", element: <MdxPage Component={ModelsApiMdx} /> },
 	{ path: "credits-api", element: <MdxPage Component={CreditsApiMdx} /> },
 	{ path: "error-codes", element: <MdxPage Component={ErrorCodesMdx} /> },
+	{ path: "api-reference", element: <ApiReference /> },
 	{
 		path: "privacy-policy",
 		element: <MdxPage Component={PrivacyPolicyMdx} />,

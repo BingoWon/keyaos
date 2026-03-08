@@ -1,0 +1,588 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Keyaos API",
+    "version": "1.0.0",
+    "description": "Keyaos is a unified AI gateway that routes requests to 300+ models across multiple providers. It supports both OpenAI and Anthropic SDK formats, with automatic provider selection, billing, and credential management.\n\n## Authentication\n\nAll `/v1/*` endpoints require authentication via one of:\n- `Authorization: Bearer <api-key>` (recommended)\n- `x-api-key: <api-key>`\n\nGet your API key from the [Dashboard](/dashboard/api-keys).",
+    "contact": {
+      "name": "Keyaos Support",
+      "url": "https://keyaos.com/docs/contact"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://keyaos.com",
+      "description": "Production"
+    }
+  ],
+  "security": [
+    { "bearerAuth": [] },
+    { "apiKeyHeader": [] }
+  ],
+  "tags": [
+    { "name": "Chat Completions", "description": "OpenAI-compatible chat completions endpoint" },
+    { "name": "Messages", "description": "Anthropic-compatible messages endpoint" },
+    { "name": "Models", "description": "List available models and pricing" },
+    { "name": "Credits", "description": "Check credit balance" },
+    { "name": "Health", "description": "Service health check" }
+  ],
+  "paths": {
+    "/v1/chat/completions": {
+      "post": {
+        "operationId": "createChatCompletion",
+        "summary": "Create chat completion",
+        "description": "Creates a chat completion using the OpenAI-compatible format. Keyaos automatically routes to the best available provider for the requested model.\n\nSupports streaming via `stream: true` (Server-Sent Events).",
+        "tags": ["Chat Completions"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ChatCompletionRequest" },
+              "examples": {
+                "basic": {
+                  "summary": "Basic completion",
+                  "value": {
+                    "model": "openai/gpt-4o",
+                    "messages": [
+                      { "role": "system", "content": "You are a helpful assistant." },
+                      { "role": "user", "content": "What is Keyaos?" }
+                    ]
+                  }
+                },
+                "streaming": {
+                  "summary": "Streaming completion",
+                  "value": {
+                    "model": "anthropic/claude-sonnet-4.6",
+                    "messages": [
+                      { "role": "user", "content": "Write a haiku about APIs." }
+                    ],
+                    "stream": true,
+                    "temperature": 0.9,
+                    "max_tokens": 256
+                  }
+                },
+                "providerFilter": {
+                  "summary": "With provider filtering",
+                  "value": {
+                    "model": "deepseek/deepseek-v3.2",
+                    "messages": [
+                      { "role": "user", "content": "Hello" }
+                    ],
+                    "provider": "siliconflow"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Chat completion response",
+            "headers": {
+              "x-request-id": { "schema": { "type": "string" }, "description": "Unique request identifier for debugging" },
+              "x-provider": { "schema": { "type": "string" }, "description": "Upstream provider that served the request" },
+              "x-credential-id": { "schema": { "type": "string" }, "description": "Credential used for the request" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ChatCompletionResponse" }
+              },
+              "text/event-stream": {
+                "description": "When `stream: true`, response is delivered as SSE with OpenAI delta format."
+              }
+            }
+          },
+          "400": { "$ref": "#/components/responses/BadRequest" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "402": { "$ref": "#/components/responses/InsufficientCredits" },
+          "503": { "$ref": "#/components/responses/NoProvider" }
+        }
+      }
+    },
+    "/v1/messages": {
+      "post": {
+        "operationId": "createMessage",
+        "summary": "Create message",
+        "description": "Creates a message using the Anthropic Messages API format. Keyaos translates between Anthropic and OpenAI formats internally, so you can use **any model** through this endpoint — not just Anthropic models.\n\nSupports text, images, tool use, and extended thinking.",
+        "tags": ["Messages"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AnthropicMessageRequest" },
+              "examples": {
+                "basic": {
+                  "summary": "Basic message",
+                  "value": {
+                    "model": "anthropic/claude-sonnet-4.6",
+                    "max_tokens": 1024,
+                    "messages": [
+                      { "role": "user", "content": "Explain quantum computing in one paragraph." }
+                    ]
+                  }
+                },
+                "thinking": {
+                  "summary": "With extended thinking",
+                  "value": {
+                    "model": "anthropic/claude-sonnet-4.6",
+                    "max_tokens": 8192,
+                    "thinking": { "type": "enabled", "budget_tokens": 4096 },
+                    "messages": [
+                      { "role": "user", "content": "What is 27 * 453?" }
+                    ]
+                  }
+                },
+                "streaming": {
+                  "summary": "Streaming message",
+                  "value": {
+                    "model": "anthropic/claude-sonnet-4.6",
+                    "max_tokens": 1024,
+                    "stream": true,
+                    "messages": [
+                      { "role": "user", "content": "Hello" }
+                    ]
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Message response",
+            "headers": {
+              "x-request-id": { "schema": { "type": "string" }, "description": "Unique request identifier" },
+              "x-provider": { "schema": { "type": "string" }, "description": "Upstream provider" },
+              "x-credential-id": { "schema": { "type": "string" }, "description": "Credential used" }
+            },
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AnthropicMessageResponse" }
+              },
+              "text/event-stream": {
+                "description": "When `stream: true`, response is delivered as Anthropic SSE format: `message_start`, `content_block_start`, `content_block_delta`, `content_block_stop`, `message_delta`, `message_stop`."
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AnthropicError" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AnthropicError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/models": {
+      "get": {
+        "operationId": "listModels",
+        "summary": "List models",
+        "description": "Returns all available models with pricing, context length, architecture details, and provider information.\n\nResponses are edge-cached for 30 seconds.",
+        "tags": ["Models"],
+        "responses": {
+          "200": {
+            "description": "List of available models",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": { "$ref": "#/components/schemas/Model" }
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/credits": {
+      "get": {
+        "operationId": "getCredits",
+        "summary": "Get credit balance",
+        "description": "Returns the authenticated user's current credit balance in USD.",
+        "tags": ["Credits"],
+        "responses": {
+          "200": {
+            "description": "Credit balance",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "balance": { "type": "number", "description": "Current balance in USD", "example": 12.50 }
+                      },
+                      "required": ["balance"]
+                    }
+                  },
+                  "required": ["data"]
+                }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "Health check",
+        "description": "Simple health check endpoint. No authentication required.",
+        "tags": ["Health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": { "type": "string", "enum": ["ok"], "example": "ok" }
+                  },
+                  "required": ["status"]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "API key as Bearer token: `Authorization: Bearer sk-keyaos-xxxxx`"
+      },
+      "apiKeyHeader": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "x-api-key",
+        "description": "API key via header: `x-api-key: sk-keyaos-xxxxx`"
+      }
+    },
+    "schemas": {
+      "ChatCompletionRequest": {
+        "type": "object",
+        "required": ["model", "messages"],
+        "properties": {
+          "model": { "type": "string", "description": "Model ID in `org/model` format", "example": "openai/gpt-4o" },
+          "messages": {
+            "type": "array",
+            "description": "Conversation messages",
+            "items": {
+              "type": "object",
+              "required": ["role", "content"],
+              "properties": {
+                "role": { "type": "string", "enum": ["system", "user", "assistant", "tool"], "description": "Message role" },
+                "content": {
+                  "description": "Message content — string or array of content parts",
+                  "oneOf": [
+                    { "type": "string" },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string", "enum": ["text", "image_url"] },
+                          "text": { "type": "string" },
+                          "image_url": {
+                            "type": "object",
+                            "properties": {
+                              "url": { "type": "string" },
+                              "detail": { "type": "string", "enum": ["auto", "low", "high"] }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  ]
+                },
+                "tool_calls": { "type": "array", "items": { "type": "object" }, "description": "Tool calls (assistant messages)" },
+                "tool_call_id": { "type": "string", "description": "Tool call ID (tool messages)" }
+              }
+            }
+          },
+          "stream": { "type": "boolean", "default": false, "description": "Enable Server-Sent Events streaming" },
+          "temperature": { "type": "number", "minimum": 0, "maximum": 2, "default": 1, "description": "Sampling temperature" },
+          "top_p": { "type": "number", "minimum": 0, "maximum": 1, "description": "Nucleus sampling" },
+          "max_tokens": { "type": "integer", "description": "Maximum tokens to generate" },
+          "stop": {
+            "description": "Stop sequences",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          },
+          "tools": { "type": "array", "items": { "type": "object" }, "description": "Tool definitions (function calling)" },
+          "tool_choice": { "description": "Tool selection strategy", "oneOf": [{ "type": "string" }, { "type": "object" }] },
+          "response_format": {
+            "type": "object",
+            "description": "Response format constraint",
+            "properties": {
+              "type": { "type": "string", "enum": ["text", "json_object", "json_schema"] }
+            }
+          },
+          "provider": {
+            "description": "Keyaos extension — restrict routing to specific provider(s)",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          }
+        }
+      },
+      "ChatCompletionResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "chatcmpl-abc123" },
+          "object": { "type": "string", "enum": ["chat.completion"] },
+          "created": { "type": "integer" },
+          "model": { "type": "string", "example": "openai/gpt-4o" },
+          "choices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "index": { "type": "integer" },
+                "message": {
+                  "type": "object",
+                  "properties": {
+                    "role": { "type": "string", "enum": ["assistant"] },
+                    "content": { "type": "string", "nullable": true },
+                    "tool_calls": { "type": "array", "items": { "type": "object" } }
+                  }
+                },
+                "finish_reason": { "type": "string", "enum": ["stop", "length", "tool_calls", "content_filter"] }
+              }
+            }
+          },
+          "usage": { "$ref": "#/components/schemas/OpenAIUsage" }
+        }
+      },
+      "OpenAIUsage": {
+        "type": "object",
+        "properties": {
+          "prompt_tokens": { "type": "integer" },
+          "completion_tokens": { "type": "integer" },
+          "total_tokens": { "type": "integer" }
+        }
+      },
+      "AnthropicMessageRequest": {
+        "type": "object",
+        "required": ["model", "max_tokens", "messages"],
+        "properties": {
+          "model": { "type": "string", "description": "Model ID", "example": "anthropic/claude-sonnet-4.6" },
+          "max_tokens": { "type": "integer", "description": "Maximum tokens to generate", "example": 1024 },
+          "messages": {
+            "type": "array",
+            "description": "Conversation messages",
+            "items": {
+              "type": "object",
+              "required": ["role", "content"],
+              "properties": {
+                "role": { "type": "string", "enum": ["user", "assistant"] },
+                "content": {
+                  "description": "String or array of content blocks",
+                  "oneOf": [
+                    { "type": "string" },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": { "type": "string", "enum": ["text", "image", "tool_use", "tool_result"] },
+                          "text": { "type": "string" },
+                          "source": { "type": "object", "description": "Image source (for type: image)" },
+                          "id": { "type": "string", "description": "Tool use ID" },
+                          "name": { "type": "string", "description": "Tool name" },
+                          "input": { "description": "Tool input" },
+                          "tool_use_id": { "type": "string", "description": "For tool_result blocks" }
+                        }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "system": {
+            "description": "System prompt",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "object", "properties": { "type": { "type": "string" }, "text": { "type": "string" } } } }
+            ]
+          },
+          "stream": { "type": "boolean", "default": false },
+          "temperature": { "type": "number", "minimum": 0, "maximum": 1 },
+          "top_p": { "type": "number", "minimum": 0, "maximum": 1 },
+          "stop_sequences": { "type": "array", "items": { "type": "string" } },
+          "thinking": {
+            "type": "object",
+            "description": "Extended thinking configuration",
+            "properties": {
+              "type": { "type": "string", "enum": ["enabled", "disabled"] },
+              "budget_tokens": { "type": "integer", "description": "Token budget for thinking" }
+            }
+          },
+          "tools": { "type": "array", "items": { "type": "object" }, "description": "Tool definitions" },
+          "tool_choice": { "type": "object", "description": "Tool selection strategy" },
+          "provider": {
+            "description": "Keyaos extension — restrict routing to specific provider(s)",
+            "oneOf": [
+              { "type": "string" },
+              { "type": "array", "items": { "type": "string" } }
+            ]
+          }
+        }
+      },
+      "AnthropicMessageResponse": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "example": "msg_abc123" },
+          "type": { "type": "string", "enum": ["message"] },
+          "role": { "type": "string", "enum": ["assistant"] },
+          "model": { "type": "string" },
+          "content": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": { "type": "string", "enum": ["text", "thinking", "tool_use"] },
+                "text": { "type": "string" },
+                "thinking": { "type": "string" },
+                "id": { "type": "string" },
+                "name": { "type": "string" },
+                "input": {}
+              }
+            }
+          },
+          "stop_reason": { "type": "string", "enum": ["end_turn", "max_tokens", "stop_sequence", "tool_use"], "nullable": true },
+          "stop_sequence": { "type": "string", "nullable": true },
+          "usage": {
+            "type": "object",
+            "properties": {
+              "input_tokens": { "type": "integer" },
+              "output_tokens": { "type": "integer" }
+            }
+          }
+        }
+      },
+      "AnthropicError": {
+        "type": "object",
+        "properties": {
+          "type": { "type": "string", "enum": ["error"] },
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": { "type": "string" },
+              "message": { "type": "string" }
+            }
+          }
+        }
+      },
+      "Model": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string", "description": "Model ID in `org/model` format", "example": "openai/gpt-4o" },
+          "name": { "type": "string", "description": "Display name", "example": "GPT-4o" },
+          "created": { "type": "integer", "description": "Unix timestamp" },
+          "description": { "type": "string", "nullable": true },
+          "hugging_face_id": { "type": "string", "nullable": true },
+          "context_length": { "type": "integer", "nullable": true, "example": 128000 },
+          "pricing": {
+            "type": "object",
+            "description": "USD per token",
+            "properties": {
+              "prompt": { "type": "string", "example": "0.0000025" },
+              "completion": { "type": "string", "example": "0.00001" }
+            }
+          },
+          "architecture": {
+            "type": "object",
+            "nullable": true,
+            "properties": {
+              "input_modalities": { "type": "array", "items": { "type": "string" } },
+              "output_modalities": { "type": "array", "items": { "type": "string" } },
+              "tokenizer": { "type": "string" }
+            }
+          },
+          "supported_parameters": { "type": "array", "items": { "type": "string" }, "nullable": true },
+          "providers": { "type": "array", "items": { "type": "string" }, "description": "Available providers" }
+        }
+      },
+      "OpenAIError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "message": { "type": "string" },
+              "type": { "type": "string" },
+              "code": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "BadRequest": {
+        "description": "Invalid request",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/OpenAIError" },
+            "example": { "error": { "message": "model is required", "type": "invalid_request_error", "code": "bad_request" } }
+          }
+        }
+      },
+      "Unauthorized": {
+        "description": "Authentication failed",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/OpenAIError" },
+            "example": { "error": { "message": "Invalid API key", "type": "authentication_error", "code": "invalid_api_key" } }
+          }
+        }
+      },
+      "InsufficientCredits": {
+        "description": "Insufficient credits and no own credential available",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/OpenAIError" },
+            "example": { "error": { "message": "Insufficient credits for openai/gpt-4o. Add credits or bring your own key.", "type": "billing_error", "code": "insufficient_credits_no_fallback" } }
+          }
+        }
+      },
+      "NoProvider": {
+        "description": "No provider available for the requested model",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/OpenAIError" },
+            "example": { "error": { "message": "No key available for openai/gpt-4o", "type": "service_unavailable", "code": "no_key_available" } }
+          }
+        }
+      }
+    }
+  }
+}

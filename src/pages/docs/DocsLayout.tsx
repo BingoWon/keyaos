@@ -252,6 +252,12 @@ export function DocsLayout() {
 					icon: ExclamationTriangleIcon,
 					activeIcon: ExclamationTriangleIconSolid,
 				},
+				{
+					name: t("docs.nav_api_playground"),
+					href: "/docs/api-reference",
+					icon: CodeBracketIcon,
+					activeIcon: CodeBracketIconSolid,
+				},
 			],
 		},
 		{

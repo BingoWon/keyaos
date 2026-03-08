@@ -53,7 +53,7 @@ export const SystemPrompt: FC<SystemPromptProps> = ({ value, onChange }) => {
 			>
 				<CommandLineIcon className="size-4" />
 			</PopoverButton>
-			<PopoverPanel className="absolute left-0 z-30 mt-2 w-80 rounded-xl border border-gray-200 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-800">
+			<PopoverPanel className="absolute left-0 z-30 mt-2 w-[min(20rem,calc(100vw-2rem))] rounded-xl border border-gray-200 bg-white p-3 shadow-lg dark:border-white/10 dark:bg-gray-800">
 				<p className="mb-2 text-xs font-medium text-gray-500 dark:text-gray-400">
 					{t("chat.system_prompt")}
 				</p>

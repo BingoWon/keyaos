@@ -53,7 +53,7 @@ export function Pagination({
 	};
 
 	return (
-		<nav className="flex items-center gap-2">
+		<nav className="flex flex-wrap items-center gap-2">
 			{onPageSizeChange && pageSize && (
 				<select
 					value={pageSize}

@@ -261,7 +261,7 @@ export function PriceChart({
 			className={`rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 ${className}`}
 		>
 			{/* Header */}
-			<div className="flex items-center justify-between gap-3 px-4 py-3 border-b border-gray-100 dark:border-white/5">
+			<div className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 border-b border-gray-100 sm:gap-3 dark:border-white/5">
 				{/* Left: title + sub-dimension toggle */}
 				<div className="flex items-center gap-3">
 					<h4 className="text-sm font-semibold text-gray-900 dark:text-white">

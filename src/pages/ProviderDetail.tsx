@@ -120,7 +120,7 @@ export function ProviderDetail() {
 			<PriceChart dimension="provider" value={group.provider.id} />
 
 			{/* Models Table */}
-			<div className="overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+			<div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
 				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
 					<thead>
 						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">

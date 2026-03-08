@@ -179,7 +179,7 @@ export function Models() {
 					</div>
 
 					{/* Table */}
-					<div className="mt-3 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
+					<div className="mt-3 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
 						<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
 							<thead>
 								<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
@@ -338,7 +338,7 @@ export function Models() {
 
 function SkeletonTable({ t }: { t: (key: string) => string }) {
 	return (
-		<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
+		<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
 			<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
 				<thead>
 					<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">

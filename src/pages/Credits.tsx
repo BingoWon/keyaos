@@ -461,17 +461,17 @@ export function Credits() {
 							</p>
 						</div>
 					</div>
-					<div className="mt-4 flex items-center gap-2">
-						<div className="relative flex-1">
-							<Input
-								placeholder={t("credits.redeem_placeholder")}
-								value={redeemCode}
-								onChange={(e) => setRedeemCode(e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === "Enter") handleRedeem();
-									if (e.key === "Escape") setRedeemCode("");
-								}}
-								className="font-mono uppercase tracking-wider pr-8"
+				<div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center">
+					<div className="relative flex-1">
+						<Input
+							placeholder={t("credits.redeem_placeholder")}
+							value={redeemCode}
+							onChange={(e) => setRedeemCode(e.target.value)}
+							onKeyDown={(e) => {
+								if (e.key === "Enter") handleRedeem();
+								if (e.key === "Escape") setRedeemCode("");
+							}}
+							className="font-mono uppercase tracking-wider pr-8"
 							/>
 							{redeemCode && (
 								<button
@@ -491,12 +491,13 @@ export function Credits() {
 								</button>
 							)}
 						</div>
-						<Button
-							disabled={redeeming || !redeemCode.trim()}
-							onClick={handleRedeem}
-						>
-							{t("credits.redeem")}
-						</Button>
+					<Button
+						disabled={redeeming || !redeemCode.trim()}
+						onClick={handleRedeem}
+						className="w-full sm:w-auto"
+					>
+						{t("credits.redeem")}
+					</Button>
 					</div>
 				</div>
 			</div>
@@ -505,53 +506,54 @@ export function Credits() {
 			<div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
 				{/* Buy Credits */}
 				<div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/5">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-3">
-							<div className="rounded-lg bg-brand-500/10 p-2.5 dark:bg-brand-500/15">
-								<BanknotesIcon className="size-5 text-brand-500" />
-							</div>
-							<div>
-								<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-									{t("credits.buy_credits")}
-								</h4>
-								<p className="text-xs text-gray-500 dark:text-gray-400">
-									{t("credits.buy_credits_desc")}
-								</p>
-							</div>
+				<div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+					<div className="flex items-center gap-3">
+						<div className="rounded-lg bg-brand-500/10 p-2.5 dark:bg-brand-500/15">
+							<BanknotesIcon className="size-5 text-brand-500" />
 						</div>
-						<div className="flex items-center gap-1.5">
-							<Icon icon="logos:visaelectron" height={18} />
-							<Icon icon="logos:mastercard" height={18} />
-							<Icon icon="logos:amex-digital" height={18} />
-							<Icon icon="logos:jcb" height={18} />
-							<Icon icon="logos:unionpay" height={18} />
-							<Icon icon="simple-icons:alipay" height={18} color="#1677FF" />
+						<div>
+							<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+								{t("credits.buy_credits")}
+							</h4>
+							<p className="text-xs text-gray-500 dark:text-gray-400">
+								{t("credits.buy_credits_desc")}
+							</p>
 						</div>
 					</div>
+					<div className="flex items-center gap-1.5">
+						<Icon icon="logos:visaelectron" height={18} />
+						<Icon icon="logos:mastercard" height={18} />
+						<Icon icon="logos:amex-digital" height={18} />
+						<Icon icon="logos:jcb" height={18} />
+						<Icon icon="logos:unionpay" height={18} />
+						<Icon icon="simple-icons:alipay" height={18} color="#1677FF" />
+					</div>
+				</div>
 
 					<div className="mt-4 space-y-3">
-						<div className="flex items-center gap-2">
-							<div className="relative w-full max-w-50">
-								<span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
-									$
-								</span>
-								<Input
-									type="number"
-									min="1"
-									step="0.01"
-									placeholder={t("credits.custom_placeholder")}
-									value={customAmount}
-									onChange={(e) => setCustomAmount(e.target.value)}
-									className="pl-7"
-								/>
-							</div>
-							<Button
-								disabled={loading || customCents < 100}
-								onClick={() => handleCheckout(customCents)}
-							>
-								{t("credits.buy_credits")}
-							</Button>
+					<div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+						<div className="relative w-full sm:max-w-50">
+							<span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+								$
+							</span>
+							<Input
+								type="number"
+								min="1"
+								step="0.01"
+								placeholder={t("credits.custom_placeholder")}
+								value={customAmount}
+								onChange={(e) => setCustomAmount(e.target.value)}
+								className="pl-7"
+							/>
 						</div>
+						<Button
+							disabled={loading || customCents < 100}
+							onClick={() => handleCheckout(customCents)}
+							className="w-full sm:w-auto"
+						>
+							{t("credits.buy_credits")}
+						</Button>
+					</div>
 						<div className="flex flex-wrap gap-2">
 							{PRESETS.map((cents) => (
 								<button
@@ -814,7 +816,7 @@ function TransactionsTable({
 
 	if (loading && !items?.length)
 		return (
-			<div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+			<div className="mt-5 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
 				<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 					{Array.from({ length: 6 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
@@ -837,7 +839,7 @@ function TransactionsTable({
 
 	return (
 		<>
-			<div className="mt-4 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+			<div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
 				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
 					<thead>
 						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
@@ -928,7 +930,7 @@ function DepositsTable({
 
 	if (loading && !items?.length)
 		return (
-			<div className="mt-5 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+			<div className="mt-5 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
 				<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 					{Array.from({ length: 5 }).map((_, i) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
@@ -952,7 +954,7 @@ function DepositsTable({
 
 	return (
 		<>
-			<div className="mt-4 overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
+			<div className="mt-4 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
 				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
 					<thead>
 						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">

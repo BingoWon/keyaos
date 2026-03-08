@@ -1,4 +1,11 @@
 import {
+	Dialog,
+	DialogBackdrop,
+	DialogPanel,
+	TransitionChild,
+} from "@headlessui/react";
+import {
+	Bars3Icon,
 	BookOpenIcon,
 	ChatBubbleLeftRightIcon,
 	CodeBracketIcon,
@@ -6,6 +13,7 @@ import {
 	MagnifyingGlassIcon,
 	ServerStackIcon,
 	UserGroupIcon,
+	XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -218,77 +226,159 @@ export function TopNav() {
 	const { t } = useTranslation();
 	const { isLoaded, isSignedIn } = useAuth();
 	const authed = isLoaded && isSignedIn;
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
 	return (
-		<header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-gray-200/50 bg-white/70 backdrop-blur-lg dark:border-white/5 dark:bg-gray-950/70">
-			<nav className="flex h-full items-center justify-between px-4 lg:px-6">
-				<div className="flex items-center gap-4">
-					<Logo size="md" />
-					<ModelSearch />
-				</div>
+		<>
+			<header className="fixed inset-x-0 top-0 z-50 h-14 border-b border-gray-200/50 bg-white/70 backdrop-blur-lg dark:border-white/5 dark:bg-gray-950/70">
+				<nav className="flex h-full items-center justify-between px-4 lg:px-6">
+					<div className="flex items-center gap-4">
+						<Logo size="md" />
+						<ModelSearch />
+					</div>
 
-				<div className="flex items-center gap-1">
-					{NAV_LINKS.map(({ key, href }) => (
-						<NavLink
-							key={href}
-							to={href}
-							className={({ isActive }) =>
-								classNames(
-									"hidden rounded-lg px-3 py-1.5 text-sm font-medium transition-colors sm:inline-flex",
-									isActive
-										? "text-brand-600 dark:text-brand-400"
-										: "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
-								)
-							}
+					<div className="flex items-center gap-1">
+						{NAV_LINKS.map(({ key, href }) => (
+							<NavLink
+								key={href}
+								to={href}
+								className={({ isActive }) =>
+									classNames(
+										"hidden rounded-lg px-3 py-1.5 text-sm font-medium transition-colors sm:inline-flex",
+										isActive
+											? "text-brand-600 dark:text-brand-400"
+											: "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white",
+									)
+								}
+							>
+								{t(key)}
+							</NavLink>
+						))}
+
+						<div className="mx-1.5 hidden h-4 w-px bg-gray-200 sm:block dark:bg-white/10" />
+
+						<ThemeToggle />
+						<LanguageSelector />
+						<a
+							href={GITHUB_URL}
+							target="_blank"
+							rel="noopener noreferrer"
+							className="hidden rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:inline-flex dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+							aria-label="GitHub"
 						>
-							{t(key)}
-						</NavLink>
-					))}
+							<GitHubIcon className="size-5" />
+						</a>
 
-					<div className="mx-1.5 hidden h-4 w-px bg-gray-200 sm:block dark:bg-white/10" />
+						<div className="mx-1.5 hidden h-4 w-px bg-gray-200 sm:block dark:bg-white/10" />
 
-					<ThemeToggle />
-					<LanguageSelector />
-					<a
-						href={GITHUB_URL}
-						target="_blank"
-						rel="noopener noreferrer"
-						className="rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
-						aria-label="GitHub"
+						{authed ? (
+							<div className="flex items-center gap-2">
+								<Link
+									to="/dashboard"
+									className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm shadow-brand-500/20 transition-colors hover:bg-brand-600 dark:hover:bg-brand-400"
+								>
+									{t("nav.dashboard")}
+								</Link>
+								{isPlatform && <UserMenu />}
+							</div>
+						) : (
+							<div className="flex items-center gap-1.5">
+								<Link
+									to="/login"
+									className="hidden items-center px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:text-gray-900 sm:inline-flex dark:text-gray-400 dark:hover:text-white"
+								>
+									{t("landing.cta_signup")}
+								</Link>
+								<Link
+									to="/login"
+									className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm shadow-brand-500/20 transition-colors hover:bg-brand-600 dark:hover:bg-brand-400"
+								>
+									{t("landing.cta_signin")}
+								</Link>
+							</div>
+						)}
+
+						{/* Mobile hamburger */}
+						<button
+							type="button"
+							onClick={() => setMobileMenuOpen(true)}
+							className="inline-flex items-center justify-center rounded-lg p-2 text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-900 sm:hidden dark:text-gray-400 dark:hover:bg-white/10 dark:hover:text-white"
+							aria-label="Open menu"
+						>
+							<Bars3Icon className="size-5" />
+						</button>
+					</div>
+				</nav>
+			</header>
+
+			{/* Mobile navigation drawer */}
+			<Dialog
+				open={mobileMenuOpen}
+				onClose={setMobileMenuOpen}
+				className="relative z-[60] sm:hidden"
+			>
+				<DialogBackdrop
+					transition
+					className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity duration-300 ease-linear data-closed:opacity-0"
+				/>
+				<div className="fixed inset-0 flex justify-end">
+					<DialogPanel
+						transition
+						className="relative w-full max-w-xs transform bg-white shadow-xl transition duration-300 ease-in-out data-closed:translate-x-full dark:bg-gray-900"
 					>
-						<GitHubIcon className="size-5" />
-					</a>
+						<TransitionChild>
+							<div className="absolute top-3 left-0 -ml-12 flex w-12 justify-center duration-300 ease-in-out data-closed:opacity-0">
+								<button
+									type="button"
+									onClick={() => setMobileMenuOpen(false)}
+									className="rounded-md p-1.5 text-white"
+								>
+									<XMarkIcon className="size-6" />
+								</button>
+							</div>
+						</TransitionChild>
 
-					<div className="mx-1.5 hidden h-4 w-px bg-gray-200 sm:block dark:bg-white/10" />
+						<div className="flex h-full flex-col overflow-y-auto px-5 py-5">
+							<div className="flex items-center justify-between">
+								<Logo size="md" />
+							</div>
 
-					{authed ? (
-						<div className="flex items-center gap-2">
-							<Link
-								to="/dashboard"
-								className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm shadow-brand-500/20 transition-colors hover:bg-brand-600 dark:hover:bg-brand-400"
-							>
-								{t("nav.dashboard")}
-							</Link>
-							{isPlatform && <UserMenu />}
+							<nav className="mt-6 flex flex-col gap-1">
+								{NAV_LINKS.map(({ key, href, icon: Icon }) => (
+									<NavLink
+										key={href}
+										to={href}
+										onClick={() => setMobileMenuOpen(false)}
+										className={({ isActive }) =>
+											classNames(
+												"flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+												isActive
+													? "bg-brand-50 text-brand-600 dark:bg-brand-500/10 dark:text-brand-400"
+													: "text-gray-600 hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white",
+											)
+										}
+									>
+										<Icon className="size-5" />
+										{t(key)}
+									</NavLink>
+								))}
+							</nav>
+
+							<div className="mt-auto border-t border-gray-200 pt-4 dark:border-white/10">
+								<a
+									href={GITHUB_URL}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-white"
+								>
+									<GitHubIcon className="size-5" />
+									GitHub
+								</a>
+							</div>
 						</div>
-					) : (
-						<div className="flex items-center gap-1.5">
-							<Link
-								to="/login"
-								className="hidden items-center px-3 py-1.5 text-xs font-medium text-gray-600 transition-colors hover:text-gray-900 sm:inline-flex dark:text-gray-400 dark:hover:text-white"
-							>
-								{t("landing.cta_signup")}
-							</Link>
-							<Link
-								to="/login"
-								className="inline-flex items-center gap-1.5 rounded-lg bg-brand-500 px-3 py-1.5 text-xs font-medium text-white shadow-sm shadow-brand-500/20 transition-colors hover:bg-brand-600 dark:hover:bg-brand-400"
-							>
-								{t("landing.cta_signin")}
-							</Link>
-						</div>
-					)}
+					</DialogPanel>
 				</div>
-			</nav>
-		</header>
+			</Dialog>
+		</>
 	);
 }

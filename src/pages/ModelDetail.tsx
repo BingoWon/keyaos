@@ -62,7 +62,7 @@ export function ModelDetail() {
 		return (
 			<div className="animate-pulse space-y-8">
 				<div>
-					<div className="h-8 w-64 rounded bg-gray-200 dark:bg-white/10" />
+					<div className="h-8 w-full max-w-64 rounded bg-gray-200 dark:bg-white/10" />
 					<div className="mt-2 h-4 w-48 rounded bg-gray-100 dark:bg-white/5" />
 					<div className="mt-3 flex gap-3">
 						<div className="h-5 w-24 rounded bg-gray-100 dark:bg-white/5" />
@@ -113,7 +113,7 @@ export function ModelDetail() {
 			/>
 
 			{/* Header */}
-			<div className="flex items-start justify-between gap-4">
+			<div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
 				<div className="min-w-0">
 					<h1 className="flex items-center gap-2 text-2xl font-bold text-gray-900 dark:text-white">
 						<OrgLogo modelId={group.id} size={24} />
@@ -171,12 +171,12 @@ export function ModelDetail() {
 			<PriceChart dimension="model" value={group.id} />
 
 			{/* Providers Table */}
-			<div className="overflow-hidden rounded-xl border border-gray-200 dark:border-white/10">
-				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
-					<thead>
-						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
-							<th className="py-2.5 pl-4 pr-2 sm:pl-5">
-								{t("models.provider", "Provider")}
+		<div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
+			<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+				<thead>
+					<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+						<th className="py-2.5 pl-4 pr-2 sm:pl-5">
+							{t("models.provider", "Provider")}
 							</th>
 							<th className="px-2 py-2.5">ID</th>
 							<th className="px-2 py-2.5 text-right">

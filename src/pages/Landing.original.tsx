@@ -166,8 +166,8 @@ function PlatformShowcase() {
 						<p className="mb-8 text-center text-xs font-medium uppercase tracking-wider text-gray-400 dark:text-gray-500">
 							{t("landing.models_label")}
 						</p>
-						<div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
-							<table className="min-w-full">
+					<div className="overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm dark:border-white/10 dark:bg-white/[0.03]">
+						<table className="min-w-full">
 								<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
 									{modelGroups.map((g) => {
 										const best = g.providers[0];

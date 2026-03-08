@@ -189,7 +189,7 @@ export function Dashboard() {
 
 			{/* Stats Cards */}
 			<dl
-				className={`grid gap-4 ${isPlatform ? "grid-cols-4" : "grid-cols-3"}`}
+				className={`grid gap-4 grid-cols-2 ${isPlatform ? "sm:grid-cols-4" : "sm:grid-cols-3"}`}
 			>
 				{statCards.map((item) => (
 					<Link
@@ -246,7 +246,7 @@ export function Dashboard() {
 
 			{/* Latest Models */}
 			{modelsLoading ? (
-				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
+				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
 					<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
 						<div className="h-4 w-28 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
 						<div className="h-3 w-16 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
@@ -290,7 +290,7 @@ export function Dashboard() {
 				</div>
 			) : (
 				latestModels.length > 0 && (
-					<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-hidden">
+					<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
 						<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
 							<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
 								{t("dashboard.latest_models")}
@@ -398,7 +398,7 @@ export function Dashboard() {
 
 			{/* Recent Activity (platform only) */}
 			{isPlatform && recentLogs && recentLogs.length > 0 && (
-				<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
+				<div className="overflow-x-auto rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">
 					<div className="flex items-center justify-between px-5 py-3.5 border-b border-gray-100 dark:border-white/5">
 						<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
 							{t("dashboard.recent_activity")}

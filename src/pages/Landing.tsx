@@ -44,8 +44,8 @@ export function Landing() {
 			</header>
 
 			{/* Hero */}
-			<section className="mx-auto max-w-5xl px-6 pt-20 pb-16 text-center">
-				<h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
+		<section className="mx-auto max-w-5xl px-6 pt-12 pb-12 text-center sm:pt-20 sm:pb-16">
+			<h1 className="text-3xl font-bold tracking-tight sm:text-5xl">
 					AI 接口统一管理平台
 				</h1>
 				<p className="mx-auto mt-5 max-w-2xl text-lg leading-relaxed text-gray-500">
@@ -117,22 +117,22 @@ export function Landing() {
 			</section>
 
 			{/* Footer */}
-			<footer className="border-t border-gray-100">
-				<div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-6 text-xs text-gray-400">
-					<span>© {new Date().getFullYear()} Keyaos. All rights reserved.</span>
-					<div className="flex gap-4">
-						<Link to="/docs/privacy-policy" className="hover:text-gray-600">
-							隐私政策
-						</Link>
-						<Link to="/docs/terms-of-service" className="hover:text-gray-600">
-							服务条款
-						</Link>
-						<Link to="/docs/contact" className="hover:text-gray-600">
-							联系我们
-						</Link>
-					</div>
+		<footer className="border-t border-gray-100">
+			<div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-6 py-6 text-xs text-gray-400 sm:flex-row sm:justify-between">
+				<span>© {new Date().getFullYear()} Keyaos. All rights reserved.</span>
+				<div className="flex gap-4">
+					<Link to="/docs/privacy-policy" className="hover:text-gray-600">
+						隐私政策
+					</Link>
+					<Link to="/docs/terms-of-service" className="hover:text-gray-600">
+						服务条款
+					</Link>
+					<Link to="/docs/contact" className="hover:text-gray-600">
+						联系我们
+					</Link>
 				</div>
-			</footer>
+			</div>
+		</footer>
 		</div>
 	);
 }

@@ -45,7 +45,7 @@ export function Logs() {
 
 	return (
 		<div>
-			<div className="sm:flex sm:items-end">
+			<div className="sm:flex sm:items-center">
 				<div className="sm:flex-auto">
 					<h1 className="text-xl font-semibold text-gray-900 dark:text-white">
 						{t("logs.title")}
@@ -54,7 +54,7 @@ export function Logs() {
 						{t("logs.subtitle")}
 					</p>
 				</div>
-				<div className="mt-4 sm:mt-0 flex items-center gap-3">
+				<div className="mt-4 sm:mt-0 flex items-end gap-3">
 					<RefreshControl
 						loading={loading}
 						lastUpdated={lastUpdated}

@@ -317,7 +317,7 @@ export function Credits() {
 
 	return (
 		<div>
-			<div className="sm:flex sm:items-end">
+			<div className="sm:flex sm:items-center">
 				<div className="sm:flex-auto">
 					<h1 className="text-xl font-semibold text-gray-900 dark:text-white">
 						{t("credits.title")}
@@ -326,8 +326,8 @@ export function Credits() {
 						{t("credits.subtitle")}
 					</p>
 				</div>
-				<div className="mt-4 sm:mt-0 flex items-center gap-3">
-					<RefreshControl
+			<div className="mt-4 sm:mt-0 flex items-end gap-3">
+				<RefreshControl
 						loading={isRefreshing}
 						lastUpdated={lastUpdated}
 						onRefresh={refetchAll}
@@ -360,7 +360,7 @@ export function Credits() {
 			{/* Balance + Redeem */}
 			<div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3">
 				{/* Balance Card */}
-				<div className="lg:col-span-2 rounded-xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/5">
+				<div className="lg:col-span-2 flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/5">
 					<div className="flex items-center justify-between">
 						<div className="flex items-center gap-4">
 							<div className="rounded-lg bg-brand-500/10 p-3 dark:bg-brand-500/15">
@@ -375,33 +375,33 @@ export function Credits() {
 								</p>
 							</div>
 						</div>
-						<div className="hidden sm:flex flex-col gap-1.5 text-right">
-							<a
-								href="/docs/credits#what-are-credits"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-xs text-gray-400 hover:text-brand-500 transition-colors dark:text-gray-500 dark:hover:text-brand-400"
-							>
-								{t("credits.faq_what_are_credits", "What are Credits?")} →
-							</a>
-							<a
-								href="/docs/credits#what-happens-when-credits-run-out"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="text-xs text-gray-400 hover:text-brand-500 transition-colors dark:text-gray-500 dark:hover:text-brand-400"
-							>
-								{t(
-									"credits.faq_credits_run_out",
-									"What happens when credits run out?",
-								)}{" "}
-								→
-							</a>
-						</div>
+					</div>
+					<div className="mt-4 flex flex-wrap gap-x-5 gap-y-1">
+						<a
+							href="/docs/credits#what-are-credits"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-xs text-gray-400 hover:text-brand-500 transition-colors dark:text-gray-500 dark:hover:text-brand-400"
+						>
+							{t("credits.faq_what_are_credits", "What are Credits?")} →
+						</a>
+						<a
+							href="/docs/credits#what-happens-when-credits-run-out"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="text-xs text-gray-400 hover:text-brand-500 transition-colors dark:text-gray-500 dark:hover:text-brand-400"
+						>
+							{t(
+								"credits.faq_credits_run_out",
+								"What happens when credits run out?",
+							)}{" "}
+							→
+						</a>
 					</div>
 				</div>
 
 				{/* Redeem Gift Card */}
-				<div className="rounded-xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/5">
+				<div className="flex flex-col justify-between rounded-xl border border-gray-200 bg-white p-5 sm:p-6 dark:border-white/10 dark:bg-white/5">
 					<div className="flex items-center gap-3">
 						<div className="rounded-lg bg-violet-500/10 p-2.5 dark:bg-violet-500/15">
 							<GiftIcon className="size-5 text-violet-500" />
@@ -416,13 +416,29 @@ export function Credits() {
 						</div>
 					</div>
 					<div className="mt-4 flex items-center gap-2">
-						<Input
-							placeholder={t("credits.redeem_placeholder")}
-							value={redeemCode}
-							onChange={(e) => setRedeemCode(e.target.value)}
-							onKeyDown={(e) => e.key === "Enter" && handleRedeem()}
-							className="flex-1 font-mono uppercase tracking-wider"
-						/>
+						<div className="relative flex-1">
+							<Input
+								placeholder={t("credits.redeem_placeholder")}
+								value={redeemCode}
+								onChange={(e) => setRedeemCode(e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === "Enter") handleRedeem();
+									if (e.key === "Escape") setRedeemCode("");
+								}}
+								className="font-mono uppercase tracking-wider pr-8"
+							/>
+							{redeemCode && (
+								<button
+									type="button"
+									onClick={() => setRedeemCode("")}
+									className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-300 hover:text-gray-500 dark:text-gray-600 dark:hover:text-gray-400 transition-colors"
+								>
+									<svg className="size-4" viewBox="0 0 20 20" fill="currentColor">
+										<path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
+									</svg>
+								</button>
+							)}
+						</div>
 						<Button
 							disabled={redeeming || !redeemCode.trim()}
 							onClick={handleRedeem}

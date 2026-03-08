@@ -63,7 +63,7 @@ export function Providers() {
 
 	return (
 		<div>
-			<div className="sm:flex sm:items-end">
+			<div className="sm:flex sm:items-center">
 				<div className="sm:flex-auto">
 					<h1 className="text-2xl font-bold text-gray-900 dark:text-white">
 						{t("providers.title")}
@@ -72,7 +72,7 @@ export function Providers() {
 						{t("providers.subtitle")}
 					</p>
 				</div>
-				<div className="mt-4 sm:mt-0 flex items-center gap-3">
+				<div className="mt-4 sm:mt-0 flex items-end gap-3">
 					<RefreshControl
 						loading={modelsLoading}
 						lastUpdated={lastUpdated}

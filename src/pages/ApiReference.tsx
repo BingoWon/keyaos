@@ -2,6 +2,18 @@ import { ApiReferenceReact } from "@scalar/api-reference-react";
 import "@scalar/api-reference-react/style.css";
 import { useEffect, useState } from "react";
 
+const NAV_HEIGHT = "56px";
+
+const SCALAR_CSS = `
+  .scalar-api-reference {
+    --scalar-custom-header-height: ${NAV_HEIGHT};
+    --full-height: calc(100dvh - ${NAV_HEIGHT});
+  }
+  .references-layout {
+    min-height: calc(100dvh - ${NAV_HEIGHT}) !important;
+  }
+`;
+
 export function ApiReference() {
 	const [darkMode, setDarkMode] = useState(
 		document.documentElement.classList.contains("dark"),
@@ -19,25 +31,14 @@ export function ApiReference() {
 	}, []);
 
 	return (
-		<div className="scalar-wrapper">
-			<style>{`
-				.scalar-wrapper {
-					position: fixed;
-					inset: 0;
-					top: 3.5rem;
-				}
-				.scalar-wrapper > .scalar-app,
-				.scalar-wrapper > div {
-					height: 100% !important;
-					max-height: 100% !important;
-				}
-			`}</style>
+		<div className="pt-14">
 			<ApiReferenceReact
 				key={String(darkMode)}
 				configuration={{
 					url: "/openapi.json",
 					hideDownloadButton: false,
 					darkMode,
+					customCss: SCALAR_CSS,
 					metaData: {
 						title: "Keyaos API Reference",
 					},

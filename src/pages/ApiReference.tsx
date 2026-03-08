@@ -31,19 +31,16 @@ export function ApiReference() {
 	}, []);
 
 	return (
-		<div className="pt-14">
-			<ApiReferenceReact
-				key={String(darkMode)}
-				configuration={{
-					url: "/openapi.json",
-					hideDownloadButton: false,
-					darkMode,
-					customCss: SCALAR_CSS,
-					metaData: {
-						title: "Keyaos API Reference",
-					},
-				}}
-			/>
-		</div>
+		<ApiReferenceReact
+			key={String(darkMode)}
+			configuration={{
+				url: "/openapi.json",
+				darkMode,
+				customCss: SCALAR_CSS,
+				metaData: {
+					title: "Keyaos API Reference",
+				},
+			}}
+		/>
 	);
 }

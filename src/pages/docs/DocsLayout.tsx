@@ -10,7 +10,6 @@ import {
 	ChatBubbleLeftRightIcon,
 	CheckIcon,
 	ClipboardDocumentIcon,
-	CodeBracketIcon,
 	CreditCardIcon,
 	CurrencyDollarIcon,
 	DocumentTextIcon,
@@ -24,7 +23,6 @@ import {
 import {
 	BookOpenIcon as BookOpenIconSolid,
 	ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
-	CodeBracketIcon as CodeBracketIconSolid,
 	CreditCardIcon as CreditCardIconSolid,
 	CurrencyDollarIcon as CurrencyDollarIconSolid,
 	DocumentTextIcon as DocumentTextIconSolid,
@@ -210,17 +208,6 @@ export function DocsLayout() {
 					href: "/docs/credits",
 					icon: CreditCardIcon,
 					activeIcon: CreditCardIconSolid,
-				},
-			],
-		},
-		{
-			label: t("docs.section_api_reference"),
-			items: [
-				{
-					name: t("docs.nav_api_playground"),
-					href: "/api-reference",
-					icon: CodeBracketIcon,
-					activeIcon: CodeBracketIconSolid,
 				},
 			],
 		},

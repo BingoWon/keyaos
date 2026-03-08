@@ -20,7 +20,6 @@ interface GiftCard {
 	redeemed_at: number | null;
 	created_by: string;
 	batch_id: string | null;
-	expires_at: number | null;
 	created_at: number;
 }
 
@@ -322,10 +321,6 @@ export function GiftCards() {
 										{card.redeemed_by ? (
 											<Badge variant="default">
 												{t("admin.gift_cards_used")}
-											</Badge>
-										) : card.expires_at && card.expires_at < Date.now() ? (
-											<Badge variant="error">
-												{t("admin.gift_cards_expired")}
 											</Badge>
 										) : (
 											<Badge variant="success">

@@ -105,7 +105,6 @@ export interface DbGiftCard {
 	redeemed_at: number | null;
 	created_by: string;
 	batch_id: string | null;
-	expires_at: number | null;
 	created_at: number;
 }
 

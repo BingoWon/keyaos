@@ -182,7 +182,6 @@ CREATE TABLE IF NOT EXISTS gift_cards (
     redeemed_at INTEGER,
     created_by TEXT NOT NULL,
     batch_id TEXT,
-    expires_at INTEGER,
     created_at INTEGER NOT NULL
 );
 

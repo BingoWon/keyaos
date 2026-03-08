@@ -81,10 +81,9 @@ admin.get("/activity", async (c) => {
 // ─── Gift cards ──────────────────────────────────────────
 
 admin.post("/gift-cards", async (c) => {
-	const { amount, count, expiresAt } = await c.req.json<{
+	const { amount, count } = await c.req.json<{
 		amount: number;
 		count: number;
-		expiresAt?: number;
 	}>();
 
 	if (!amount || amount <= 0) throw new BadRequestError("amount must be > 0");
@@ -93,12 +92,7 @@ admin.post("/gift-cards", async (c) => {
 	}
 
 	const dao = new GiftCardDao(c.env.DB);
-	const result = await dao.createBatch(
-		c.get("owner_id"),
-		amount,
-		count,
-		expiresAt,
-	);
+	const result = await dao.createBatch(c.get("owner_id"), amount, count);
 	return c.json(result);
 });
 

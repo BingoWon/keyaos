@@ -85,10 +85,7 @@ credits.post("/redeem", async (c) => {
 		return c.json(
 			{
 				error: {
-					message:
-						result.reason === "expired"
-							? "This code has expired"
-							: "Invalid or already redeemed code",
+					message: "Invalid or already redeemed code",
 					type: "invalid_request_error",
 					code: result.reason,
 				},
@@ -100,18 +97,50 @@ credits.post("/redeem", async (c) => {
 	return c.json({ ok: true, amount: result.amount });
 });
 
-// ─── GET /payments ───────────────────────────────────────
-credits.get("/payments", async (c) => {
+// ─── GET /deposits (formerly /payments) ─────────────────
+credits.get("/deposits", async (c) => {
 	const page = Math.max(1, Number(c.req.query("page")) || 1);
 	const limit = Math.min(Math.max(1, Number(c.req.query("limit")) || 20), 100);
 	const offset = (page - 1) * limit;
-	const ownerId = c.get("owner_id");
-	const dao = new PaymentsDao(c.env.DB);
-	const [items, total] = await Promise.all([
-		dao.getHistory(ownerId, limit, offset),
-		dao.countHistory(ownerId),
+	const userId = c.get("owner_id");
+
+	const baseQuery = `
+		SELECT id, credits AS amount, type AS source, status, created_at
+		FROM payments
+		WHERE owner_id = ?1
+
+		UNION ALL
+
+		SELECT code AS id, amount, 'gift_card' AS source, 'completed' AS status, redeemed_at AS created_at
+		FROM gift_cards
+		WHERE redeemed_by = ?1 AND redeemed_at IS NOT NULL
+
+		UNION ALL
+
+		SELECT id, amount, 'grant' AS source, 'completed' AS status, created_at
+		FROM credit_adjustments
+		WHERE owner_id = ?1 AND amount > 0`;
+
+	const [items, countRes] = await Promise.all([
+		c.env.DB.prepare(
+			`SELECT * FROM (${baseQuery}) combined ORDER BY created_at DESC LIMIT ?2 OFFSET ?3`,
+		)
+			.bind(userId, limit, offset)
+			.all<{
+				id: string;
+				amount: number;
+				source: string;
+				status: string;
+				created_at: number;
+			}>(),
+		c.env.DB.prepare(`SELECT COUNT(*) AS total FROM (${baseQuery})`)
+			.bind(userId)
+			.first<{ total: number }>(),
 	]);
-	return c.json({ data: { items, total } });
+
+	return c.json({
+		data: { items: items.results || [], total: countRes?.total ?? 0 },
+	});
 });
 
 // ─── POST /cancel-pending ────────────────────────────────

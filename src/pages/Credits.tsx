@@ -37,10 +37,10 @@ interface AutoTopUpConfig {
 	pausedReason?: string | null;
 }
 
-interface PaymentEntry {
+interface DepositEntry {
 	id: string;
-	type: string;
-	credits: number;
+	amount: number;
+	source: string;
 	status: string;
 	created_at: number;
 }
@@ -54,7 +54,7 @@ interface TransactionEntry {
 	created_at: number;
 }
 
-type HistoryTab = "payments" | "transactions";
+type HistoryTab = "deposits" | "transactions";
 
 /* ─── Category badges for transactions ─── */
 
@@ -123,7 +123,7 @@ export function Credits() {
 	const formatDateTime = useFormatDateTime();
 	const [searchParams, setSearchParams] = useSearchParams();
 
-	const [tab, setTab] = useState<HistoryTab>("payments");
+	const [tab, setTab] = useState<HistoryTab>("deposits");
 	const [loading, setLoading] = useState(false);
 	const [customAmount, setCustomAmount] = useState("");
 	const [redeemCode, setRedeemCode] = useState("");
@@ -144,11 +144,11 @@ export function Credits() {
 	const [txSize, setTxSize] = useState(20);
 
 	const {
-		data: paymentsResult,
-		loading: paymentsLoading,
-		refetch: refetchPayments,
-	} = useFetch<{ items: PaymentEntry[]; total: number }>(
-		`/api/credits/payments?page=${paymentsPage}&limit=${paymentsSize}`,
+		data: depositsResult,
+		loading: depositsLoading,
+		refetch: refetchDeposits,
+	} = useFetch<{ items: DepositEntry[]; total: number }>(
+		`/api/credits/deposits?page=${paymentsPage}&limit=${paymentsSize}`,
 	);
 	const {
 		data: autoConfig,
@@ -179,7 +179,7 @@ export function Credits() {
 		if (searchParams.get("success") === "true") {
 			toast.success(t("credits.success"));
 			refetchWallet();
-			refetchPayments();
+			refetchDeposits();
 			refetchAuto();
 			setSearchParams({}, { replace: true });
 		} else if (searchParams.get("canceled") === "true") {
@@ -189,14 +189,14 @@ export function Credits() {
 				fetch("/api/credits/cancel-pending", {
 					method: "POST",
 					headers: { Authorization: `Bearer ${token}` },
-				}).then(() => refetchPayments()),
+				}).then(() => refetchDeposits()),
 			);
 		}
 	}, [
 		searchParams,
 		setSearchParams,
 		refetchWallet,
-		refetchPayments,
+		refetchDeposits,
 		refetchAuto,
 		getToken,
 		t,
@@ -288,14 +288,7 @@ export function Credits() {
 				refetchWallet();
 				refetchTx();
 			} else {
-				const errCode = json.error?.code;
-				toast.error(
-					t(
-						errCode === "expired"
-							? "credits.redeem_error_expired"
-							: "credits.redeem_error_invalid",
-					),
-				);
+				toast.error(t("credits.redeem_error_invalid"));
 			}
 		} catch {
 			toast.error("Network error");
@@ -305,15 +298,15 @@ export function Credits() {
 	}, [redeemCode, getToken, refetchWallet, refetchTx, t]);
 
 	const isRefreshing =
-		walletLoading || paymentsLoading || autoLoading || transactionsLoading;
+		walletLoading || depositsLoading || autoLoading || transactionsLoading;
 	const refetchAll = useCallback(() => {
 		refetchWallet();
-		refetchPayments();
+		refetchDeposits();
 		refetchAuto();
 		if (tab === "transactions") refetchTx();
-	}, [refetchWallet, refetchPayments, refetchAuto, tab, refetchTx]);
+	}, [refetchWallet, refetchDeposits, refetchAuto, tab, refetchTx]);
 
-	const lastUpdated = useAutoRefresh(refetchAll, paymentsResult);
+	const lastUpdated = useAutoRefresh(refetchAll, depositsResult);
 
 	const customCents = Math.round(Number.parseFloat(customAmount || "0") * 100);
 
@@ -701,10 +694,10 @@ export function Credits() {
 				<div className="flex gap-1 border-b border-gray-200 dark:border-white/10">
 					<button
 						type="button"
-						onClick={() => setTab("payments")}
-						className={tabClass(tab === "payments")}
+						onClick={() => setTab("deposits")}
+						className={tabClass(tab === "deposits")}
 					>
-						{t("credits.tab_payments")}
+						{t("credits.tab_deposits")}
 					</button>
 					<button
 						type="button"
@@ -715,11 +708,11 @@ export function Credits() {
 					</button>
 				</div>
 
-				{tab === "payments" && (
-					<PaymentsTable
-						items={paymentsResult?.items ?? null}
-						total={paymentsResult?.total ?? 0}
-						loading={paymentsLoading}
+				{tab === "deposits" && (
+					<DepositsTable
+						items={depositsResult?.items ?? null}
+						total={depositsResult?.total ?? 0}
+						loading={depositsLoading}
 						formatDateTime={formatDateTime}
 						page={paymentsPage}
 						pageSize={paymentsSize}
@@ -826,7 +819,7 @@ function TransactionsTable({
 								<td className="whitespace-nowrap px-2 py-2.5">
 									<CategoryBadge category={e.category} />
 								</td>
-								<td className="whitespace-nowrap px-2 py-2.5 text-sm text-gray-900 dark:text-white">
+								<td className="whitespace-nowrap px-2 py-2.5 text-sm text-gray-900 dark:text-white max-w-48 truncate">
 									{e.description ||
 										(e.type === "adjustment"
 											? t("credits.admin_adjustment")
@@ -864,9 +857,21 @@ function TransactionsTable({
 	);
 }
 
-/* ─── Payments table ─── */
+/* ─── Source badge config for deposits ─── */
 
-function PaymentsTable({
+const SOURCE_CONFIG: Record<
+	string,
+	{ variant: "brand" | "accent" | "success" | "info"; labelKey: string }
+> = {
+	manual: { variant: "brand", labelKey: "credits.source_manual" },
+	auto: { variant: "accent", labelKey: "credits.source_auto" },
+	gift_card: { variant: "success", labelKey: "credits.source_gift_card" },
+	grant: { variant: "info", labelKey: "credits.source_grant" },
+};
+
+/* ─── Deposits table ─── */
+
+function DepositsTable({
 	items,
 	total,
 	loading,
@@ -875,7 +880,7 @@ function PaymentsTable({
 	pageSize,
 	onPageChange,
 	onPageSizeChange,
-}: PaginatedTableProps & { items: PaymentEntry[] | null }) {
+}: PaginatedTableProps & { items: DepositEntry[] | null }) {
 	const { t } = useTranslation();
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -899,7 +904,7 @@ function PaymentsTable({
 	if (!items?.length)
 		return (
 			<p className="mt-8 text-center text-sm text-gray-500 dark:text-gray-400">
-				{t("credits.no_payments")}
+				{t("credits.no_deposits")}
 			</p>
 		);
 
@@ -910,53 +915,54 @@ function PaymentsTable({
 					<thead>
 						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
 							<th className="py-2.5 pl-4 pr-2 sm:pl-5">{t("credits.time")}</th>
-							<th className="px-2 py-2.5">{t("credits.amount")}</th>
-							<th className="px-2 py-2.5">{t("credits.type")}</th>
+							<th className="px-2 py-2.5 text-right">{t("credits.amount")}</th>
+							<th className="px-2 py-2.5">{t("credits.source")}</th>
 							<th className="py-2.5 pl-2 pr-4 sm:pr-5">
 								{t("credits.status")}
 							</th>
 						</tr>
 					</thead>
 					<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-						{items.map((p) => (
-							<tr
-								key={p.id}
-								className="even:bg-gray-50/50 dark:even:bg-white/[0.015]"
-							>
-								<td className="whitespace-nowrap py-2.5 pl-4 pr-2 text-sm text-gray-500 dark:text-gray-400 sm:pl-5">
-									{formatDateTime(p.created_at)}
-								</td>
-								<td className="whitespace-nowrap px-2 py-2.5 text-sm font-medium text-gray-900 dark:text-white">
-									{formatSignedUSD(p.credits)}
-								</td>
-								<td className="whitespace-nowrap px-2 py-2.5 text-sm">
-									<Badge variant={p.type === "auto" ? "accent" : "brand"}>
-										{t(`credits.type_${p.type || "manual"}`)}
-									</Badge>
-								</td>
-								<td className="whitespace-nowrap py-2.5 pl-2 pr-4 text-sm sm:pr-5">
-									<span
-										className={
-											p.status === "completed"
-												? TOKENS.green.text
-												: p.status === "pending"
-													? TOKENS.yellow.text
-													: p.status === "failed"
-														? TOKENS.red.text
-														: "text-gray-400 dark:text-gray-500"
-										}
-									>
-										{t(`credits.status_${p.status}`)}
-									</span>
-								</td>
-							</tr>
-						))}
+						{items.map((d) => {
+							const src = SOURCE_CONFIG[d.source] ?? SOURCE_CONFIG.manual;
+							return (
+								<tr
+									key={d.id}
+									className="even:bg-gray-50/50 dark:even:bg-white/[0.015]"
+								>
+									<td className="whitespace-nowrap py-2.5 pl-4 pr-2 text-sm text-gray-500 dark:text-gray-400 sm:pl-5">
+										{formatDateTime(d.created_at)}
+									</td>
+									<td className="whitespace-nowrap px-2 py-2.5 text-sm font-medium text-right text-gray-900 dark:text-white">
+										{formatSignedUSD(d.amount)}
+									</td>
+									<td className="whitespace-nowrap px-2 py-2.5 text-sm">
+										<Badge variant={src.variant}>{t(src.labelKey)}</Badge>
+									</td>
+									<td className="whitespace-nowrap py-2.5 pl-2 pr-4 text-sm sm:pr-5">
+										<span
+											className={
+												d.status === "completed"
+													? TOKENS.green.text
+													: d.status === "pending"
+														? TOKENS.yellow.text
+														: d.status === "failed"
+															? TOKENS.red.text
+															: "text-gray-400 dark:text-gray-500"
+											}
+										>
+											{t(`credits.status_${d.status}`)}
+										</span>
+									</td>
+								</tr>
+							);
+						})}
 					</tbody>
 				</table>
 			</div>
 			<div className="mt-3 flex items-center justify-between">
 				<span className="text-xs text-gray-500 dark:text-gray-400">
-					{total.toLocaleString()} {t("credits.tab_payments").toLowerCase()}
+					{total.toLocaleString()} {t("credits.tab_deposits").toLowerCase()}
 				</span>
 				<Pagination
 					page={page}

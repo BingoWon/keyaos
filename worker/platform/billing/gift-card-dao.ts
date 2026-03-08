@@ -35,9 +35,6 @@ export class GiftCardDao {
 		if (!card || card.redeemed_by) {
 			return { ok: false, reason: "invalid_or_used" };
 		}
-		if (card.expires_at && card.expires_at < Date.now()) {
-			return { ok: false, reason: "expired" };
-		}
 
 		const now = Date.now();
 		const updateResult = await this.db
@@ -59,7 +56,6 @@ export class GiftCardDao {
 		createdBy: string,
 		amount: number,
 		count: number,
-		expiresAt?: number,
 	): Promise<{ batchId: string; codes: string[] }> {
 		const batchId = crypto.randomUUID().slice(0, 8);
 		const now = Date.now();
@@ -72,9 +68,9 @@ export class GiftCardDao {
 			stmts.push(
 				this.db
 					.prepare(
-						"INSERT INTO gift_cards (code, amount, created_by, batch_id, expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?)",
+						"INSERT INTO gift_cards (code, amount, created_by, batch_id, created_at) VALUES (?, ?, ?, ?, ?)",
 					)
-					.bind(code, amount, createdBy, batchId, expiresAt ?? null, now),
+					.bind(code, amount, createdBy, batchId, now),
 			);
 		}
 

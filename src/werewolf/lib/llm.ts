@@ -94,6 +94,47 @@ export interface GenerateOptions {
 	response_format?: ResponseFormat;
 }
 
+// ─── Provider-aware parameter adaptation ───
+
+function extractProvider(model: string): string {
+	const slash = model.indexOf("/");
+	return slash > 0 ? model.slice(0, slash).toLowerCase() : "";
+}
+
+function adaptBodyForProvider(
+	model: string,
+	body: Record<string, unknown>,
+): Record<string, unknown> {
+	const provider = extractProvider(model);
+	if (provider !== "anthropic") return body;
+
+	const adapted = { ...body };
+
+	if (typeof adapted.temperature === "number" && adapted.temperature > 1) {
+		adapted.temperature = 1.0;
+	}
+
+	if (adapted.response_format) {
+		const rf = adapted.response_format as ResponseFormat;
+		if (rf.type === "json_object") {
+			adapted.output_config = {
+				format: { type: "json_schema", schema: { type: "object" } },
+			};
+		} else if (rf.type === "json_schema" && "json_schema" in rf) {
+			adapted.output_config = {
+				format: {
+					type: "json_schema",
+					schema: (rf as { json_schema: { schema: unknown } }).json_schema
+						.schema,
+				},
+			};
+		}
+		delete adapted.response_format;
+	}
+
+	return adapted;
+}
+
 export function mergeOptionsFromModelRef<T extends GenerateOptions>(
 	modelRef: ModelRef | undefined,
 	options: T,
@@ -391,24 +432,26 @@ export async function generateCompletion(options: GenerateOptions): Promise<{
 		...(await getAuthHeaders()),
 	};
 
+	const rawBody: Record<string, unknown> = {
+		model: options.model,
+		messages: options.messages,
+		temperature: options.temperature ?? 0.7,
+		max_tokens: maxTokens,
+		...(options.reasoning ? { reasoning: options.reasoning } : {}),
+		...(options.reasoning_effort
+			? { reasoning_effort: options.reasoning_effort }
+			: {}),
+		...(options.response_format
+			? { response_format: options.response_format }
+			: {}),
+	};
+
 	const response = await fetchWithRetry(
 		"/v1/chat/completions",
 		{
 			method: "POST",
 			headers,
-			body: JSON.stringify({
-				model: options.model,
-				messages: options.messages,
-				temperature: options.temperature ?? 0.7,
-				max_tokens: maxTokens,
-				...(options.reasoning ? { reasoning: options.reasoning } : {}),
-				...(options.reasoning_effort
-					? { reasoning_effort: options.reasoning_effort }
-					: {}),
-				...(options.response_format
-					? { response_format: options.response_format }
-					: {}),
-			}),
+			body: JSON.stringify(adaptBodyForProvider(options.model, rawBody)),
 		},
 		4,
 	);
@@ -478,25 +521,27 @@ export async function* generateCompletionStream(
 		...(await getAuthHeaders()),
 	};
 
+	const rawBody: Record<string, unknown> = {
+		model: options.model,
+		messages: options.messages,
+		temperature: options.temperature ?? 0.7,
+		max_tokens: maxTokens,
+		stream: true,
+		...(options.reasoning ? { reasoning: options.reasoning } : {}),
+		...(options.reasoning_effort
+			? { reasoning_effort: options.reasoning_effort }
+			: {}),
+		...(options.response_format
+			? { response_format: options.response_format }
+			: {}),
+	};
+
 	const response = await fetchWithRetry(
 		"/v1/chat/completions",
 		{
 			method: "POST",
 			headers,
-			body: JSON.stringify({
-				model: options.model,
-				messages: options.messages,
-				temperature: options.temperature ?? 0.7,
-				max_tokens: maxTokens,
-				stream: true,
-				...(options.reasoning ? { reasoning: options.reasoning } : {}),
-				...(options.reasoning_effort
-					? { reasoning_effort: options.reasoning_effort }
-					: {}),
-				...(options.response_format
-					? { response_format: options.response_format }
-					: {}),
-			}),
+			body: JSON.stringify(adaptBodyForProvider(options.model, rawBody)),
 		},
 		4,
 	);

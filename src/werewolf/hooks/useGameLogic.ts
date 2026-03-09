@@ -13,7 +13,6 @@
  */
 
 import { PhaseManager } from "@wolf/game/core/PhaseManager";
-import { gameSessionTracker } from "@wolf/lib/game-session-tracker";
 import { aiLogger } from "@wolf/lib/ai-logger";
 import { getGeneratorModel } from "@wolf/lib/api-keys";
 import {
@@ -36,6 +35,7 @@ import {
 	transitionPhase as rawTransitionPhase,
 	setupPlayers,
 } from "@wolf/lib/game-master";
+import { gameSessionTracker } from "@wolf/lib/game-session-tracker";
 import { getSystemMessages, getUiText } from "@wolf/lib/game-texts";
 import { isQuotaExhaustedMessage } from "@wolf/lib/llm";
 import { playNarrator } from "@wolf/lib/narrator-audio-player";
@@ -1685,10 +1685,10 @@ export function useGameLogic() {
 
 			setIsLoading(true);
 			try {
-			void gameSessionTracker.start({
-				playerCount,
-				difficulty,
-			});
+				void gameSessionTracker.start({
+					playerCount,
+					difficulty,
+				});
 
 				const systemMessages = getSystemMessages();
 				const scenario = isGenshinMode ? undefined : getRandomScenario();

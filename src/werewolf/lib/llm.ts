@@ -551,7 +551,9 @@ export async function* generateCompletionStream(
 
 	const decoder = new TextDecoder();
 	let buffer = "";
-	let streamUsage: { prompt_tokens?: number; completion_tokens?: number } | undefined;
+	let streamUsage:
+		| { prompt_tokens?: number; completion_tokens?: number }
+		| undefined;
 
 	while (true) {
 		const { done, value } = await reader.read();

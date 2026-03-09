@@ -2,9 +2,9 @@ import {
 	FingerprintSimple,
 	GearSix,
 	GithubLogo,
+	Sparkle,
 	SpeakerSimpleHigh,
 	SpeakerSimpleSlash,
-	Sparkle,
 	UsersFour,
 	Wrench,
 } from "@phosphor-icons/react";
@@ -17,7 +17,6 @@ import { WerewolfIcon } from "@wolf/components/icons/FlatIcons";
 import { Button } from "@wolf/components/ui/button";
 import { useCustomCharacters } from "@wolf/hooks/useCustomCharacters";
 import { type GateReason, useGameGate } from "@wolf/hooks/useGameGate";
-import { useAppLocale } from "@wolf/i18n/useAppLocale";
 import {
 	difficultyAtom,
 	playerCountAtom,
@@ -203,7 +202,7 @@ export function WelcomeScreen({
 	humanName,
 	setHumanName,
 	onStart,
-	onAbort,
+	_onAbort,
 	isLoading,
 	isGenshinMode,
 	onGenshinModeChange,
@@ -219,7 +218,6 @@ export function WelcomeScreen({
 	onAutoAdvanceDialogueEnabledChange,
 }: WelcomeScreenProps) {
 	const t = useTranslations();
-	const { locale } = useAppLocale();
 	const gate = useGameGate();
 
 	const [isSetupOpen, setIsSetupOpen] = useState(false);
@@ -382,14 +380,13 @@ export function WelcomeScreen({
 	}, [playerCount, t]);
 
 	const canConfirm = useMemo(() => {
-		return !!humanName.trim() && !isLoading && !isTransitioning && !gate.loading;
+		return (
+			!!humanName.trim() && !isLoading && !isTransitioning && !gate.loading
+		);
 	}, [humanName, isLoading, isTransitioning, gate.loading]);
 
 	const isAnyModalOpen =
-		isSetupOpen ||
-		isCustomCharacterOpen ||
-		!!gateReason ||
-		isDevConsoleOpen;
+		isSetupOpen || isCustomCharacterOpen || !!gateReason || isDevConsoleOpen;
 
 	useEffect(() => {
 		const paper = paperRef.current;
@@ -544,10 +541,7 @@ export function WelcomeScreen({
 						onAutoAdvanceDialogueEnabledChange
 					}
 				/>
-				<GateModal
-					reason={gateReason}
-					onClose={() => setGateReason(null)}
-				/>
+				<GateModal reason={gateReason} onClose={() => setGateReason(null)} />
 				<CustomCharacterModal
 					open={isCustomCharacterOpen}
 					onOpenChange={setIsCustomCharacterOpen}

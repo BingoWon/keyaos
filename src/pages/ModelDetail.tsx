@@ -171,12 +171,12 @@ export function ModelDetail() {
 			<PriceChart dimension="model" value={group.id} />
 
 			{/* Providers Table */}
-		<div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
-			<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
-				<thead>
-					<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
-						<th className="py-2.5 pl-4 pr-2 sm:pl-5">
-							{t("models.provider", "Provider")}
+			<div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
+				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+					<thead>
+						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+							<th className="py-2.5 pl-4 pr-2 sm:pl-5">
+								{t("models.provider", "Provider")}
 							</th>
 							<th className="px-2 py-2.5">ID</th>
 							<th className="px-2 py-2.5 text-right">

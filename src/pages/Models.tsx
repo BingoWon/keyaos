@@ -235,20 +235,20 @@ export function Models() {
 															<OrgLogo modelId={g.id} />
 															{g.displayName}
 														</Link>
-													<div className="hidden items-center gap-1.5 mt-0.5 sm:flex">
-														<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
-															{g.id}
-														</code>
-														<CopyButton text={g.id} />
-														{g.createdAt > 0 && (
-															<Badge variant="brand">
-																{formatRelativeTime(
-																	g.createdAt,
-																	i18n.language,
-																)}
-															</Badge>
-														)}
-													</div>
+														<div className="hidden items-center gap-1.5 mt-0.5 sm:flex">
+															<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
+																{g.id}
+															</code>
+															<CopyButton text={g.id} />
+															{g.createdAt > 0 && (
+																<Badge variant="brand">
+																	{formatRelativeTime(
+																		g.createdAt,
+																		i18n.language,
+																	)}
+																</Badge>
+															)}
+														</div>
 													</div>
 												</td>
 												<td className="px-2 py-2.5 hidden lg:table-cell">

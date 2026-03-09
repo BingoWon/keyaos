@@ -14,6 +14,8 @@ import {
 import { DevConsole, DevModeButton } from "@wolf/components/DevTools";
 import { DialogArea } from "@wolf/components/game/DialogArea";
 import { GameBackground } from "@wolf/components/game/GameBackground";
+// Components
+import { GateModal } from "@wolf/components/game/GateModal";
 import {
 	NightActionOverlay,
 	type NightActionOverlayType,
@@ -27,8 +29,6 @@ import {
 	TutorialOverlay,
 	type TutorialPayload,
 } from "@wolf/components/game/TutorialOverlay";
-// Components
-import { GateModal } from "@wolf/components/game/GateModal";
 import { WelcomeScreen } from "@wolf/components/game/WelcomeScreen";
 import {
 	DayIcon,
@@ -1731,26 +1731,32 @@ export default function Home() {
 										<span>WOLFCHA</span>
 									</div>
 
-								<div className="md:hidden flex items-center gap-1.5">
-									<button
-										type="button"
-										onClick={() => setSoundEnabled(!isSoundEnabled)}
-										title={t(isSoundEnabled ? "page.mute" : "page.unmute")}
-										aria-label={t(isSoundEnabled ? "page.mute" : "page.unmute")}
-										className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-primary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-bg)]"
-									>
-										{isSoundEnabled ? <SpeakerSimpleHigh size={16} /> : <SpeakerSimpleSlash size={16} />}
-									</button>
-									<button
-										type="button"
-										onClick={() => setIsSettingsOpen(true)}
-										title={t("page.audioSettings")}
-										aria-label={t("page.audioSettings")}
-										className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-primary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-bg)]"
-									>
-										<GearSix size={16} />
-									</button>
-								</div>
+									<div className="md:hidden flex items-center gap-1.5">
+										<button
+											type="button"
+											onClick={() => setSoundEnabled(!isSoundEnabled)}
+											title={t(isSoundEnabled ? "page.mute" : "page.unmute")}
+											aria-label={t(
+												isSoundEnabled ? "page.mute" : "page.unmute",
+											)}
+											className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-primary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-bg)]"
+										>
+											{isSoundEnabled ? (
+												<SpeakerSimpleHigh size={16} />
+											) : (
+												<SpeakerSimpleSlash size={16} />
+											)}
+										</button>
+										<button
+											type="button"
+											onClick={() => setIsSettingsOpen(true)}
+											title={t("page.audioSettings")}
+											aria-label={t("page.audioSettings")}
+											className="inline-flex items-center justify-center w-8 h-8 rounded-md border border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-primary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-bg)]"
+										>
+											<GearSix size={16} />
+										</button>
+									</div>
 								</div>
 
 								<div className="wc-topbar__info">
@@ -1845,7 +1851,11 @@ export default function Home() {
 										aria-label={t(isSoundEnabled ? "page.mute" : "page.unmute")}
 										className="inline-flex items-center justify-center w-8 h-8 rounded-md border-2 border-[var(--border-color)] bg-[var(--bg-card)] text-[var(--text-primary)] transition-colors hover:border-[var(--color-accent)] hover:bg-[var(--color-accent-bg)]"
 									>
-										{isSoundEnabled ? <SpeakerSimpleHigh size={16} /> : <SpeakerSimpleSlash size={16} />}
+										{isSoundEnabled ? (
+											<SpeakerSimpleHigh size={16} />
+										) : (
+											<SpeakerSimpleSlash size={16} />
+										)}
 									</button>
 									<button
 										type="button"

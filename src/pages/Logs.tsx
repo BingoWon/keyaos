@@ -54,13 +54,13 @@ export function Logs() {
 						{t("logs.subtitle")}
 					</p>
 				</div>
-			<div className="mt-4 sm:mt-0 flex items-end gap-3">
-				<RefreshControl
-					loading={loading}
-					lastUpdated={lastUpdated}
-					onRefresh={refetch}
-				/>
-			</div>
+				<div className="mt-4 sm:mt-0 flex items-end gap-3">
+					<RefreshControl
+						loading={loading}
+						lastUpdated={lastUpdated}
+						onRefresh={refetch}
+					/>
+				</div>
 			</div>
 
 			<PromoBanner
@@ -85,9 +85,9 @@ export function Logs() {
 			/>
 
 			{loading && !items.length ? (
-			<div className="mt-5 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
-				<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-					{Array.from({ length: 8 }).map((_, i) => (
+				<div className="mt-5 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
+					<div className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+						{Array.from({ length: 8 }).map((_, i) => (
 							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							<div key={i} className="flex items-center gap-4 px-5 py-2.5">
 								<div className="h-4 w-28 rounded bg-gray-200 dark:bg-white/10 animate-pulse" />
@@ -104,11 +104,11 @@ export function Logs() {
 				</p>
 			) : (
 				<>
-				<div className="mt-5 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
-					<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
-						<thead>
-							<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
-								<th className="py-2.5 pl-4 pr-2 sm:pl-5">{t("logs.time")}</th>
+					<div className="mt-5 overflow-x-auto rounded-xl border border-gray-200 dark:border-white/10">
+						<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+							<thead>
+								<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+									<th className="py-2.5 pl-4 pr-2 sm:pl-5">{t("logs.time")}</th>
 									<th className="px-2 py-2.5">{t("logs.direction")}</th>
 									<th className="px-2 py-2.5">{t("logs.model")}</th>
 									<th className="px-2 py-2.5">{t("logs.provider")}</th>

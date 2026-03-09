@@ -192,8 +192,8 @@ export function Chat() {
 
 	if (!models) {
 		return (
-		<div className="flex h-dvh pt-14 animate-pulse">
-			<div className="hidden w-64 shrink-0 border-r border-gray-200 bg-gray-50 sm:block dark:border-white/10 dark:bg-gray-900/50">
+			<div className="flex h-dvh pt-14 animate-pulse">
+				<div className="hidden w-64 shrink-0 border-r border-gray-200 bg-gray-50 sm:block dark:border-white/10 dark:bg-gray-900/50">
 					<div className="flex flex-col gap-2 p-4">
 						<div className="h-9 rounded-lg bg-gray-200 dark:bg-white/10" />
 						<div className="mt-4 h-4 w-3/4 rounded bg-gray-200 dark:bg-white/10" />
@@ -228,40 +228,40 @@ export function Chat() {
 
 				{/* Main chat area */}
 				<div className="flex min-w-0 flex-1 flex-col">
-				<div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2 sm:gap-3 dark:border-white/10">
-					<button
-						type="button"
-						onClick={() => setSidebarOpen((v) => !v)}
-						className="flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10"
-						aria-label="Toggle sidebar"
-					>
-						<Bars3Icon className="size-4" />
-					</button>
-					<div className="flex min-w-0 items-center gap-1">
-						<span className="hidden text-xs font-medium text-gray-400 sm:inline dark:text-gray-500">
-							{t("chat.label_model")}
-						</span>
-						<ModelPicker
-							models={uniqueModels}
-							value={modelId}
-							onChange={handleModelIdChange}
-						/>
-						{modelId && <CopyButton text={modelId} />}
+					<div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-gray-200 px-3 py-2 sm:gap-3 dark:border-white/10">
+						<button
+							type="button"
+							onClick={() => setSidebarOpen((v) => !v)}
+							className="flex size-8 items-center justify-center rounded-lg text-gray-500 transition-colors hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-white/10"
+							aria-label="Toggle sidebar"
+						>
+							<Bars3Icon className="size-4" />
+						</button>
+						<div className="flex min-w-0 items-center gap-1">
+							<span className="hidden text-xs font-medium text-gray-400 sm:inline dark:text-gray-500">
+								{t("chat.label_model")}
+							</span>
+							<ModelPicker
+								models={uniqueModels}
+								value={modelId}
+								onChange={handleModelIdChange}
+							/>
+							{modelId && <CopyButton text={modelId} />}
+						</div>
+						<div className="hidden h-4 w-px bg-gray-300 sm:block dark:bg-white/15" />
+						<div className="hidden min-w-0 items-center gap-1 sm:flex">
+							<span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+								{t("chat.label_provider")}
+							</span>
+							<ProviderPicker
+								providers={availableProviders}
+								value={providerId}
+								onChange={handleProviderIdChange}
+							/>
+							{providerId !== AUTO_PROVIDER && <CopyButton text={providerId} />}
+						</div>
+						<SystemPrompt value={systemPrompt} onChange={setSystemPrompt} />
 					</div>
-					<div className="hidden h-4 w-px bg-gray-300 sm:block dark:bg-white/15" />
-					<div className="hidden min-w-0 items-center gap-1 sm:flex">
-						<span className="text-xs font-medium text-gray-400 dark:text-gray-500">
-							{t("chat.label_provider")}
-						</span>
-						<ProviderPicker
-							providers={availableProviders}
-							value={providerId}
-							onChange={handleProviderIdChange}
-						/>
-						{providerId !== AUTO_PROVIDER && <CopyButton text={providerId} />}
-					</div>
-					<SystemPrompt value={systemPrompt} onChange={setSystemPrompt} />
-				</div>
 					<div className="min-h-0 flex-1">
 						<ChatThread allowAttachments={allowAttachments} />
 					</div>

@@ -236,20 +236,25 @@ export function GiftCards() {
 
 				{/* Last batch result */}
 				{lastBatch && (
-				<div className="mt-4 rounded-lg border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-500/20 dark:bg-brand-500/5">
-					<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-						<p className="text-sm font-medium text-gray-900 dark:text-white">
-							{t("admin.gift_cards_batch_result", {
-								count: lastBatch.codes.length,
-								amount: formatUSD(lastBatch.amount),
-								batchId: lastBatch.batchId,
-							})}
-						</p>
-						<Button variant="secondary" size="sm" onClick={copyAll} className="w-full sm:w-auto">
-							<ClipboardDocumentIcon className="size-4" />
-							{t("admin.gift_cards_copy_all")}
-						</Button>
-					</div>
+					<div className="mt-4 rounded-lg border border-brand-200 bg-brand-50/50 p-4 dark:border-brand-500/20 dark:bg-brand-500/5">
+						<div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+							<p className="text-sm font-medium text-gray-900 dark:text-white">
+								{t("admin.gift_cards_batch_result", {
+									count: lastBatch.codes.length,
+									amount: formatUSD(lastBatch.amount),
+									batchId: lastBatch.batchId,
+								})}
+							</p>
+							<Button
+								variant="secondary"
+								size="sm"
+								onClick={copyAll}
+								className="w-full sm:w-auto"
+							>
+								<ClipboardDocumentIcon className="size-4" />
+								{t("admin.gift_cards_copy_all")}
+							</Button>
+						</div>
 						<div className="mt-3 max-h-40 overflow-y-auto">
 							<div className="grid grid-cols-1 gap-1 sm:grid-cols-2 lg:grid-cols-3">
 								{lastBatch.codes.map((code) => (

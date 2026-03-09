@@ -312,20 +312,20 @@ export function Overview() {
 			</div>
 
 			{loading ? (
-			<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-				{Array.from({ length: 6 }).map((_, i) => (
-					<div
-						// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
-						key={i}
-						className="rounded-xl border border-gray-200 bg-white px-4 py-5 dark:border-white/10 dark:bg-white/5 animate-pulse"
-					>
-						<div className="h-4 w-20 rounded bg-gray-200 dark:bg-white/10" />
-						<div className="mt-2 h-6 w-14 rounded bg-gray-200 dark:bg-white/10" />
-					</div>
-				))}
-			</dl>
-		) : (
-			<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+				<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+					{Array.from({ length: 6 }).map((_, i) => (
+						<div
+							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
+							key={i}
+							className="rounded-xl border border-gray-200 bg-white px-4 py-5 dark:border-white/10 dark:bg-white/5 animate-pulse"
+						>
+							<div className="h-4 w-20 rounded bg-gray-200 dark:bg-white/10" />
+							<div className="mt-2 h-6 w-14 rounded bg-gray-200 dark:bg-white/10" />
+						</div>
+					))}
+				</dl>
+			) : (
+				<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
 					{cards.map((c) => (
 						<div
 							key={c.name}

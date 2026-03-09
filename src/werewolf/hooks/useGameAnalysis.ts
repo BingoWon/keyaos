@@ -3,9 +3,9 @@
  * 在 GAME_END 时自动触发分析数据生成
  */
 
-import { gameSessionTracker } from "@wolf/lib/game-session-tracker";
 import { getReviewModel } from "@wolf/lib/api-keys";
 import { generateGameAnalysis } from "@wolf/lib/game-analysis";
+import { gameSessionTracker } from "@wolf/lib/game-session-tracker";
 import {
 	analysisErrorAtom,
 	analysisLoadingAtom,
@@ -30,15 +30,13 @@ export function useGameAnalysis() {
 		setError(null);
 
 		try {
-			const winner = gameState.winner === "wolf" ? "wolf" : "villager";
-
 			// 优先使用 GameState.startTime 计算时长，避免刷新后丢失
 			let durationSeconds = 0;
 			if (gameState.startTime) {
 				durationSeconds = Math.round((Date.now() - gameState.startTime) / 1000);
 			} else {
-			const summary = gameSessionTracker.getSummary();
-			durationSeconds = summary?.durationSeconds ?? 0;
+				const summary = gameSessionTracker.getSummary();
+				durationSeconds = summary?.durationSeconds ?? 0;
 			}
 
 			const reviewModel = getReviewModel();

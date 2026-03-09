@@ -72,9 +72,9 @@ export function Providers() {
 						{t("providers.subtitle")}
 					</p>
 				</div>
-			<div className="mt-4 sm:mt-0 flex items-end gap-3">
-				<RefreshControl
-					loading={modelsLoading}
+				<div className="mt-4 sm:mt-0 flex items-end gap-3">
+					<RefreshControl
+						loading={modelsLoading}
 						lastUpdated={lastUpdated}
 						onRefresh={refetch}
 					/>
@@ -89,24 +89,24 @@ export function Providers() {
 			</div>
 
 			{initialLoading ? (
-			<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
-				<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
-					<thead>
-						<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
-							<th className="py-2.5 pl-4 pr-2 sm:pl-5">
-								{t("models.provider")}
-							</th>
-							<th className="px-2">ID</th>
-							<th className="px-2 hidden md:table-cell">24h Chart</th>
-							<th className="px-2 hidden md:table-cell">24h Range</th>
-							<th className="px-2 text-right">Multiplier</th>
-							<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
-								{t("providers.models_count")}
-							</th>
-						</tr>
-					</thead>
-					<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-						{Array.from({ length: 6 }).map((_, i) => (
+				<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
+					<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+						<thead>
+							<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+								<th className="py-2.5 pl-4 pr-2 sm:pl-5">
+									{t("models.provider")}
+								</th>
+								<th className="px-2">ID</th>
+								<th className="px-2 hidden md:table-cell">24h Chart</th>
+								<th className="px-2 hidden md:table-cell">24h Range</th>
+								<th className="px-2 text-right">Multiplier</th>
+								<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
+									{t("providers.models_count")}
+								</th>
+							</tr>
+						</thead>
+						<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+							{Array.from({ length: 6 }).map((_, i) => (
 								// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 								<tr key={i}>
 									<td className="py-2.5 pl-4 pr-2 sm:pl-5">
@@ -141,24 +141,24 @@ export function Providers() {
 				</p>
 			) : (
 				<>
-				<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
-					<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
-						<thead>
-							<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
-								<th className="py-2.5 pl-4 pr-2 sm:pl-5">
-									{t("models.provider")}
-								</th>
-								<th className="px-2">ID</th>
-								<th className="px-2 hidden md:table-cell">24h Chart</th>
-								<th className="px-2 hidden md:table-cell">24h Range</th>
-								<th className="px-2 text-right">Multiplier</th>
-								<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
-									{t("providers.models_count")}
-								</th>
-							</tr>
-						</thead>
-						<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-							{filtered.map((g) => {
+					<div className="mt-5 rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5 overflow-x-auto">
+						<table className="min-w-full divide-y divide-gray-100 dark:divide-white/5">
+							<thead>
+								<tr className="text-left text-xs font-medium text-gray-400 dark:text-gray-500 whitespace-nowrap">
+									<th className="py-2.5 pl-4 pr-2 sm:pl-5">
+										{t("models.provider")}
+									</th>
+									<th className="px-2">ID</th>
+									<th className="px-2 hidden md:table-cell">24h Chart</th>
+									<th className="px-2 hidden md:table-cell">24h Range</th>
+									<th className="px-2 text-right">Multiplier</th>
+									<th className="py-2.5 pl-2 pr-4 sm:pr-5 text-right">
+										{t("providers.models_count")}
+									</th>
+								</tr>
+							</thead>
+							<tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
+								{filtered.map((g) => {
 									const spark = providerSparks?.[g.provider.id];
 									const href = `/providers/${g.provider.id}`;
 									return (

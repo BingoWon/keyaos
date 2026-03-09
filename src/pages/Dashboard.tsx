@@ -178,13 +178,13 @@ export function Dashboard() {
 						{t("dashboard.subtitle")}
 					</p>
 				</div>
-			<div className="mt-4 sm:mt-0 flex items-end gap-3">
-				<RefreshControl
-					loading={isRefreshing}
-					lastUpdated={lastUpdated}
-					onRefresh={handleRefresh}
-				/>
-			</div>
+				<div className="mt-4 sm:mt-0 flex items-end gap-3">
+					<RefreshControl
+						loading={isRefreshing}
+						lastUpdated={lastUpdated}
+						onRefresh={handleRefresh}
+					/>
+				</div>
 			</div>
 
 			{/* Stats Cards */}
@@ -323,28 +323,28 @@ export function Dashboard() {
 											}}
 											className="even:bg-gray-50/50 hover:bg-gray-100/60 dark:even:bg-white/[0.015] dark:hover:bg-white/[0.04] transition-colors cursor-pointer"
 										>
-										<td className="py-2.5 pl-5 pr-2">
-											<div className="min-w-0">
-											<Link
-												to={`/${g.id}`}
-												className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400 transition-colors whitespace-nowrap"
-											>
-												<OrgLogo modelId={g.id} size={16} />
-												{g.displayName}
-											</Link>
-												<div className="hidden items-center gap-1.5 mt-0.5 sm:flex">
-													<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
-														{g.id}
-													</code>
-													<CopyButton text={g.id} />
-													{g.createdAt > 0 && (
-														<Badge variant="warning">
-															{formatRelativeTime(g.createdAt, i18n.language)}
-														</Badge>
-													)}
+											<td className="py-2.5 pl-5 pr-2">
+												<div className="min-w-0">
+													<Link
+														to={`/${g.id}`}
+														className="inline-flex items-center gap-2 text-sm font-semibold text-gray-900 hover:text-brand-600 dark:text-white dark:hover:text-brand-400 transition-colors whitespace-nowrap"
+													>
+														<OrgLogo modelId={g.id} size={16} />
+														{g.displayName}
+													</Link>
+													<div className="hidden items-center gap-1.5 mt-0.5 sm:flex">
+														<code className="text-xs font-mono text-gray-500 dark:text-gray-400">
+															{g.id}
+														</code>
+														<CopyButton text={g.id} />
+														{g.createdAt > 0 && (
+															<Badge variant="warning">
+																{formatRelativeTime(g.createdAt, i18n.language)}
+															</Badge>
+														)}
+													</div>
 												</div>
-											</div>
-										</td>
+											</td>
 											<td className="px-2 py-2.5 hidden lg:table-cell">
 												<ModalityBadges
 													input={g.inputModalities}

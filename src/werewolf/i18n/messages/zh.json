@@ -2087,8 +2087,8 @@
 		"werewolfResult": "狼人",
 		"goodResult": "好人",
 		"quotaExhausted": {
-			"title": "API Key 余额已耗尽",
-			"description": "游戏无法继续，请前往对应平台充值后重新开始游戏。"
+			"title": "额度已用完",
+			"description": "充值额度或配置 API Key 即可继续游戏。"
 		}
 	},
 	"customKey": {
@@ -2279,15 +2279,18 @@
 			"copyFailed": "复制失败"
 		}
 	},
-	"lowCreditModal": {
-		"title": "额度即将用尽",
-		"description": "您的游戏额度较低，建议补充额度以获得更好的体验。",
-		"currentCredits": "剩余额度",
-		"unit": "局",
-		"guidance": "我们是独立开发者，服务器和 AI 调用成本不低。如果你喜欢这个游戏，希望能支持一下我们继续做下去 🙏",
-		"buyApiKey": "购买 API Key",
-		"recharge": "充值游戏额度",
-		"startGame": "继续开始游戏",
-		"startGameNoCredits": "充值游戏额度"
+	"gateModal": {
+		"auth": {
+			"title": "登录后即可开始",
+			"description": "注册或登录账号即可开始游戏，只需几秒。",
+			"action": "去登录"
+		},
+		"resources": {
+			"title": "还差一步！",
+			"description": "开始游戏前需要额度或 API Key，选一个适合你的方式。",
+			"topUp": "获取额度",
+			"addKey": "配置 API Key",
+			"abandon": "退出游戏"
+		}
 	}
 }

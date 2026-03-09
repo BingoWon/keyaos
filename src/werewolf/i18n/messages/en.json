@@ -2116,8 +2116,8 @@
 		"werewolfResult": "werewolf",
 		"goodResult": "good",
 		"quotaExhausted": {
-			"title": "API Key balance exhausted",
-			"description": "Game cannot continue. Please top up at the respective platform and restart the game."
+			"title": "Credits ran out",
+			"description": "Top up credits or add an API key to keep playing."
 		}
 	},
 	"customKey": {
@@ -2308,15 +2308,18 @@
 			"copyFailed": "Copy failed"
 		}
 	},
-	"lowCreditModal": {
-		"title": "Running Low on Credits",
-		"description": "Your game credits are running low. Consider recharging for a better experience.",
-		"currentCredits": "Credits Left",
-		"unit": "games",
-		"guidance": "We're indie developers, and server & AI costs add up. If you enjoy this game, your support helps us keep it running 🙏",
-		"buyApiKey": "Get API Key",
-		"recharge": "Buy Game Credits",
-		"startGame": "Continue Playing",
-		"startGameNoCredits": "Buy Game Credits"
+	"gateModal": {
+		"auth": {
+			"title": "Sign in to play",
+			"description": "Create an account or sign in to start a game. It only takes a moment.",
+			"action": "Sign In"
+		},
+		"resources": {
+			"title": "Almost there!",
+			"description": "You need credits or an API key before starting. Pick whichever works for you.",
+			"topUp": "Get Credits",
+			"addKey": "Add API Key",
+			"abandon": "Leave Game"
+		}
 	}
 }

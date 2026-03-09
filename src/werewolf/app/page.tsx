@@ -26,6 +26,7 @@ import {
 	type TutorialPayload,
 } from "@wolf/components/game/TutorialOverlay";
 // Components
+import { GateModal } from "@wolf/components/game/GateModal";
 import { WelcomeScreen } from "@wolf/components/game/WelcomeScreen";
 import {
 	DayIcon,
@@ -199,6 +200,8 @@ export default function Home() {
 		waitingForNextRound,
 		advanceSpeech,
 		markCurrentSegmentCompleted,
+		quotaExhausted,
+		clearQuotaExhausted,
 	} = useGameLogic();
 	const {
 		settings,
@@ -1479,11 +1482,20 @@ export default function Home() {
 	// 欢迎阶段：未开始游戏时显示欢迎屏
 	const isWelcomeStage = !gameStarted;
 
+	const midGameGateReason = quotaExhausted ? ("resources" as const) : null;
+
 	return (
 		<div
 			className="wc-game h-dvh pt-14 flex flex-col overflow-hidden"
 			style={{ backgroundColor: "var(--bg-main)" }}
 		>
+			{midGameGateReason && (
+				<GateModal
+					reason={midGameGateReason}
+					onClose={clearQuotaExhausted}
+					onAbandon={restartGame}
+				/>
+			)}
 			<GameBackground
 				isNight={visualIsNight}
 				isBlinking={!!dayNightBlinkPhase}

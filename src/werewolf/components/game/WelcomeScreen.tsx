@@ -7,40 +7,15 @@ import {
 	Wrench,
 } from "@phosphor-icons/react";
 import { DevModeButton } from "@wolf/components/DevTools";
-import { AccountModal } from "@wolf/components/game/AccountModal";
-import { AuthModal } from "@wolf/components/game/AuthModal";
 import { CustomCharacterModal } from "@wolf/components/game/CustomCharacterModal";
 import { GameSetupModal } from "@wolf/components/game/GameSetupModal";
+import { GateModal } from "@wolf/components/game/GateModal";
 import { LocaleSwitcher } from "@wolf/components/game/LocaleSwitcher";
-import {
-	LOW_CREDIT_THRESHOLD,
-	LowCreditModal,
-} from "@wolf/components/game/LowCreditModal";
-import { ResetPasswordModal } from "@wolf/components/game/ResetPasswordModal";
-import { SharePanel } from "@wolf/components/game/SharePanel";
-import { UserProfileModal } from "@wolf/components/game/UserProfileModal";
 import { WerewolfIcon } from "@wolf/components/icons/FlatIcons";
 import { Button } from "@wolf/components/ui/button";
-import { Dialog, DialogContent } from "@wolf/components/ui/dialog";
-import { useCredits } from "@wolf/hooks/useCredits";
 import { useCustomCharacters } from "@wolf/hooks/useCustomCharacters";
+import { type GateReason, useGameGate } from "@wolf/hooks/useGameGate";
 import { useAppLocale } from "@wolf/i18n/useAppLocale";
-import {
-	hasDashscopeKey,
-	hasZenmuxKey,
-	isCustomKeyEnabled,
-} from "@wolf/lib/api-keys";
-import {
-	getShanghaiDateKey,
-	isSpringCampaignActive,
-	SPRING_CAMPAIGN_CODE,
-	SPRING_CAMPAIGN_DAILY_QUOTA,
-} from "@wolf/lib/spring-campaign";
-import {
-	FREE_ROUNDS_PROMO_ENABLED,
-	REFERRAL_BONUS_ENABLED,
-	SPRING_CAMPAIGN_ENABLED,
-} from "@wolf/lib/welfare-config";
 import {
 	difficultyAtom,
 	playerCountAtom,
@@ -51,7 +26,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useAtom } from "jotai";
 import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { toast } from "sonner";
 
 type ProviderCardProps = {
 	href: string;
@@ -244,42 +218,21 @@ export function WelcomeScreen({
 }: WelcomeScreenProps) {
 	const t = useTranslations();
 	const { locale } = useAppLocale();
+	const gate = useGameGate();
 
-	const {
-		user,
-		session: _session,
-		credits,
-		referralCode,
-		totalReferrals,
-		loading: creditsLoading,
-		consumeCredit,
-		redeemCode,
-		signOut,
-		isPasswordRecovery,
-		clearPasswordRecovery,
-		fetchCredits,
-		springCampaign,
-	} = useCredits();
 	const [isSetupOpen, setIsSetupOpen] = useState(false);
 	const [isTransitioning, setIsTransitioning] = useState(false);
 	const paperRef = useRef<HTMLDivElement | null>(null);
 	const sealButtonRef = useRef<HTMLButtonElement | null>(null);
 	const isStartingRef = useRef(false);
-	const [isAuthOpen, setIsAuthOpen] = useState(false);
-	const [isShareOpen, setIsShareOpen] = useState(false);
-	const [isAccountOpen, setIsAccountOpen] = useState(false);
-	const [isUserProfileOpen, setIsUserProfileOpen] = useState(false);
-	const [isSpringFestivalOpen, setIsSpringFestivalOpen] = useState(false);
 	const [isCustomCharacterOpen, setIsCustomCharacterOpen] = useState(false);
-	const [isLowCreditOpen, setIsLowCreditOpen] = useState(false);
-	const [userProfileDefaultTab, setUserProfileDefaultTab] = useState<
-		string | undefined
-	>(undefined);
+	const [gateReason, setGateReason] = useState<GateReason>(null);
+
 	const selectionStorageKey = useMemo(() => {
-		return user?.id
-			? `${CUSTOM_CHARACTER_SELECTION_STORAGE_KEY}:${user.id}`
+		return gate.isSignedIn
+			? `${CUSTOM_CHARACTER_SELECTION_STORAGE_KEY}:keyaos`
 			: CUSTOM_CHARACTER_SELECTION_STORAGE_KEY;
-	}, [user?.id]);
+	}, [gate.isSignedIn]);
 
 	const readSelectionFromStorage = useCallback(() => {
 		if (typeof window === "undefined") return new Set<string>();
@@ -301,61 +254,12 @@ export function WelcomeScreen({
 		() => readSelectionFromStorage(),
 	);
 
-	const customCharacters = useCustomCharacters(user);
+	const customCharacters = useCustomCharacters(
+		gate.isSignedIn ? { id: "keyaos" } : null,
+	);
 	const [difficulty, _setDifficulty] = useAtom(difficultyAtom);
 	const [playerCount, setPlayerCount] = useAtom(playerCountAtom);
 	const [preferredRole, setPreferredRole] = useAtom(preferredRoleAtom);
-	const springCampaignRemainingQuota = springCampaign?.remainingQuota ?? 0;
-	const springCampaignTotalQuota = springCampaign?.totalQuota ?? 0;
-	const springCampaignActiveNow =
-		SPRING_CAMPAIGN_ENABLED &&
-		(springCampaign?.active ?? isSpringCampaignActive());
-	const springCampaignDateToday = springCampaignActiveNow
-		? getShanghaiDateKey()
-		: null;
-	const isSpringCampaignForToday =
-		springCampaignActiveNow &&
-		springCampaign?.quotaDate === springCampaignDateToday;
-	const effectiveSpringRemainingQuota = springCampaignActiveNow
-		? isSpringCampaignForToday
-			? springCampaignRemainingQuota
-			: SPRING_CAMPAIGN_DAILY_QUOTA
-		: 0;
-	const effectiveSpringTotalQuota = springCampaignActiveNow
-		? isSpringCampaignForToday
-			? springCampaignTotalQuota
-			: SPRING_CAMPAIGN_DAILY_QUOTA
-		: 0;
-	const hasSpringQuota =
-		springCampaignActiveNow && effectiveSpringRemainingQuota > 0;
-	const mayHaveUnclaimedSpringQuota =
-		springCampaignActiveNow && !isSpringCampaignForToday;
-	const springFestivalSeenKey = `wolfcha:${SPRING_CAMPAIGN_CODE}:welcome_seen`;
-
-	useEffect(() => {
-		if (
-			!SPRING_CAMPAIGN_ENABLED ||
-			!springCampaign?.active ||
-			!springCampaign.justClaimed
-		)
-			return;
-		toast.success(t("welcome.springCampaign.toast.claimed.title"), {
-			description: t("welcome.springCampaign.toast.claimed.description"),
-		});
-	}, [springCampaign?.active, springCampaign?.justClaimed, t]);
-
-	useEffect(() => {
-		if (!springCampaignActiveNow) return;
-		if (typeof window === "undefined") return;
-		const params = new URLSearchParams(window.location.search);
-		const popupDebugMode = params.get("spring_popup_debug") === "1";
-		const seen = window.localStorage.getItem(springFestivalSeenKey);
-		if (!popupDebugMode && seen === "1") return;
-		if (!popupDebugMode) {
-			window.localStorage.setItem(springFestivalSeenKey, "1");
-		}
-		setIsSpringFestivalOpen(true);
-	}, [springCampaignActiveNow, springFestivalSeenKey]);
 
 	useEffect(() => {
 		selectionStorageKeyRef.current = selectionStorageKey;
@@ -385,20 +289,6 @@ export function WelcomeScreen({
 		customCharacters.loading,
 		selectedCharacterIds,
 	]);
-
-	const [customKeyEnabled, setCustomKeyEnabled] = useState(() =>
-		isCustomKeyEnabled(),
-	);
-
-	useEffect(() => {
-		if (typeof window === "undefined") return;
-		const onStorage = (e: StorageEvent) => {
-			if (e.key !== "wolfcha_custom_key_enabled") return;
-			setCustomKeyEnabled(isCustomKeyEnabled());
-		};
-		window.addEventListener("storage", onStorage);
-		return () => window.removeEventListener("storage", onStorage);
-	}, []);
 
 	// 调试面板状态
 	const [mounted, setMounted] = useState(false);
@@ -492,20 +382,13 @@ export function WelcomeScreen({
 	}, [playerCount, t]);
 
 	const canConfirm = useMemo(() => {
-		return (
-			!!humanName.trim() && !isLoading && !isTransitioning && !creditsLoading
-		);
-	}, [humanName, isLoading, isTransitioning, creditsLoading]);
+		return !!humanName.trim() && !isLoading && !isTransitioning && !gate.loading;
+	}, [humanName, isLoading, isTransitioning, gate.loading]);
 
 	const isAnyModalOpen =
 		isSetupOpen ||
-		isAuthOpen ||
-		(REFERRAL_BONUS_ENABLED && isShareOpen) ||
-		isAccountOpen ||
-		isUserProfileOpen ||
-		(SPRING_CAMPAIGN_ENABLED && isSpringFestivalOpen) ||
 		isCustomCharacterOpen ||
-		isLowCreditOpen ||
+		!!gateReason ||
 		isDevConsoleOpen;
 
 	useEffect(() => {
@@ -586,117 +469,18 @@ export function WelcomeScreen({
 		}
 	};
 
-	const handleCreditFailure = () => {
-		setIsTransitioning(false);
-		onAbort?.();
-		if (REFERRAL_BONUS_ENABLED) {
-			setIsShareOpen(true);
-		} else {
-			setUserProfileDefaultTab("payAsYouGo");
-			setIsUserProfileOpen(true);
-		}
-		toast.error(t("welcome.toast.creditFail.title"), {
-			description: t("welcome.toast.creditFail.description"),
-		});
-	};
-
 	const handleConfirm = async () => {
-		if (!canConfirm) {
-			return;
-		}
-		if (isStartingRef.current) {
-			return;
-		}
+		if (!canConfirm || isStartingRef.current) return;
 
-		if (!user) {
-			setIsAuthOpen(true);
-			toast(t("welcome.toast.signInFirst"));
-			return;
-		}
-
-		const hasUserKey =
-			customKeyEnabled && (hasZenmuxKey() || hasDashscopeKey());
-
-		if (
-			!hasUserKey &&
-			credits !== null &&
-			credits <= LOW_CREDIT_THRESHOLD &&
-			!hasSpringQuota &&
-			!mayHaveUnclaimedSpringQuota
-		) {
-			setIsLowCreditOpen(true);
+		const blocked = gate.check();
+		if (blocked) {
+			setGateReason(blocked);
 			return;
 		}
 
 		isStartingRef.current = true;
-
 		const seal = sealButtonRef.current;
 		if (seal) createParticles(seal);
-
-		setIsTransitioning(true);
-
-		window.setTimeout(() => {
-			// 传递开发模式配置
-			const roles =
-				devTab === "roles" && devRoleOverrideEnabled && roleConfigValid
-					? (fixedRoles as Role[])
-					: undefined;
-			const preset =
-				devTab === "preset" && devPreset ? (devPreset as DevPreset) : undefined;
-
-			// Get selected custom characters
-			const selectedCustomChars = customCharacters.characters
-				.filter((c) => selectedCharacterIds.has(c.id))
-				.map((c) => ({
-					id: c.id,
-					display_name: c.display_name,
-					gender: c.gender,
-					age: c.age,
-					mbti: c.mbti,
-					basic_info: c.basic_info,
-					style_label: c.style_label,
-					avatar_seed: c.avatar_seed,
-				}));
-
-			void onStart({
-				fixedRoles: roles,
-				devPreset: preset,
-				difficulty,
-				playerCount,
-				customCharacters: selectedCustomChars,
-				preferredRole: preferredRole || undefined,
-			});
-		}, 800);
-
-		if (hasUserKey) {
-			isStartingRef.current = false;
-			return;
-		}
-
-		void consumeCredit()
-			.then((consumed) => {
-				if (consumed) return;
-				handleCreditFailure();
-			})
-			.catch(() => {
-				handleCreditFailure();
-			})
-			.finally(() => {
-				isStartingRef.current = false;
-			});
-	};
-
-	const handleOpenPayAsYouGo = () => {
-		setUserProfileDefaultTab("payAsYouGo");
-		setIsUserProfileOpen(true);
-	};
-
-	const handleStartGameFromLowCreditModal = () => {
-		isStartingRef.current = true;
-
-		const seal = sealButtonRef.current;
-		if (seal) createParticles(seal);
-
 		setIsTransitioning(true);
 
 		window.setTimeout(() => {
@@ -728,26 +512,8 @@ export function WelcomeScreen({
 				customCharacters: selectedCustomChars,
 				preferredRole: preferredRole || undefined,
 			});
-		}, 800);
-
-		const hasUserKey =
-			customKeyEnabled && (hasZenmuxKey() || hasDashscopeKey());
-		if (hasUserKey) {
 			isStartingRef.current = false;
-			return;
-		}
-
-		void consumeCredit()
-			.then((consumed) => {
-				if (consumed) return;
-				handleCreditFailure();
-			})
-			.catch(() => {
-				handleCreditFailure();
-			})
-			.finally(() => {
-				isStartingRef.current = false;
-			});
+		}, 800);
 	};
 
 	return (
@@ -778,47 +544,10 @@ export function WelcomeScreen({
 						onAutoAdvanceDialogueEnabledChange
 					}
 				/>
-				<AuthModal open={isAuthOpen} onOpenChange={setIsAuthOpen} />
-				<AccountModal open={isAccountOpen} onOpenChange={setIsAccountOpen} />
-				<UserProfileModal
-					open={isUserProfileOpen}
-					onOpenChange={(open) => {
-						setIsUserProfileOpen(open);
-						if (!open) setUserProfileDefaultTab(undefined);
-					}}
-					email={user?.email}
-					credits={credits ?? undefined}
-					springCampaign={springCampaign}
-					referralCode={referralCode}
-					totalReferrals={totalReferrals}
-					onChangePassword={() => setIsAccountOpen(true)}
-					onShareInvite={() => setIsShareOpen(true)}
-					onSignOut={signOut}
-					onRedeemCode={redeemCode}
-					onCustomKeyEnabledChange={setCustomKeyEnabled}
-					onCreditsChange={fetchCredits}
-					defaultTab={userProfileDefaultTab}
+				<GateModal
+					reason={gateReason}
+					onClose={() => setGateReason(null)}
 				/>
-				<LowCreditModal
-					open={isLowCreditOpen}
-					onOpenChange={setIsLowCreditOpen}
-					credits={credits ?? 0}
-					onStartGame={handleStartGameFromLowCreditModal}
-					onOpenPayAsYouGo={handleOpenPayAsYouGo}
-				/>
-				<ResetPasswordModal
-					open={isPasswordRecovery}
-					onOpenChange={(open) => !open && clearPasswordRecovery()}
-					onSuccess={clearPasswordRecovery}
-				/>
-				{REFERRAL_BONUS_ENABLED && (
-					<SharePanel
-						open={isShareOpen}
-						onOpenChange={setIsShareOpen}
-						referralCode={referralCode}
-						totalReferrals={totalReferrals}
-					/>
-				)}
 				<CustomCharacterModal
 					open={isCustomCharacterOpen}
 					onOpenChange={setIsCustomCharacterOpen}
@@ -832,70 +561,6 @@ export function WelcomeScreen({
 					onUpdateCharacter={customCharacters.updateCharacter}
 					onDeleteCharacter={customCharacters.deleteCharacter}
 				/>
-
-				{SPRING_CAMPAIGN_ENABLED && (
-					<Dialog
-						open={isSpringFestivalOpen}
-						onOpenChange={setIsSpringFestivalOpen}
-					>
-						<DialogContent className="max-w-[560px] overflow-hidden border-2 border-[var(--border-color)] bg-[var(--bg-card)] p-0">
-							<motion.div
-								initial={{
-									opacity: 0,
-									y: 18,
-									scale: 0.92,
-									rotateX: -14,
-									filter: "blur(8px)",
-								}}
-								animate={{
-									opacity: 1,
-									y: 0,
-									scale: 1,
-									rotateX: 0,
-									filter: "blur(0px)",
-								}}
-								transition={{ duration: 0.55, ease: "easeOut" }}
-								style={{ transformOrigin: "top center", perspective: 1100 }}
-								className="relative"
-							>
-								<div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,255,255,0.22),transparent_40%)]" />
-								<div className="bg-gradient-to-r from-[#8b1a1a] via-[#b4232b] to-[#8b1a1a] px-6 py-5 text-white">
-									<div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.18em] text-white/80">
-										<Sparkle size={14} weight="fill" />
-										{t("welcome.springCampaign.modal.badge")}
-									</div>
-									<h3 className="mt-2 text-2xl font-semibold tracking-wide">
-										{t("welcome.springCampaign.modal.title")}
-									</h3>
-									<p className="mt-1 text-sm text-white/90">
-										{t("welcome.springCampaign.modal.subtitle")}
-									</p>
-								</div>
-								<div className="space-y-3 px-6 py-5 text-sm">
-									<p className="text-[var(--text-primary)]">
-										{t("welcome.springCampaign.modal.line1")}
-									</p>
-									<p className="text-[var(--text-secondary)]">
-										{t("welcome.springCampaign.modal.line2")}
-									</p>
-									<p className="text-[var(--text-secondary)]">
-										{t("welcome.springCampaign.modal.line3")}
-									</p>
-									<div className="rounded-lg border border-[var(--border-color)] bg-white/60 px-3 py-2 text-xs text-[var(--text-secondary)]">
-										{t("welcome.springCampaign.modal.note")}
-									</div>
-									<Button
-										type="button"
-										className="w-full bg-[#b4232b] text-white hover:bg-[#9f1f26]"
-										onClick={() => setIsSpringFestivalOpen(false)}
-									>
-										{t("welcome.springCampaign.modal.action")}
-									</Button>
-								</div>
-							</motion.div>
-						</DialogContent>
-					</Dialog>
-				)}
 
 				{/* AI Provider showcase cards — left 3, right 2 */}
 				<div
@@ -989,23 +654,6 @@ export function WelcomeScreen({
 					<div ref={paperRef} className="wc-contract-paper">
 						<div className="wc-contract-borders" aria-hidden="true" />
 
-						{locale === "zh" && FREE_ROUNDS_PROMO_ENABLED && (
-							<a
-								href="https://my.feishu.cn/share/base/form/shrcnqLuGo3qyh64vFp2JhCN9CF"
-								target="_blank"
-								rel="noopener noreferrer"
-								className="wc-promo-tag-container"
-								aria-label="赠送次数"
-							>
-								<span className="wc-paper-clip" aria-hidden="true" />
-								<span className="wc-promo-ticket">
-									<span className="wc-shine-effect" aria-hidden="true" />
-									<span className="wc-promo-title">赠送次数</span>
-									<span className="wc-promo-subtitle">Free Rounds</span>
-								</span>
-							</a>
-						)}
-
 						{/* Mobile: inline provider stamps at top of paper */}
 						<div className="wc-paper-sponsors sm:hidden">
 							{[
@@ -1065,38 +713,6 @@ export function WelcomeScreen({
 							</div>
 						</div>
 
-						<div className="mt-5">
-							{springCampaignActiveNow ? (
-								<div className="relative rotate-[-1deg]">
-									<div
-										className="pointer-events-none absolute -top-2 left-6 h-4 w-20 rotate-[-6deg] rounded-sm border border-black/10 bg-white/60 shadow-sm"
-										aria-hidden="true"
-									/>
-									<div className="rounded-xl border border-[var(--border-color)] bg-white/60 px-4 py-3 shadow-[0_10px_24px_rgba(0,0,0,0.08)] backdrop-blur-sm">
-										<div className="flex items-center justify-between gap-3">
-											<p className="text-sm font-semibold text-[var(--text-primary)]">
-												{t("welcome.springCampaign.title")}
-											</p>
-											<p className="text-xs text-[var(--text-muted)]">
-												{t("welcome.springCampaign.range")}
-											</p>
-										</div>
-										<p className="mt-1 text-xs leading-snug text-[var(--text-secondary)]">
-											{user
-												? t("welcome.springCampaign.claimedStatus", {
-														count: springCampaignActiveNow
-															? effectiveSpringRemainingQuota
-															: SPRING_CAMPAIGN_DAILY_QUOTA,
-														total: springCampaignActiveNow
-															? effectiveSpringTotalQuota
-															: SPRING_CAMPAIGN_DAILY_QUOTA,
-													})
-												: t("welcome.springCampaign.signInHint")}
-										</p>
-									</div>
-								</div>
-							) : null}
-						</div>
 						<div className="mt-7 text-center wc-contract-body">
 							<div className="wc-contract-oath">
 								{t("welcome.oath.line1")}
@@ -1144,7 +760,7 @@ export function WelcomeScreen({
 						</div>
 
 						{/* Custom Character Entry */}
-						{user && (
+						{gate.isSignedIn && (
 							<button
 								type="button"
 								onClick={() => setIsCustomCharacterOpen(true)}

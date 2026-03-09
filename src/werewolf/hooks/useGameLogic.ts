@@ -100,6 +100,7 @@ export function useGameLogic() {
 	const [isLoading, setIsLoading] = useState(false);
 	const [inputText, setInputText] = useState("");
 	const [showTable, setShowTable] = useState(false);
+	const [quotaExhausted, setQuotaExhausted] = useState(false);
 	const logRef = useRef<HTMLDivElement>(null);
 
 	// Track if we've already restored the game state on mount
@@ -2046,10 +2047,7 @@ export function useGameLogic() {
 			} catch (error) {
 				const msg = String(error);
 				if (isQuotaExhaustedMessage(msg)) {
-					toast.error(t("gameLogicMessages.quotaExhausted.title"), {
-						description: t("gameLogicMessages.quotaExhausted.description"),
-						duration: 10000,
-					});
+					setQuotaExhausted(true);
 				} else if (msg.includes(" 401")) {
 					toast.error(t("gameLogicMessages.zenmux401"));
 				} else {
@@ -2943,6 +2941,8 @@ export function useGameLogic() {
 		logRef,
 		humanPlayer,
 		isNight,
+		quotaExhausted,
+		clearQuotaExhausted: useCallback(() => setQuotaExhausted(false), []),
 
 		// Actions
 		startGame,

@@ -237,11 +237,9 @@ export const router = createBrowserRouter([
 			{
 				path: "/werewolf",
 				element: (
-					<AuthGuard fallback={<Navigate to="/login" replace />}>
-						<Suspense fallback={<PageLoader />}>
-							<WerewolfGame />
-						</Suspense>
-					</AuthGuard>
+					<Suspense fallback={<PageLoader />}>
+						<WerewolfGame />
+					</Suspense>
 				),
 			},
 

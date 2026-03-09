@@ -7,7 +7,7 @@ import {
 	useLocation,
 	useNavigate,
 } from "react-router-dom";
-import { AuthGuard, isPlatform, useAuth } from "./auth";
+import { AuthGuard, isPlatform, SignupContent, useAuth } from "./auth";
 import { PageLoader } from "./components/PageLoader";
 import { RouteError } from "./components/RouteError";
 import { TopNav } from "./components/TopNav";
@@ -159,6 +159,23 @@ function LoginRoute() {
 	return <Login />;
 }
 
+function SignupRoute() {
+	const { isLoaded, isSignedIn } = useAuth();
+	const navigate = useNavigate();
+
+	useEffect(() => {
+		if (isLoaded && isSignedIn) {
+			navigate("/dashboard", { replace: true });
+		}
+	}, [isLoaded, isSignedIn, navigate]);
+
+	return (
+		<div className="flex min-h-dvh flex-col items-center justify-center px-6 pt-14 pb-12">
+			<SignupContent />
+		</div>
+	);
+}
+
 // ─── Dashboard children ──────────────────────────────────
 
 const dashboardChildren = [
@@ -209,6 +226,7 @@ export const router = createBrowserRouter([
 		errorElement: <RouteError />,
 		children: [
 			{ path: "/login/*", element: <LoginRoute /> },
+			{ path: "/signup/*", element: <SignupRoute /> },
 
 			{
 				element: <ContentShell />,

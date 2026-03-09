@@ -1,6 +1,7 @@
 import {
 	ClerkProvider,
 	SignIn,
+	SignUp,
 	UserButton,
 	useAuth as useClerkAuth,
 	useUser,
@@ -155,7 +156,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 		return (
 			<ClerkProvider
 				publishableKey={import.meta.env.VITE_CLERK_PUBLISHABLE_KEY}
-				signUpUrl="/login"
+				signInUrl="/login"
+				signUpUrl="/signup"
 				afterSignOutUrl="/login"
 				afterSignInUrl="/dashboard"
 				afterSignUpUrl="/dashboard"
@@ -262,6 +264,11 @@ function CoreLoginForm() {
 
 export function LoginContent() {
 	if (isPlatform) return <SignIn routing="path" path="/login" />;
+	return <CoreLoginForm />;
+}
+
+export function SignupContent() {
+	if (isPlatform) return <SignUp routing="path" path="/signup" />;
 	return <CoreLoginForm />;
 }
 

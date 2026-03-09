@@ -2088,7 +2088,7 @@
 		"goodResult": "好人",
 		"quotaExhausted": {
 			"title": "额度已用完",
-			"description": "充值额度或配置 API Key 即可继续游戏。"
+			"description": "充值额度或添加凭证即可继续游戏。"
 		}
 	},
 	"customKey": {
@@ -2287,9 +2287,9 @@
 		},
 		"resources": {
 			"title": "还差一步！",
-			"description": "开始游戏前需要额度或 API Key，选一个适合你的方式。",
+			"description": "开始游戏前需要额度或自有凭证，选一个适合你的方式。",
 			"topUp": "获取额度",
-			"addKey": "配置 API Key",
+			"addKey": "添加凭证",
 			"abandon": "退出游戏"
 		}
 	}

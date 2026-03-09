@@ -2117,7 +2117,7 @@
 		"goodResult": "good",
 		"quotaExhausted": {
 			"title": "Credits ran out",
-			"description": "Top up credits or add an API key to keep playing."
+			"description": "Top up credits or add a credential to keep playing."
 		}
 	},
 	"customKey": {
@@ -2316,9 +2316,9 @@
 		},
 		"resources": {
 			"title": "Almost there!",
-			"description": "You need credits or an API key before starting. Pick whichever works for you.",
+			"description": "You need credits or a provider credential before starting. Pick whichever works for you.",
 			"topUp": "Get Credits",
-			"addKey": "Add API Key",
+			"addKey": "Add Credential",
 			"abandon": "Leave Game"
 		}
 	}

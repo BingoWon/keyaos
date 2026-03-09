@@ -264,6 +264,59 @@ async function fetchWithRetry(
 	throw lastError instanceof Error ? lastError : new Error(String(lastError));
 }
 
+function buildRequestBody(
+	options: GenerateOptions,
+	stream = false,
+): Record<string, unknown> {
+	const maxTokens =
+		typeof options.max_tokens === "number" &&
+		Number.isFinite(options.max_tokens)
+			? Math.max(16, Math.floor(options.max_tokens))
+			: undefined;
+	return {
+		model: options.model,
+		messages: options.messages,
+		temperature: options.temperature ?? 0.7,
+		max_tokens: maxTokens,
+		...(stream ? { stream: true } : {}),
+		...(options.reasoning ? { reasoning: options.reasoning } : {}),
+		...(options.reasoning_effort
+			? { reasoning_effort: options.reasoning_effort }
+			: {}),
+		...(options.response_format
+			? { response_format: options.response_format }
+			: {}),
+	};
+}
+
+async function authenticatedFetch(
+	url: string,
+	body: string,
+	maxAttempts: number,
+): Promise<Response> {
+	const headers: Record<string, string> = {
+		"Content-Type": "application/json",
+		...(await getAuthHeaders()),
+	};
+	const response = await fetchWithRetry(
+		url,
+		{ method: "POST", headers, body },
+		maxAttempts,
+	);
+	if (response.status !== 401) return response;
+
+	console.warn("[LLM] 401 received, retrying with refreshed auth");
+	const freshHeaders: Record<string, string> = {
+		"Content-Type": "application/json",
+		...(await getAuthHeaders()),
+	};
+	return fetchWithRetry(
+		url,
+		{ method: "POST", headers: freshHeaders, body },
+		1,
+	);
+}
+
 export function stripMarkdownCodeFences(text: string): string {
 	let t = text.trim();
 	if (t.startsWith("```")) {
@@ -430,38 +483,11 @@ export async function generateCompletion(options: GenerateOptions): Promise<{
 	reasoning_details?: unknown;
 	raw: ChatCompletionResponse;
 }> {
-	const maxTokens =
-		typeof options.max_tokens === "number" &&
-		Number.isFinite(options.max_tokens)
-			? Math.max(16, Math.floor(options.max_tokens))
-			: undefined;
+	const body = buildRequestBody(options);
 
-	const headers: Record<string, string> = {
-		"Content-Type": "application/json",
-		...(await getAuthHeaders()),
-	};
-
-	const rawBody: Record<string, unknown> = {
-		model: options.model,
-		messages: options.messages,
-		temperature: options.temperature ?? 0.7,
-		max_tokens: maxTokens,
-		...(options.reasoning ? { reasoning: options.reasoning } : {}),
-		...(options.reasoning_effort
-			? { reasoning_effort: options.reasoning_effort }
-			: {}),
-		...(options.response_format
-			? { response_format: options.response_format }
-			: {}),
-	};
-
-	const response = await fetchWithRetry(
+	const response = await authenticatedFetch(
 		"/v1/chat/completions",
-		{
-			method: "POST",
-			headers,
-			body: JSON.stringify(adaptBodyForProvider(options.model, rawBody)),
-		},
+		JSON.stringify(adaptBodyForProvider(options.model, body)),
 		4,
 	);
 
@@ -524,39 +550,11 @@ export async function generateCompletionBatch(
 export async function* generateCompletionStream(
 	options: GenerateOptions,
 ): AsyncGenerator<string, void, unknown> {
-	const maxTokens =
-		typeof options.max_tokens === "number" &&
-		Number.isFinite(options.max_tokens)
-			? Math.max(16, Math.floor(options.max_tokens))
-			: undefined;
+	const body = buildRequestBody(options, true);
 
-	const headers: Record<string, string> = {
-		"Content-Type": "application/json",
-		...(await getAuthHeaders()),
-	};
-
-	const rawBody: Record<string, unknown> = {
-		model: options.model,
-		messages: options.messages,
-		temperature: options.temperature ?? 0.7,
-		max_tokens: maxTokens,
-		stream: true,
-		...(options.reasoning ? { reasoning: options.reasoning } : {}),
-		...(options.reasoning_effort
-			? { reasoning_effort: options.reasoning_effort }
-			: {}),
-		...(options.response_format
-			? { response_format: options.response_format }
-			: {}),
-	};
-
-	const response = await fetchWithRetry(
+	const response = await authenticatedFetch(
 		"/v1/chat/completions",
-		{
-			method: "POST",
-			headers,
-			body: JSON.stringify(adaptBodyForProvider(options.model, rawBody)),
-		},
+		JSON.stringify(adaptBodyForProvider(options.model, body)),
 		4,
 	);
 

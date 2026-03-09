@@ -14,10 +14,15 @@ export function setSessionTokenGetter(getter: () => Promise<string | null>) {
 	_getToken = getter;
 }
 
+const AUTH_TIMEOUT_MS = 5_000;
+
 async function authHeaders(): Promise<Record<string, string>> {
 	if (!_getToken) return {};
 	try {
-		const token = await _getToken();
+		const token = await Promise.race([
+			_getToken(),
+			new Promise<null>((r) => setTimeout(() => r(null), AUTH_TIMEOUT_MS)),
+		]);
 		if (token) return { Authorization: `Bearer ${token}` };
 	} catch {}
 	return {};

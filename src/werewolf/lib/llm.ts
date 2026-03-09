@@ -18,8 +18,6 @@ export type LLMContentPart =
 			input_audio: { data: string; format: "mp3" | "wav" };
 	  };
 
-export type ApiKeySource = "user" | "project";
-
 export interface LLMMessage {
 	role: "system" | "user" | "assistant";
 	content: string | LLMContentPart[];
@@ -34,19 +32,33 @@ export function setAuthTokenGetter(getter: () => Promise<string | null>) {
 	_getToken = getter;
 }
 
+const AUTH_TIMEOUT_MS = 5_000;
+const FETCH_TIMEOUT_MS = 30_000;
+
+function withTimeout<T>(
+	promise: Promise<T>,
+	ms: number,
+	label: string,
+): Promise<T> {
+	let timer: ReturnType<typeof setTimeout>;
+	return Promise.race([
+		promise,
+		new Promise<never>((_resolve, reject) => {
+			timer = setTimeout(
+				() => reject(new Error(`${label} timed out after ${ms}ms`)),
+				ms,
+			);
+		}),
+	]).finally(() => clearTimeout(timer));
+}
+
 async function getAuthHeaders(): Promise<Record<string, string>> {
 	if (!_getToken) return {};
 	try {
-		const token = await _getToken();
+		const token = await withTimeout(_getToken(), AUTH_TIMEOUT_MS, "getToken");
 		if (token) return { Authorization: `Bearer ${token}` };
 	} catch {}
 	return {};
-}
-
-// ─── Model resolution (simplified — Keyaos handles routing) ───
-
-export function resolveApiKeySource(_model: string): ApiKeySource {
-	return "project";
 }
 
 export interface ChatCompletionResponse {
@@ -217,8 +229,14 @@ async function fetchWithRetry(
 	let lastError: unknown = null;
 
 	for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+		const controller = new AbortController();
+		const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 		try {
-			const response = await fetch(input, init);
+			const response = await fetch(input, {
+				...init,
+				signal: controller.signal,
+			});
+			clearTimeout(timer);
 			lastResponse = response;
 			if (response.ok) return response;
 			if (!RETRYABLE_STATUS.has(response.status) || attempt === maxAttempts) {
@@ -233,6 +251,7 @@ async function fetchWithRetry(
 					: base * 2 ** (attempt - 1)) + jitter;
 			await sleep(backoffMs);
 		} catch (err) {
+			clearTimeout(timer);
 			lastError = err;
 			if (attempt === maxAttempts) break;
 			const base = 400;
@@ -555,8 +574,13 @@ export async function* generateCompletionStream(
 		| { prompt_tokens?: number; completion_tokens?: number }
 		| undefined;
 
+	const STREAM_CHUNK_TIMEOUT_MS = 30_000;
 	while (true) {
-		const { done, value } = await reader.read();
+		const { done, value } = await withTimeout(
+			reader.read(),
+			STREAM_CHUNK_TIMEOUT_MS,
+			"stream read",
+		);
 		if (done) break;
 		buffer += decoder.decode(value, { stream: true });
 		const lines = buffer.split("\n");

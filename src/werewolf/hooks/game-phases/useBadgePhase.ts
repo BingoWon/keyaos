@@ -382,6 +382,9 @@ export function useBadgePhase(
 
 				setIsWaitingForAI(true);
 				try {
+					console.info(
+						`[wolfcha] Badge signup batch: ${pendingAI.length} AI players`,
+					);
 					const results = await generateAIBadgeSignupBatch(
 						baseState,
 						pendingAI,
@@ -661,21 +664,25 @@ export function useBadgePhase(
 			const aiPlayers = currentState.players.filter(
 				(p) => p.alive && !p.isHuman && !candidates.includes(p.seat),
 			);
+			setIsWaitingForAI(true);
 			try {
-				for (const aiPlayer of aiPlayers) {
-					setIsWaitingForAI(true);
+				for (let i = 0; i < aiPlayers.length; i++) {
+					const aiPlayer = aiPlayers[i];
+					const model = aiPlayer.agentProfile?.modelRef?.model ?? "unknown";
+					console.info(
+						`[wolfcha] Badge vote ${i + 1}/${aiPlayers.length}: seat ${aiPlayer.seat + 1} (${model})`,
+					);
 					let targetSeat: number;
 					try {
 						targetSeat = await generateAIBadgeVote(currentState, aiPlayer);
 					} catch (e) {
 						console.warn(
-							"[wolfcha] AI badge vote threw, treating as abstain",
+							`[wolfcha] Badge vote failed for seat ${aiPlayer.seat + 1} (${model}), treating as abstain`,
 							e,
 						);
 						targetSeat = BADGE_VOTE_ABSTAIN;
 					}
 
-					// Abstain (-1) is recorded as-is; only correct non-abstain to a valid candidate
 					if (
 						targetSeat !== BADGE_VOTE_ABSTAIN &&
 						candidates.length > 0 &&
@@ -685,7 +692,6 @@ export function useBadgePhase(
 							candidates[Math.floor(Math.random() * candidates.length)];
 					}
 
-					// 从最新状态获取投票，避免覆盖人类玩家的投票
 					const latestState = gameStateRef.current;
 					currentState = {
 						...currentState,
@@ -752,8 +758,10 @@ export function useBadgePhase(
 				return;
 			}
 
-			// AI 警长选择移交对象
 			setIsWaitingForAI(true);
+			console.info(
+				`[wolfcha] Badge transfer: seat ${sheriff.seat + 1} (${sheriff.agentProfile?.modelRef?.model ?? "unknown"})`,
+			);
 			const targetSeat = await generateBadgeTransfer(currentState, sheriff);
 			setIsWaitingForAI(false);
 

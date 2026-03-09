@@ -3,8 +3,7 @@
  * 记录所有 AI 调用用于复盘
  */
 
-import type { ApiKeySource, LLMMessage } from "./llm";
-import { resolveApiKeySource } from "./llm";
+import type { LLMMessage } from "./llm";
 import { generateUUID } from "./utils";
 
 const LOCAL_LOGS_STORAGE_KEY = "wolfcha_ai_logs";
@@ -40,7 +39,7 @@ export interface AILogEntry {
 	request: {
 		model: string;
 		messages: LLMMessage[];
-		apiKeySource?: ApiKeySource;
+		apiKeySource?: "project";
 		temperature?: number;
 		player?: {
 			playerId: string;
@@ -109,11 +108,7 @@ class AILogger {
 			...entry,
 			request: {
 				...entry.request,
-				apiKeySource:
-					entry.request.apiKeySource ??
-					(typeof entry.request.model === "string" && entry.request.model.trim()
-						? resolveApiKeySource(entry.request.model)
-						: undefined),
+				apiKeySource: entry.request.apiKeySource ?? "project",
 			},
 			id: generateUUID(),
 			timestamp: Date.now(),

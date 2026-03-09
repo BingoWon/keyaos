@@ -164,6 +164,9 @@ export class NightPhase extends GamePhase {
 			return currentState;
 		}
 
+		console.info(
+			`[wolfcha] Guard action: seat ${guard.seat + 1} (${guard.agentProfile?.modelRef?.model ?? "unknown"})`,
+		);
 		const guardTarget = await generateGuardAction(currentState, guard);
 		await runtime.waitForUnpause();
 
@@ -233,6 +236,9 @@ export class NightPhase extends GamePhase {
 			try {
 				// 简化逻辑：第一个狼人决定目标，其他狼人自动达成共识
 				const firstWolf = wolves[0];
+				console.info(
+					`[wolfcha] Wolf action: seat ${firstWolf.seat + 1} (${firstWolf.agentProfile?.modelRef?.model ?? "unknown"}), pack size ${wolves.length}`,
+				);
 				const targetSeat = await generateWolfAction(
 					currentState,
 					firstWolf,
@@ -323,6 +329,9 @@ export class NightPhase extends GamePhase {
 			return currentState;
 		}
 
+		console.info(
+			`[wolfcha] Witch action: seat ${witch.seat + 1} (${witch.agentProfile?.modelRef?.model ?? "unknown"})`,
+		);
 		const witchAction = await generateWitchAction(
 			currentState,
 			witch,
@@ -394,6 +403,9 @@ export class NightPhase extends GamePhase {
 			return currentState;
 		}
 
+		console.info(
+			`[wolfcha] Seer action: seat ${seer.seat + 1} (${seer.agentProfile?.modelRef?.model ?? "unknown"})`,
+		);
 		const targetSeat = await generateSeerAction(currentState, seer);
 		if (!runtime.isTokenValid(runtime.token)) return currentState;
 

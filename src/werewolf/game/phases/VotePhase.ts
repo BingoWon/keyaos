@@ -118,11 +118,16 @@ export class VotePhase extends GamePhase {
 		let tokenInvalidated = false;
 		setIsWaitingForAI(true);
 		try {
-			for (const aiPlayer of aiPlayers) {
+			for (let i = 0; i < aiPlayers.length; i++) {
+				const aiPlayer = aiPlayers[i];
 				if (!isTokenValid(token)) {
 					tokenInvalidated = true;
 					break;
 				}
+				const model = aiPlayer.agentProfile?.modelRef?.model ?? "unknown";
+				console.info(
+					`[wolfcha] Vote ${i + 1}/${aiPlayers.length}: seat ${aiPlayer.seat + 1} (${model})`,
+				);
 				const vote = await generateAIVote(currentState, aiPlayer);
 				if (!isTokenValid(token)) {
 					tokenInvalidated = true;

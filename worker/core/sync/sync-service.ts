@@ -89,28 +89,28 @@ export async function syncAllModels(
 				return;
 			}
 
-		const filtered = models.filter((m) =>
-			allowedModelIds.has(m.model_id),
-		);
+			const filtered = models.filter((m) =>
+				allowedModelIds.has(m.model_id),
+			);
 
-		for (const m of filtered) {
-			const canonical = canonicalMap.get(m.model_id);
-			if (!canonical) continue;
+			for (const m of filtered) {
+				const canonical = canonicalMap.get(m.model_id);
+				if (!canonical) continue;
 
-			// Inherit the model's true creation time from the canonical catalog
-			m.created_at = canonical.created_at;
+				// Inherit the model's true creation time from the canonical catalog
+				m.created_at = canonical.created_at;
 
-			// Enrich models that lack upstream pricing (price == -1)
-			if (m.input_price < 0) {
-				m.input_price = canonical.input_price;
-				m.output_price = canonical.output_price;
-				m.model_type = canonical.model_type;
-				m.name ??= canonical.name;
-				m.context_length ??= canonical.context_length;
-				m.input_modalities ??= canonical.input_modalities;
-				m.output_modalities ??= canonical.output_modalities;
+				// Enrich models that lack upstream pricing (price == -1)
+				if (m.input_price < 0) {
+					m.input_price = canonical.input_price;
+					m.output_price = canonical.output_price;
+					m.model_type = canonical.model_type;
+					m.name ??= canonical.name;
+					m.context_length ??= canonical.context_length;
+					m.input_modalities ??= canonical.input_modalities;
+					m.output_modalities ??= canonical.output_modalities;
+				}
 			}
-		}
 
 			if (filtered.length > 0) {
 				await dao.upsertPricing(filtered);

@@ -21,6 +21,7 @@ export class PricingDao {
 			   is_active = 1,
 			   upstream_model_id = excluded.upstream_model_id,
 			   metadata = excluded.metadata,
+			   created_at = excluded.created_at,
 			   refreshed_at = excluded.refreshed_at`,
 		);
 

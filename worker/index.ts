@@ -4,7 +4,11 @@ import { cors } from "hono/cors";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 import { ApiKeysDao } from "./core/db/api-keys-dao";
 import { CandleDao } from "./core/db/candle-dao";
-import { syncAllModels, syncAutoCredits } from "./core/sync/sync-service";
+import {
+	syncAllModels,
+	syncAutoCredits,
+	syncFromRemote,
+} from "./core/sync/sync-service";
 import { sweepAutoTopUp } from "./platform/billing/auto-topup-service";
 import adminRouter from "./platform/routes/admin";
 import creditsRouter, { webhookRouter } from "./platform/routes/credits";
@@ -14,7 +18,11 @@ import chatRouter from "./routes/chat";
 import credentialsRouter from "./routes/credentials";
 import embeddingsRouter from "./routes/embeddings";
 import messagesRouter from "./routes/messages";
-import { dashboardModelsRouter, publicModelsRouter } from "./routes/models";
+import {
+	catalogRouter,
+	dashboardModelsRouter,
+	publicModelsRouter,
+} from "./routes/models";
 import systemRouter from "./routes/system";
 import threadsRouter from "./routes/threads";
 import werewolfRouter from "./routes/werewolf";
@@ -78,6 +86,7 @@ app.use("/api/*", async (c, next) => {
 		c.req.method === "GET" &&
 		(c.req.path === "/api/providers" ||
 			c.req.path === "/api/models" ||
+			c.req.path === "/api/catalog" ||
 			c.req.path.startsWith("/api/sparklines/"))
 	)
 		return next();
@@ -168,6 +177,7 @@ app.use("/v1/*", async (c, next) => {
 app.route("/api/credentials", credentialsRouter);
 app.route("/api/api-keys", apiKeysRouter);
 app.route("/api/models", dashboardModelsRouter);
+app.route("/api/catalog", catalogRouter);
 app.route("/api", systemRouter);
 
 app.route("/api/chat", assistantRouter);
@@ -250,7 +260,13 @@ export default {
 				await candleDao.aggregate(Date.now() - 60_000);
 				await candleDao.generateQuotedCandles();
 				await sweepAutoTopUp(env.DB, env.STRIPE_SECRET_KEY);
-				await syncAllModels(env.DB, rate, env);
+
+				if (env.CATALOG_URL) {
+					await syncFromRemote(env.DB, env.CATALOG_URL);
+				} else {
+					await syncAllModels(env.DB, rate, env);
+				}
+
 				await syncAutoCredits(env.DB, env.ENCRYPTION_KEY, rate);
 				await candleDao.pruneOldCandles();
 			})(),

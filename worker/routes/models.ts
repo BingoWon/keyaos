@@ -4,6 +4,20 @@ import { PricingDao } from "../core/db/pricing-dao";
 import { edgeCache } from "../shared/cache";
 import type { AppEnv } from "../shared/types";
 
+/**
+ * /api/catalog — Raw model_pricing export for remote sync.
+ * Self-hosted deployments fetch this to populate their local DB.
+ */
+export const catalogRouter = new Hono<AppEnv>();
+
+catalogRouter.get("/", edgeCache(60), async (c) => {
+	const dao = new PricingDao(c.env.DB);
+	const rows = await dao.getAllActive();
+	return c.json({
+		data: rows.map(({ is_active, refreshed_at, ...entry }) => entry),
+	});
+});
+
 /** Strip markdown links and bare URLs from model descriptions */
 function cleanDescription(raw: unknown): string | null {
 	if (typeof raw !== "string" || !raw) return null;

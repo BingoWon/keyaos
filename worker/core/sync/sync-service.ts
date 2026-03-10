@@ -146,6 +146,66 @@ export async function syncAllModels(
 	}
 }
 
+/**
+ * Remote Catalog Sync — fetch the full model catalog from a central source
+ * (e.g. keyaos.com /api/catalog) and replicate it into the local DB.
+ * On any failure, the local DB is left unchanged.
+ */
+export async function syncFromRemote(
+	db: D1Database,
+	catalogUrl: string,
+): Promise<void> {
+	let res: Response;
+	try {
+		res = await fetch(catalogUrl);
+	} catch (err) {
+		log.warn("sync", "Catalog fetch error, skipping", {
+			error: err instanceof Error ? err.message : String(err),
+		});
+		return;
+	}
+
+	if (!res.ok) {
+		log.warn("sync", "Catalog fetch failed, skipping", {
+			status: res.status,
+		});
+		return;
+	}
+
+	type CatalogEntry = Omit<
+		import("../db/schema").DbModelPricing,
+		"refreshed_at" | "is_active"
+	>;
+	const body = (await res.json()) as { data?: CatalogEntry[] };
+	const entries = body.data;
+	if (!Array.isArray(entries) || entries.length === 0) {
+		log.warn("sync", "Catalog returned 0 entries, skipping");
+		return;
+	}
+
+	const dao = new PricingDao(db);
+	await dao.upsertPricing(entries);
+
+	const byProvider = new Map<string, string[]>();
+	for (const e of entries) {
+		let ids = byProvider.get(e.provider_id);
+		if (!ids) {
+			ids = [];
+			byProvider.set(e.provider_id, ids);
+		}
+		ids.push(e.id);
+	}
+
+	for (const [providerId, ids] of byProvider) {
+		await dao.deactivateMissing(providerId, ids);
+	}
+
+	log.info("sync", "Remote catalog synced", {
+		entries: entries.length,
+		providers: byProvider.size,
+	});
+}
+
 export async function syncAutoCredits(
 	db: D1Database,
 	encryptionKey: string,

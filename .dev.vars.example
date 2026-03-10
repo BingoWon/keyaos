@@ -14,9 +14,15 @@ ENCRYPTION_KEY=
 # STRIPE_SECRET_KEY=sk_test_xxxxx
 # STRIPE_WEBHOOK_SECRET=whsec_xxxxx
 
-# ─── Provider System Keys (optional — enables dynamic model sync) ─────
-# When set, the sync service fetches live models from provider APIs
-# instead of relying on static JSON files.
+# ─── Model Catalog Sync ──────────────────────────────────
+# When CATALOG_URL is set, the worker syncs its model_pricing table
+# from the remote catalog every minute (recommended for self-hosted).
+# When unset, the worker runs local syncAllModels using system keys below.
+CATALOG_URL=https://keyaos.com/api/catalog
+
+# ─── Provider System Keys (optional — local sync mode only) ──
+# Only needed when CATALOG_URL is NOT set.
+# The sync service fetches live models from provider APIs.
 # DEEPSEEK_KEY=sk-xxxxx
 # OPENAI_KEY=sk-proj-xxxxx
 # GEMINI_KEY=AIzaxxxxx

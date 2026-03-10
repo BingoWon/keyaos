@@ -78,6 +78,13 @@ export class PricingDao {
 		}
 	}
 
+	async getAllActive(): Promise<DbModelPricing[]> {
+		const res = await this.db
+			.prepare("SELECT * FROM model_pricing WHERE is_active = 1")
+			.all<DbModelPricing>();
+		return res.results || [];
+	}
+
 	async findByModelId(modelId: string): Promise<DbModelPricing[]> {
 		const res = await this.db
 			.prepare(

@@ -8,10 +8,21 @@ import { Icon } from "@iconify/react";
 import type { Modality } from "../../worker/core/db/schema";
 
 /** Canonical display order */
-const MODALITY_ORDER: Modality[] = ["text", "image", "file", "audio", "video"];
+const MODALITY_ORDER: Modality[] = [
+	"text",
+	"image",
+	"file",
+	"audio",
+	"video",
+	"embeddings",
+];
 
 function TextIcon({ size }: { size: number }) {
 	return <Icon icon="solar:text-square-bold" width={size} height={size} />;
+}
+
+function EmbeddingsIcon({ size }: { size: number }) {
+	return <Icon icon="solar:graph-new-bold" width={size} height={size} />;
 }
 
 const ICON_MAP: Record<
@@ -23,6 +34,9 @@ const ICON_MAP: Record<
 	file: DocumentArrowUpIcon,
 	audio: MicrophoneIcon,
 	video: VideoCameraIcon,
+	embeddings: ({ style }) => (
+		<EmbeddingsIcon size={(style?.width as number) ?? 16} />
+	),
 };
 
 function ModalityDot({ modality, size }: { modality: Modality; size: number }) {

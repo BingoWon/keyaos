@@ -142,9 +142,19 @@ const MODALITY_ICON: Record<Modality, React.FC<{ className?: string }>> = {
 	file: DocumentArrowUpIcon,
 	audio: MicrophoneIcon,
 	video: VideoCameraIcon,
+	embeddings: ({ className }) => (
+		<Icon icon="solar:graph-new-bold" className={className} />
+	),
 };
 
-const ALL_MODALITIES: Modality[] = ["text", "image", "file", "audio", "video"];
+const ALL_MODALITIES: Modality[] = [
+	"text",
+	"image",
+	"file",
+	"audio",
+	"video",
+	"embeddings",
+];
 
 // ─── Context steps ───────────────────────────────────────
 

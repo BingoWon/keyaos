@@ -256,7 +256,14 @@ export function ModelDetail() {
 
 // ─── Modality pills (detail page only) ───────────────────
 
-const MODALITY_ORDER: Modality[] = ["text", "image", "file", "audio", "video"];
+const MODALITY_ORDER: Modality[] = [
+	"text",
+	"image",
+	"file",
+	"audio",
+	"video",
+	"embeddings",
+];
 
 const MODALITY_ICON: Record<Modality, React.FC<{ className?: string }>> = {
 	text: ({ className }) => (
@@ -266,6 +273,9 @@ const MODALITY_ICON: Record<Modality, React.FC<{ className?: string }>> = {
 	file: DocumentArrowUpIcon,
 	audio: MicrophoneIcon,
 	video: VideoCameraIcon,
+	embeddings: ({ className }) => (
+		<Icon icon="solar:graph-new-bold" className={className} />
+	),
 };
 
 function ModalityPill({

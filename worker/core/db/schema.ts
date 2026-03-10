@@ -32,7 +32,13 @@ export interface DbCredential {
 	added_at: number;
 }
 
-export type Modality = "text" | "image" | "audio" | "video" | "file";
+export type Modality =
+	| "text"
+	| "image"
+	| "audio"
+	| "video"
+	| "file"
+	| "embeddings";
 
 export type ModelType = "chat" | "embedding";
 

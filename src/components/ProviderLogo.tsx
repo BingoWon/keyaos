@@ -24,7 +24,7 @@ export function ProviderLogo({ src, name, size = 20 }: ProviderLogoProps) {
 		<img
 			src={src}
 			alt={name}
-			className="rounded-full object-cover shrink-0"
+			className="rounded-full object-cover shrink-0 bg-gray-100 dark:bg-white/15"
 			style={{ width: size, height: size }}
 			onError={() => setFailed(true)}
 		/>

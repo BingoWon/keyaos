@@ -370,21 +370,23 @@ export function Dashboard() {
 												{maxCtx > 0 ? formatContext(maxCtx) : "—"}
 											</td>
 											<td className="py-2.5 pl-2 pr-5">
-												<div className="flex items-center justify-end gap-1">
-													<span className="hidden sm:inline-flex items-center gap-0.5">
-														{g.providers.slice(0, 4).map((p) => {
-															const meta = providerMap.get(p.provider_id);
-															return meta ? (
-																<ProviderLogo
-																	key={p.provider_id}
-																	src={meta.logoUrl}
-																	name={meta.name}
-																	size={16}
-																/>
-															) : null;
-														})}
-													</span>
-													<Badge variant="brand">{g.providers.length}</Badge>
+												<div className="flex items-center justify-end gap-0.5">
+													{g.providers.slice(0, 5).map((p) => {
+														const meta = providerMap.get(p.provider_id);
+														return meta ? (
+															<ProviderLogo
+																key={p.provider_id}
+																src={meta.logoUrl}
+																name={meta.name}
+																size={16}
+															/>
+														) : null;
+													})}
+													{g.providers.length > 5 && (
+														<span className="ml-0.5 text-[11px] text-gray-400 dark:text-gray-500">
+															+{g.providers.length - 5}
+														</span>
+													)}
 												</div>
 											</td>
 										</tr>

@@ -15,6 +15,15 @@ systemRouter.get("/me", (c) => {
 	return c.json({ ownerId, isAdmin });
 });
 
+systemRouter.get("/my-ip", (c) => {
+	const ip =
+		c.req.header("cf-connecting-ip") ||
+		c.req.header("x-real-ip") ||
+		c.req.header("x-forwarded-for")?.split(",")[0]?.trim() ||
+		null;
+	return c.json({ ip });
+});
+
 systemRouter.get("/pool/stats", async (c) => {
 	const userId = c.get("owner_id");
 	const [credStats, logStats] = await Promise.all([

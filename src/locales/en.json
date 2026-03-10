@@ -107,13 +107,19 @@
 		"allowed_models": "Allowed Models",
 		"allowed_models_all": "All models",
 		"allowed_models_placeholder": "e.g. gpt-4o, claude-3-5-sonnet",
+		"allowed_models_hint": "Leave empty to allow all models.",
 		"allowed_ips": "IP Allowlist",
 		"allowed_ips_all": "Any IP",
 		"allowed_ips_placeholder": "e.g. 1.2.3.4, 10.0.0.0",
+		"allowed_ips_hint": "Leave empty to allow any IP address.",
 		"permissions": "Permissions",
 		"restrictions_count_one": "{{count}} restriction",
 		"restrictions_count_other": "{{count}} restrictions",
-		"no_restrictions": "No restrictions"
+		"no_restrictions": "No restrictions",
+		"quota_hint": "Maximum spending in credits (USD). Key stops working once exceeded.",
+		"edit_title": "Edit API Key",
+		"edit_permissions": "Edit permissions",
+		"expiry_keep": "Keep current"
 	},
 	"credentials": {
 		"title": "Bring Your Own Key",

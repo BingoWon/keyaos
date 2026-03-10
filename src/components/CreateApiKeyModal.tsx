@@ -1,11 +1,18 @@
-import { CheckIcon, ClipboardDocumentIcon } from "@heroicons/react/20/solid";
+import {
+	CheckIcon,
+	ChevronDownIcon,
+	ClipboardDocumentIcon,
+} from "@heroicons/react/20/solid";
 import type React from "react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
 import { TOKENS } from "../utils/colors";
+import { IpAllowlistInput } from "./IpAllowlistInput";
 import { Modal } from "./Modal";
+import { ModelMultiSelect } from "./ModelMultiSelect";
+import { ToggleSwitch } from "./ToggleSwitch";
 import { Button, Input } from "./ui";
 
 interface CreatedKey {
@@ -45,12 +52,14 @@ export function CreateApiKeyModal({
 	const [createdKey, setCreatedKey] = useState<string | null>(null);
 	const [copied, setCopied] = useState(false);
 
+	// Advanced settings
+	const [showAdvanced, setShowAdvanced] = useState(false);
 	const [expiryPreset, setExpiryPreset] = useState<ExpiryPreset>("never");
 	const [customDate, setCustomDate] = useState("");
 	const [quotaEnabled, setQuotaEnabled] = useState(false);
 	const [quotaLimit, setQuotaLimit] = useState("");
-	const [modelsText, setModelsText] = useState("");
-	const [ipsText, setIpsText] = useState("");
+	const [allowedModels, setAllowedModels] = useState<string[]>([]);
+	const [allowedIps, setAllowedIps] = useState<string[]>([]);
 
 	const handleClose = () => {
 		onClose();
@@ -58,27 +67,19 @@ export function CreateApiKeyModal({
 			setCreatedKey(null);
 			setName("");
 			setCopied(false);
+			setShowAdvanced(false);
 			setExpiryPreset("never");
 			setCustomDate("");
 			setQuotaEnabled(false);
 			setQuotaLimit("");
-			setModelsText("");
-			setIpsText("");
+			setAllowedModels([]);
+			setAllowedIps([]);
 		}, 200);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		const tid = toast.loading(t("common.loading"));
-
-		const allowedModels = modelsText
-			.split(/[,\n]/)
-			.map((s) => s.trim())
-			.filter(Boolean);
-		const allowedIps = ipsText
-			.split(/[,\n]/)
-			.map((s) => s.trim())
-			.filter(Boolean);
 
 		try {
 			const res = await fetch("/api/api-keys", {
@@ -90,7 +91,8 @@ export function CreateApiKeyModal({
 				body: JSON.stringify({
 					name,
 					expiresAt: expiryToTimestamp(expiryPreset, customDate),
-					quotaLimit: quotaEnabled && quotaLimit ? Number(quotaLimit) : null,
+					quotaLimit:
+						quotaEnabled && quotaLimit ? Number(quotaLimit) : null,
 					allowedModels: allowedModels.length ? allowedModels : null,
 					allowedIps: allowedIps.length ? allowedIps : null,
 				}),
@@ -117,14 +119,20 @@ export function CreateApiKeyModal({
 
 	const labelCls =
 		"block text-sm font-medium text-gray-700 dark:text-gray-300";
-	const hintCls = "mt-0.5 text-xs text-gray-400 dark:text-gray-500";
+	const hintCls = "mt-1 text-xs text-gray-400 dark:text-gray-500";
+
+	const hasAdvancedSettings =
+		expiryPreset !== "never" ||
+		quotaEnabled ||
+		allowedModels.length > 0 ||
+		allowedIps.length > 0;
 
 	return (
 		<Modal
 			open={open}
 			onClose={handleClose}
 			title={createdKey ? t("api_keys.key") : t("api_keys.create")}
-			size="md"
+			size="lg"
 		>
 			{createdKey ? (
 				<div className="space-y-4">
@@ -179,114 +187,144 @@ export function CreateApiKeyModal({
 						/>
 					</div>
 
-					{/* Expiration */}
-					<div>
-						<label className={labelCls}>{t("api_keys.expires_at")}</label>
-						<div className="mt-1 flex flex-wrap gap-2">
-							{(
-								[
-									["never", t("api_keys.expires_never")],
-									["7d", "7 days"],
-									["30d", "30 days"],
-									["90d", "90 days"],
-									["custom", "Custom"],
-								] as const
-							).map(([val, label]) => (
-								<button
-									key={val}
-									type="button"
-									onClick={() => setExpiryPreset(val as ExpiryPreset)}
-									className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors ${
-										expiryPreset === val
-											? "border-brand-500 bg-brand-50 text-brand-700 dark:bg-brand-500/10 dark:text-brand-400"
-											: "border-gray-200 text-gray-600 hover:border-gray-300 dark:border-white/10 dark:text-gray-400 dark:hover:border-white/20"
-									}`}
-								>
-									{label}
-								</button>
-							))}
-						</div>
-						{expiryPreset === "custom" && (
-							<Input
-								type="datetime-local"
-								value={customDate}
-								onChange={(e) => setCustomDate(e.target.value)}
-								className="mt-2"
-								min={new Date().toISOString().slice(0, 16)}
+					{/* Advanced Settings Toggle */}
+					<div className="border-t border-gray-100 pt-4 dark:border-white/5">
+						<button
+							type="button"
+							onClick={() => setShowAdvanced(!showAdvanced)}
+							className="flex w-full items-center justify-between text-sm font-medium text-gray-600 transition-colors hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+						>
+							<span className="flex items-center gap-2">
+								{t("api_keys.permissions")}
+								{hasAdvancedSettings && (
+									<span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-600 dark:bg-brand-500/15 dark:text-brand-400">
+										{
+											[
+												expiryPreset !== "never",
+												quotaEnabled,
+												allowedModels.length > 0,
+												allowedIps.length > 0,
+											].filter(Boolean).length
+										}
+									</span>
+								)}
+							</span>
+							<ChevronDownIcon
+								className={`size-5 transition-transform ${showAdvanced ? "rotate-180" : ""}`}
 							/>
-						)}
+						</button>
 					</div>
 
-					{/* Quota */}
-					<div>
-						<label className={labelCls}>{t("api_keys.quota")}</label>
-						<div className="mt-1 flex items-center gap-3">
-							<label className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-								<input
-									type="checkbox"
-									checked={quotaEnabled}
-									onChange={(e) => setQuotaEnabled(e.target.checked)}
-									className="rounded border-gray-300 text-brand-500 focus:ring-brand-500 dark:border-white/20 dark:bg-white/5"
-								/>
-								Enable quota limit
-							</label>
-							{quotaEnabled && (
-								<Input
-									type="number"
-									value={quotaLimit}
-									onChange={(e) => setQuotaLimit(e.target.value)}
-									className="w-32"
-									placeholder="e.g. 10.00"
-									step="0.01"
-									min="0.01"
-								/>
-							)}
+					{showAdvanced && (
+						<div className="space-y-5 rounded-xl border border-gray-100 bg-gray-50/50 p-4 dark:border-white/5 dark:bg-white/[0.02]">
+							{/* Expiration */}
+							<div>
+								<label className={labelCls}>
+									{t("api_keys.expires_at")}
+								</label>
+								<div className="mt-2 flex flex-wrap gap-1.5">
+									{(
+										[
+											["never", t("api_keys.expires_never")],
+											["7d", "7d"],
+											["30d", "30d"],
+											["90d", "90d"],
+											["custom", "Custom"],
+										] as const
+									).map(([val, label]) => (
+										<button
+											key={val}
+											type="button"
+											onClick={() =>
+												setExpiryPreset(val as ExpiryPreset)
+											}
+											className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+												expiryPreset === val
+													? "bg-brand-500 text-white shadow-sm"
+													: "bg-white text-gray-600 shadow-sm ring-1 ring-gray-200 hover:bg-gray-50 dark:bg-white/5 dark:text-gray-400 dark:ring-white/10 dark:hover:bg-white/10"
+											}`}
+										>
+											{label}
+										</button>
+									))}
+								</div>
+								{expiryPreset === "custom" && (
+									<Input
+										type="datetime-local"
+										value={customDate}
+										onChange={(e) => setCustomDate(e.target.value)}
+										className="mt-2"
+										min={new Date().toISOString().slice(0, 16)}
+									/>
+								)}
+							</div>
+
+							{/* Quota */}
+							<div>
+								<div className="flex items-center justify-between">
+									<label className={labelCls}>{t("api_keys.quota")}</label>
+									<ToggleSwitch
+										enabled={quotaEnabled}
+										onChange={setQuotaEnabled}
+									/>
+								</div>
+								{quotaEnabled && (
+									<div className="mt-2">
+										<div className="relative">
+											<span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-gray-400">
+												$
+											</span>
+											<Input
+												type="number"
+												value={quotaLimit}
+												onChange={(e) => setQuotaLimit(e.target.value)}
+												className="pl-7"
+												placeholder="10.00"
+												step="0.01"
+												min="0.01"
+											/>
+										</div>
+										<p className={hintCls}>
+											{t("api_keys.quota_hint")}
+										</p>
+									</div>
+								)}
+							</div>
+
+							{/* Allowed Models */}
+							<div>
+								<label className={labelCls}>
+									{t("api_keys.allowed_models")}
+								</label>
+								<div className="mt-2">
+									<ModelMultiSelect
+										value={allowedModels}
+										onChange={setAllowedModels}
+										placeholder={t("api_keys.allowed_models_all")}
+									/>
+								</div>
+								<p className={hintCls}>
+									{t("api_keys.allowed_models_hint")}
+								</p>
+							</div>
+
+							{/* IP Allowlist */}
+							<div>
+								<label className={labelCls}>
+									{t("api_keys.allowed_ips")}
+								</label>
+								<div className="mt-2">
+									<IpAllowlistInput
+										value={allowedIps}
+										onChange={setAllowedIps}
+									/>
+								</div>
+								<p className={hintCls}>
+									{t("api_keys.allowed_ips_hint")}
+								</p>
+							</div>
 						</div>
-						{quotaEnabled && (
-							<p className={hintCls}>
-								Maximum spending in credits (USD). Key will stop working once
-								exceeded.
-							</p>
-						)}
-					</div>
-
-					{/* Allowed Models */}
-					<div>
-						<label htmlFor="modal-key-models" className={labelCls}>
-							{t("api_keys.allowed_models")}
-						</label>
-						<textarea
-							id="modal-key-models"
-							value={modelsText}
-							onChange={(e) => setModelsText(e.target.value)}
-							className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-gray-500"
-							rows={2}
-							placeholder={t("api_keys.allowed_models_placeholder")}
-						/>
-						<p className={hintCls}>
-							Comma or newline separated. Leave empty for{" "}
-							{t("api_keys.allowed_models_all").toLowerCase()}.
-						</p>
-					</div>
-
-					{/* Allowed IPs */}
-					<div>
-						<label htmlFor="modal-key-ips" className={labelCls}>
-							{t("api_keys.allowed_ips")}
-						</label>
-						<textarea
-							id="modal-key-ips"
-							value={ipsText}
-							onChange={(e) => setIpsText(e.target.value)}
-							className="mt-1 w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 placeholder-gray-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white dark:placeholder-gray-500"
-							rows={2}
-							placeholder={t("api_keys.allowed_ips_placeholder")}
-						/>
-						<p className={hintCls}>
-							Comma or newline separated. Leave empty for{" "}
-							{t("api_keys.allowed_ips_all").toLowerCase()}.
-						</p>
-					</div>
+					)}
 
 					<div className="flex justify-end gap-3">
 						<Button variant="secondary" onClick={handleClose}>

@@ -2,6 +2,7 @@ import {
 	ArrowPathIcon,
 	CheckIcon,
 	ClipboardDocumentIcon,
+	Cog6ToothIcon,
 	EyeIcon,
 	EyeSlashIcon,
 	PencilSquareIcon,
@@ -13,6 +14,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
 import { CreateApiKeyModal } from "../components/CreateApiKeyModal";
+import { EditApiKeyModal } from "../components/EditApiKeyModal";
 import { ToggleSwitch } from "../components/ToggleSwitch";
 import { Badge, Button } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
@@ -20,9 +22,18 @@ import { useFormatDateTime } from "../hooks/useFormatDateTime";
 import type { ApiKeyInfo } from "../types/api-key";
 import { TOKENS } from "../utils/colors";
 
-function RestrictionBadges({ k, t }: { k: ApiKeyInfo; t: (s: string, o?: Record<string, unknown>) => string }) {
+function RestrictionBadges({
+	k,
+	t,
+}: {
+	k: ApiKeyInfo;
+	t: (s: string, o?: Record<string, unknown>) => string;
+}) {
 	const now = Date.now();
-	const badges: { label: string; variant: "brand" | "warning" | "success" | "default" }[] = [];
+	const badges: {
+		label: string;
+		variant: "brand" | "warning" | "success" | "default";
+	}[] = [];
 
 	if (k.expiresAt) {
 		if (k.expiresAt <= now) {
@@ -77,11 +88,12 @@ export function ApiKeys() {
 	} = useFetch<ApiKeyInfo[]>("/api/api-keys");
 
 	const [isAddOpen, setIsAddOpen] = useState(false);
+	const [editKey, setEditKey] = useState<ApiKeyInfo | null>(null);
 	const [revealedKeys, setRevealedKeys] = useState<Map<string, string>>(
 		new Map(),
 	);
 	const [revealingId, setRevealingId] = useState<string | null>(null);
-	const [editingId, setEditingId] = useState<string | null>(null);
+	const [editingNameId, setEditingNameId] = useState<string | null>(null);
 	const [editName, setEditName] = useState("");
 
 	const getHeaders = async () => ({
@@ -101,7 +113,7 @@ export function ApiKeys() {
 				body: JSON.stringify(updates),
 			});
 			if (res.ok) {
-				setEditingId(null);
+				setEditingNameId(null);
 				refetch();
 				toast.success(t("common.success"), { id: tid });
 			} else {
@@ -213,6 +225,13 @@ export function ApiKeys() {
 				onCreated={() => refetch()}
 			/>
 
+			<EditApiKeyModal
+				open={!!editKey}
+				onClose={() => setEditKey(null)}
+				apiKey={editKey}
+				onUpdated={refetch}
+			/>
+
 			<div className="mt-8 flow-root">
 				<div className="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
 					<div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -278,14 +297,16 @@ export function ApiKeys() {
 												key={k.id}
 												className={k.isEnabled ? "" : "opacity-50"}
 											>
-												{/* Name (editable) */}
+												{/* Name (inline editable) */}
 												<td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
-													{editingId === k.id ? (
+													{editingNameId === k.id ? (
 														<div className="flex items-center gap-2">
 															<input
 																type="text"
 																value={editName}
-																onChange={(e) => setEditName(e.target.value)}
+																onChange={(e) =>
+																	setEditName(e.target.value)
+																}
 																className="w-32 rounded-lg border border-gray-200 py-1 px-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white"
 															/>
 															<button
@@ -300,7 +321,7 @@ export function ApiKeys() {
 															</button>
 															<button
 																type="button"
-																onClick={() => setEditingId(null)}
+																onClick={() => setEditingNameId(null)}
 																className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
 																title={t("common.cancel")}
 															>
@@ -313,7 +334,7 @@ export function ApiKeys() {
 															<button
 																type="button"
 																onClick={() => {
-																	setEditingId(k.id);
+																	setEditingNameId(k.id);
 																	setEditName(k.name);
 																}}
 																className="ml-2 text-gray-400 hover:text-brand-500"
@@ -324,16 +345,20 @@ export function ApiKeys() {
 														</span>
 													)}
 												</td>
-												{/* Key (hint / revealed) */}
+												{/* Key */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm font-mono text-gray-500 dark:text-gray-400">
 													<div className="flex items-center gap-2">
-														<span>{revealedKeys.get(k.id) ?? k.keyHint}</span>
+														<span>
+															{revealedKeys.get(k.id) ?? k.keyHint}
+														</span>
 														<button
 															type="button"
 															disabled={revealingId === k.id}
 															onClick={() => toggleReveal(k.id)}
 															className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 disabled:opacity-50"
-															title={revealedKeys.has(k.id) ? "Hide" : "Reveal"}
+															title={
+																revealedKeys.has(k.id) ? "Hide" : "Reveal"
+															}
 														>
 															{revealingId === k.id ? (
 																<ArrowPathIcon className="size-4 animate-spin" />
@@ -382,7 +407,7 @@ export function ApiKeys() {
 														</span>
 													)}
 												</td>
-												{/* Enabled toggle */}
+												{/* Toggle */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm">
 													<ToggleSwitch
 														enabled={k.isEnabled}
@@ -400,13 +425,23 @@ export function ApiKeys() {
 												</td>
 												{/* Actions */}
 												<td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-													<button
-														type="button"
-														onClick={() => handleDelete(k.id)}
-														className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
-													>
-														{t("common.delete")}
-													</button>
+													<div className="flex items-center justify-end gap-3">
+														<button
+															type="button"
+															onClick={() => setEditKey(k)}
+															className="text-gray-400 hover:text-brand-500"
+															title={t("api_keys.edit_permissions")}
+														>
+															<Cog6ToothIcon className="size-4" />
+														</button>
+														<button
+															type="button"
+															onClick={() => handleDelete(k.id)}
+															className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
+														>
+															{t("common.delete")}
+														</button>
+													</div>
 												</td>
 											</tr>
 										))

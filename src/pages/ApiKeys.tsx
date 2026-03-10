@@ -1,13 +1,11 @@
 import {
 	ArrowPathIcon,
-	CheckIcon,
 	ClipboardDocumentIcon,
-	Cog6ToothIcon,
 	EyeIcon,
 	EyeSlashIcon,
 	PencilSquareIcon,
 	PlusIcon,
-	XMarkIcon,
+	TrashIcon,
 } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import toast from "react-hot-toast";
@@ -93,8 +91,6 @@ export function ApiKeys() {
 		new Map(),
 	);
 	const [revealingId, setRevealingId] = useState<string | null>(null);
-	const [editingNameId, setEditingNameId] = useState<string | null>(null);
-	const [editName, setEditName] = useState("");
 
 	const getHeaders = async () => ({
 		"Content-Type": "application/json",
@@ -113,7 +109,6 @@ export function ApiKeys() {
 				body: JSON.stringify(updates),
 			});
 			if (res.ok) {
-				setEditingNameId(null);
 				refetch();
 				toast.success(t("common.success"), { id: tid });
 			} else {
@@ -297,53 +292,9 @@ export function ApiKeys() {
 												key={k.id}
 												className={k.isEnabled ? "" : "opacity-50"}
 											>
-												{/* Name (inline editable) */}
+												{/* Name */}
 												<td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
-													{editingNameId === k.id ? (
-														<div className="flex items-center gap-2">
-															<input
-																type="text"
-																value={editName}
-																onChange={(e) =>
-																	setEditName(e.target.value)
-																}
-																className="w-32 rounded-lg border border-gray-200 py-1 px-2 text-sm focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 dark:border-white/10 dark:bg-white/5 dark:text-white"
-															/>
-															<button
-																type="button"
-																onClick={() =>
-																	handleUpdate(k.id, { name: editName })
-																}
-																className={`${TOKENS.green.text} ${TOKENS.green.textHover}`}
-																title={t("common.save")}
-															>
-																<CheckIcon className="size-5" />
-															</button>
-															<button
-																type="button"
-																onClick={() => setEditingNameId(null)}
-																className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
-																title={t("common.cancel")}
-															>
-																<XMarkIcon className="size-5" />
-															</button>
-														</div>
-													) : (
-														<span className="flex items-center">
-															{k.name}
-															<button
-																type="button"
-																onClick={() => {
-																	setEditingNameId(k.id);
-																	setEditName(k.name);
-																}}
-																className="ml-2 text-gray-400 hover:text-brand-500"
-																title={t("common.edit")}
-															>
-																<PencilSquareIcon className="size-4" />
-															</button>
-														</span>
-													)}
+													{k.name}
 												</td>
 												{/* Key */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm font-mono text-gray-500 dark:text-gray-400">
@@ -425,21 +376,22 @@ export function ApiKeys() {
 												</td>
 												{/* Actions */}
 												<td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-													<div className="flex items-center justify-end gap-3">
+													<div className="flex items-center justify-end gap-2">
 														<button
 															type="button"
 															onClick={() => setEditKey(k)}
-															className="text-gray-400 hover:text-brand-500"
-															title={t("api_keys.edit_permissions")}
+															className="rounded-md p-1 text-gray-400 transition-colors hover:bg-gray-100 hover:text-brand-500 dark:hover:bg-white/10"
+															title={t("common.edit")}
 														>
-															<Cog6ToothIcon className="size-4" />
+															<PencilSquareIcon className="size-4" />
 														</button>
 														<button
 															type="button"
 															onClick={() => handleDelete(k.id)}
-															className={`${TOKENS.red.text} ${TOKENS.red.textHover}`}
+															className={`rounded-md p-1 transition-colors hover:bg-red-50 dark:hover:bg-red-500/10 ${TOKENS.red.text} ${TOKENS.red.textHover}`}
+															title={t("common.delete")}
 														>
-															{t("common.delete")}
+															<TrashIcon className="size-4" />
 														</button>
 													</div>
 												</td>

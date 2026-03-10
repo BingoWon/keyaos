@@ -135,7 +135,13 @@ export function CreateApiKeyModal({
 			size="lg"
 		>
 			{createdKey ? (
-				<div className="space-y-4">
+				<form
+					onSubmit={(e) => {
+						e.preventDefault();
+						handleClose();
+					}}
+					className="space-y-4"
+				>
 					<div
 						className={`rounded-xl border p-3 text-xs ${TOKENS.amber.outline}`}
 					>
@@ -166,15 +172,18 @@ export function CreateApiKeyModal({
 						</button>
 					</div>
 					<div className="flex justify-end">
-						<Button onClick={handleClose}>{t("common.confirm")}</Button>
+						<Button type="submit">{t("common.confirm")}</Button>
 					</div>
-				</div>
+				</form>
 			) : (
 				<form onSubmit={handleSubmit} className="space-y-5">
 					{/* Name */}
 					<div>
 						<label htmlFor="modal-key-name" className={labelCls}>
 							{t("api_keys.name")}
+							<span className="ml-1.5 text-xs font-normal text-gray-400 dark:text-gray-500">
+								({t("common.optional")})
+							</span>
 						</label>
 						<Input
 							type="text"

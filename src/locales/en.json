@@ -40,7 +40,8 @@
 		"confirm": "Confirm",
 		"actions": "Actions",
 		"free": "Free",
-		"copied": "Copied"
+		"copied": "Copied",
+		"optional": "optional"
 	},
 	"nav": {
 		"dashboard": "Dashboard",

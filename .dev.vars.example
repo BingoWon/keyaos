@@ -15,13 +15,11 @@ ENCRYPTION_KEY=
 # STRIPE_WEBHOOK_SECRET=whsec_xxxxx
 
 # ─── Model Catalog Sync ──────────────────────────────────
-# When CATALOG_URL is set, the worker syncs its model_pricing table
-# from the remote catalog every minute (recommended for self-hosted).
-# When unset, the worker runs local syncAllModels using system keys below.
-CATALOG_URL=https://keyaos.com/api/catalog
+# By default the worker syncs model_pricing from keyaos.com every minute.
+# Set LOCAL_SYNC=1 to run local three-phase sync (requires system keys below).
+# LOCAL_SYNC=1
 
-# ─── Provider System Keys (optional — local sync mode only) ──
-# Only needed when CATALOG_URL is NOT set.
+# ─── Provider System Keys (optional — only when LOCAL_SYNC=1) ──
 # The sync service fetches live models from provider APIs.
 # DEEPSEEK_KEY=sk-xxxxx
 # OPENAI_KEY=sk-proj-xxxxx

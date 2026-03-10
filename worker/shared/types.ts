@@ -14,8 +14,8 @@ export type Env = {
 	OPENAI_KEY?: string;
 	GEMINI_KEY?: string;
 	ANTHROPIC_KEY?: string;
-	/** When set, sync model catalog from this URL instead of running local syncAllModels */
-	CATALOG_URL?: string;
+	/** When set, run local three-phase syncAllModels instead of fetching from keyaos.com */
+	LOCAL_SYNC?: string;
 };
 
 export type AppEnv = {

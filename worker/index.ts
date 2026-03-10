@@ -261,10 +261,10 @@ export default {
 				await candleDao.generateQuotedCandles();
 				await sweepAutoTopUp(env.DB, env.STRIPE_SECRET_KEY);
 
-				if (env.CATALOG_URL) {
-					await syncFromRemote(env.DB, env.CATALOG_URL);
-				} else {
+				if (env.LOCAL_SYNC) {
 					await syncAllModels(env.DB, rate, env);
+				} else {
+					await syncFromRemote(env.DB);
 				}
 
 				await syncAutoCredits(env.DB, env.ENCRYPTION_KEY, rate);

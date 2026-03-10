@@ -146,18 +146,17 @@ export async function syncAllModels(
 	}
 }
 
+const CATALOG_URL = "https://keyaos.com/api/catalog";
+
 /**
- * Remote Catalog Sync — fetch the full model catalog from a central source
- * (e.g. keyaos.com /api/catalog) and replicate it into the local DB.
+ * Remote Catalog Sync — fetch the full model catalog from keyaos.com
+ * and replicate it into the local DB.
  * On any failure, the local DB is left unchanged.
  */
-export async function syncFromRemote(
-	db: D1Database,
-	catalogUrl: string,
-): Promise<void> {
+export async function syncFromRemote(db: D1Database): Promise<void> {
 	let res: Response;
 	try {
-		res = await fetch(catalogUrl);
+		res = await fetch(CATALOG_URL);
 	} catch (err) {
 		log.warn("sync", "Catalog fetch error, skipping", {
 			error: err instanceof Error ? err.message : String(err),

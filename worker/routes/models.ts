@@ -1,17 +1,17 @@
 import { Hono } from "hono";
+import { CatalogDao } from "../core/db/catalog-dao";
 import { CandleDao } from "../core/db/candle-dao";
-import { PricingDao } from "../core/db/pricing-dao";
 import { edgeCache } from "../shared/cache";
 import type { AppEnv } from "../shared/types";
 
 /**
- * /api/catalog — Raw model_pricing export for remote sync.
+ * /api/catalog — Raw model_catalog export for remote sync.
  * Self-hosted deployments fetch this to populate their local DB.
  */
 export const catalogRouter = new Hono<AppEnv>();
 
 catalogRouter.get("/", edgeCache(60), async (c) => {
-	const dao = new PricingDao(c.env.DB);
+	const dao = new CatalogDao(c.env.DB);
 	const rows = await dao.getAllActive();
 	return c.json({
 		data: rows.map(({ is_active, refreshed_at, ...entry }) => entry),
@@ -42,11 +42,11 @@ function cleanDescription(raw: unknown): string | null {
 export const publicModelsRouter = new Hono<AppEnv>();
 
 publicModelsRouter.get("/", edgeCache(), async (c) => {
-	const dao = new PricingDao(c.env.DB);
+	const dao = new CatalogDao(c.env.DB);
 	const candleDao = new CandleDao(c.env.DB);
 
 	const [all, inputPrices, outputPrices] = await Promise.all([
-		dao.getActivePricingWithBestMultiplier(),
+		dao.getActiveWithBestMultiplier(),
 		candleDao.getLatestPrices("model:input"),
 		candleDao.getLatestPrices("model:output"),
 	]);
@@ -151,11 +151,11 @@ publicModelsRouter.get("/", edgeCache(), async (c) => {
 export const dashboardModelsRouter = new Hono<AppEnv>();
 
 dashboardModelsRouter.get("/", edgeCache(), async (c) => {
-	const dao = new PricingDao(c.env.DB);
+	const dao = new CatalogDao(c.env.DB);
 	const candleDao = new CandleDao(c.env.DB);
 
 	const [all, providerMuls] = await Promise.all([
-		dao.getActivePricingWithBestMultiplier(),
+		dao.getActiveWithBestMultiplier(),
 		candleDao.getLatestPrices("provider"),
 	]);
 

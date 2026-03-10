@@ -46,7 +46,7 @@ Embedding models are marked with the `embedding` type in the [Models page](/mode
 When you send a request, the dispatcher executes this pipeline:
 
 1. **Credits check** — If your balance is positive, the full global credential pool is available. If zero, routing narrows to your own BYOK credentials only (self-use is free)
-2. **Price lookup** — Query `model_pricing` for all providers that carry the requested model
+2. **Price lookup** — Query `model_catalog` for all providers that carry the requested model
 3. **Credential match** — Find all enabled, healthy credentials for each provider
 4. **Effective cost** — Calculate `base_price × price_multiplier` for each combination
 5. **Global sort** — Rank all candidates by effective cost, regardless of provider

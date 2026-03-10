@@ -22,11 +22,11 @@ export class CandleDao {
 		const rows = await this.db
 			.prepare(
 				`SELECT u.provider_id, u.model_id, u.price_multiplier,
-				        u.input_tokens, u.output_tokens, u.created_at,
-				        mp.input_price, mp.output_price
+				   u.input_tokens, u.output_tokens, u.created_at,
+				        mc.input_price, mc.output_price
 				 FROM logs u
-				 JOIN model_pricing mp
-				   ON mp.provider_id = u.provider_id AND mp.model_id = u.model_id AND mp.is_active = 1
+				 JOIN model_catalog mc
+				   ON mc.provider_id = u.provider_id AND mc.model_id = u.model_id AND mc.is_active = 1
 				 WHERE u.created_at >= ? AND u.created_at < ? AND u.status = 'ok'
 				 ORDER BY u.created_at ASC`,
 			)
@@ -160,7 +160,7 @@ export class CandleDao {
 
 	/**
 	 * Generate quoted candles for models and providers without real trades.
-	 * Sources from model_pricing LEFT JOIN credentials:
+	 * Sources from model_catalog LEFT JOIN credentials:
 	 * - model:input  — MIN(input_price × COALESCE(multiplier, 1.0))
 	 * - model:output — MIN(output_price × COALESCE(multiplier, 1.0))
 	 * - provider     — COALESCE(MIN(multiplier), 1.0)
@@ -173,41 +173,41 @@ export class CandleDao {
 		const [inputQuotes, outputQuotes, providerQuotes] = await Promise.all([
 			this.db
 				.prepare(
-					`SELECT mp.model_id AS val,
-					        MIN(mp.input_price * COALESCE(c.price_multiplier, 1.0)) AS price
-					 FROM model_pricing mp
+					`SELECT mc.model_id AS val,
+					        MIN(mc.input_price * COALESCE(c.price_multiplier, 1.0)) AS price
+					 FROM model_catalog mc
 					 LEFT JOIN upstream_credentials c
-					   ON c.provider_id = mp.provider_id
+					   ON c.provider_id = mc.provider_id
 					   AND c.is_enabled = 1
 					   AND c.health_status NOT IN ('dead')
-					 WHERE mp.is_active = 1 AND mp.input_price > 0
-					 GROUP BY mp.model_id`,
+					 WHERE mc.is_active = 1 AND mc.input_price > 0
+					 GROUP BY mc.model_id`,
 				)
 				.all<{ val: string; price: number }>(),
 			this.db
 				.prepare(
-					`SELECT mp.model_id AS val,
-					        MIN(mp.output_price * COALESCE(c.price_multiplier, 1.0)) AS price
-					 FROM model_pricing mp
+					`SELECT mc.model_id AS val,
+					        MIN(mc.output_price * COALESCE(c.price_multiplier, 1.0)) AS price
+					 FROM model_catalog mc
 					 LEFT JOIN upstream_credentials c
-					   ON c.provider_id = mp.provider_id
+					   ON c.provider_id = mc.provider_id
 					   AND c.is_enabled = 1
 					   AND c.health_status NOT IN ('dead')
-					 WHERE mp.is_active = 1 AND mp.output_price > 0
-					 GROUP BY mp.model_id`,
+					 WHERE mc.is_active = 1 AND mc.output_price > 0
+					 GROUP BY mc.model_id`,
 				)
 				.all<{ val: string; price: number }>(),
 			this.db
 				.prepare(
-					`SELECT mp.provider_id AS val,
+					`SELECT mc.provider_id AS val,
 					        COALESCE(MIN(c.price_multiplier), 1.0) AS price
-					 FROM model_pricing mp
+					 FROM model_catalog mc
 					 LEFT JOIN upstream_credentials c
-					   ON c.provider_id = mp.provider_id
+					   ON c.provider_id = mc.provider_id
 					   AND c.is_enabled = 1
 					   AND c.health_status NOT IN ('dead')
-					 WHERE mp.is_active = 1
-					 GROUP BY mp.provider_id`,
+					 WHERE mc.is_active = 1
+					 GROUP BY mc.provider_id`,
 				)
 				.all<{ val: string; price: number }>(),
 		]);

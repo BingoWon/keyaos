@@ -10,8 +10,8 @@
 
 import { log } from "../../shared/logger";
 import type { Env } from "../../shared/types";
+import { CatalogDao } from "../db/catalog-dao";
 import { CredentialsDao } from "../db/credentials-dao";
-import { PricingDao } from "../db/pricing-dao";
 import {
 	getAllProviders,
 	getProvider,
@@ -26,7 +26,7 @@ export async function syncAllModels(
 	cnyUsdRate = 7,
 	env?: Env,
 ): Promise<void> {
-	const dao = new PricingDao(db);
+	const dao = new CatalogDao(db);
 	const allProviders = getAllProviders();
 
 	// ─── Phase 1: Sync OpenRouter chat models (canonical catalog) ───
@@ -42,7 +42,7 @@ export async function syncAllModels(
 		return;
 	}
 
-	await dao.upsertPricing(orModels);
+	await dao.upsert(orModels);
 	log.info("sync", "OpenRouter chat synced", { count: orModels.length });
 
 	// ─── Phase 2: Sync OpenRouter embedding models ──────────────
@@ -53,7 +53,7 @@ export async function syncAllModels(
 			const raw = (await res.json()) as Record<string, unknown>;
 			orEmbedModels = parseOpenRouterModels(raw, "embedding");
 			if (orEmbedModels.length > 0) {
-				await dao.upsertPricing(orEmbedModels);
+				await dao.upsert(orEmbedModels);
 			}
 			log.info("sync", "OpenRouter embeddings synced", {
 				count: orEmbedModels.length,
@@ -122,7 +122,7 @@ export async function syncAllModels(
 				}
 			}
 
-			await dao.upsertPricing(filtered);
+			await dao.upsert(filtered);
 			await dao.deactivateMissing(
 				provider.info.id,
 				filtered.map((m) => m.id),
@@ -172,7 +172,7 @@ export async function syncFromRemote(db: D1Database): Promise<void> {
 	}
 
 	type CatalogEntry = Omit<
-		import("../db/schema").DbModelPricing,
+		import("../db/schema").DbModelCatalog,
 		"refreshed_at" | "is_active"
 	>;
 	const body = (await res.json()) as { data?: CatalogEntry[] };
@@ -182,8 +182,8 @@ export async function syncFromRemote(db: D1Database): Promise<void> {
 		return;
 	}
 
-	const dao = new PricingDao(db);
-	await dao.upsertPricing(entries);
+	const dao = new CatalogDao(db);
+	await dao.upsert(entries);
 
 	const byProvider = new Map<string, string[]>();
 	for (const e of entries) {

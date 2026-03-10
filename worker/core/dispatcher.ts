@@ -6,8 +6,8 @@
  */
 
 import { BadRequestError, NoKeyAvailableError } from "../shared/errors";
+import { CatalogDao } from "./db/catalog-dao";
 import { CredentialsDao } from "./db/credentials-dao";
-import { PricingDao } from "./db/pricing-dao";
 import type { DbCredential } from "./db/schema";
 import type { ProviderAdapter } from "./providers/interface";
 import { getProvider } from "./providers/registry";
@@ -37,10 +37,10 @@ export async function dispatchAll(
 ): Promise<DispatchResult[]> {
 	if (!modelId) throw new BadRequestError("Model is required");
 
-	const pricingDao = new PricingDao(db);
+	const catalogDao = new CatalogDao(db);
 	const credDao = new CredentialsDao(db, encryptionKey);
 
-	const offerings = await pricingDao.findByModelId(modelId);
+	const offerings = await catalogDao.findByModelId(modelId);
 	const candidates: DispatchResult[] = [];
 
 	for (const offering of offerings) {

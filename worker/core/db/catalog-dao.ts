@@ -1,14 +1,14 @@
-import type { DbModelPricing } from "./schema";
+import type { DbModelCatalog } from "./schema";
 
-export class PricingDao {
+export class CatalogDao {
 	constructor(private db: D1Database) {}
 
-	async upsertPricing(
-		models: Omit<DbModelPricing, "refreshed_at" | "is_active">[],
+	async upsert(
+		models: Omit<DbModelCatalog, "refreshed_at" | "is_active">[],
 	): Promise<void> {
 		const now = Date.now();
 		const stmt = this.db.prepare(
-			`INSERT INTO model_pricing (id, provider_id, model_id, name, model_type, input_price, output_price, context_length, input_modalities, output_modalities, is_active, upstream_model_id, metadata, created, refreshed_at)
+			`INSERT INTO model_catalog (id, provider_id, model_id, name, model_type, input_price, output_price, context_length, input_modalities, output_modalities, is_active, upstream_model_id, metadata, created, refreshed_at)
 			 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)
 			 ON CONFLICT(id) DO UPDATE SET
 			   name = excluded.name,
@@ -58,7 +58,7 @@ export class PricingDao {
 		const activeSet = new Set(activeIds);
 		const existing = await this.db
 			.prepare(
-				"SELECT id FROM model_pricing WHERE provider_id = ? AND is_active = 1",
+				"SELECT id FROM model_catalog WHERE provider_id = ? AND is_active = 1",
 			)
 			.bind(providerId)
 			.all<{ id: string }>();
@@ -69,7 +69,7 @@ export class PricingDao {
 		if (toDeactivate.length === 0) return;
 
 		const stmt = this.db.prepare(
-			"UPDATE model_pricing SET is_active = 0 WHERE id = ?",
+			"UPDATE model_catalog SET is_active = 0 WHERE id = ?",
 		);
 		for (let i = 0; i < toDeactivate.length; i += 100) {
 			await this.db.batch(
@@ -78,41 +78,41 @@ export class PricingDao {
 		}
 	}
 
-	async getAllActive(): Promise<DbModelPricing[]> {
+	async getAllActive(): Promise<DbModelCatalog[]> {
 		const res = await this.db
-			.prepare("SELECT * FROM model_pricing WHERE is_active = 1")
-			.all<DbModelPricing>();
+			.prepare("SELECT * FROM model_catalog WHERE is_active = 1")
+			.all<DbModelCatalog>();
 		return res.results || [];
 	}
 
-	async findByModelId(modelId: string): Promise<DbModelPricing[]> {
+	async findByModelId(modelId: string): Promise<DbModelCatalog[]> {
 		const res = await this.db
 			.prepare(
-				"SELECT * FROM model_pricing WHERE model_id = ? AND is_active = 1 ORDER BY input_price ASC",
+				"SELECT * FROM model_catalog WHERE model_id = ? AND is_active = 1 ORDER BY input_price ASC",
 			)
 			.bind(modelId)
-			.all<DbModelPricing>();
+			.all<DbModelCatalog>();
 		return res.results || [];
 	}
 
-	async getActivePricingWithBestMultiplier(): Promise<
-		(DbModelPricing & { best_multiplier: number | null })[]
+	async getActiveWithBestMultiplier(): Promise<
+		(DbModelCatalog & { best_multiplier: number | null })[]
 	> {
 		const res = await this.db
 			.prepare(
-				`SELECT mp.*, MIN(c.price_multiplier) AS best_multiplier
-				 FROM model_pricing mp
+				`SELECT mc.*, MIN(c.price_multiplier) AS best_multiplier
+				 FROM model_catalog mc
 				 LEFT JOIN upstream_credentials c
-				   ON c.provider_id = mp.provider_id
+				   ON c.provider_id = mc.provider_id
 				   AND c.is_enabled = 1
 				   AND c.health_status NOT IN ('dead')
-				 WHERE mp.is_active = 1
-				 GROUP BY mp.id
-				 ORDER BY mp.created DESC,
-				   CASE WHEN mp.metadata IS NOT NULL THEN 0 ELSE 1 END,
-				   mp.input_price ASC`,
+				 WHERE mc.is_active = 1
+				 GROUP BY mc.id
+				 ORDER BY mc.created DESC,
+				   CASE WHEN mc.metadata IS NOT NULL THEN 0 ELSE 1 END,
+				   mc.input_price ASC`,
 			)
-			.all<DbModelPricing & { best_multiplier: number | null }>();
+			.all<DbModelCatalog & { best_multiplier: number | null }>();
 		return res.results || [];
 	}
 }

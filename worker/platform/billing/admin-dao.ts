@@ -23,7 +23,7 @@ const QUERYABLE_TABLES: Record<string, string> = {
 	wallets: "updated_at",
 	payments: "created_at",
 	api_keys: "created_at",
-	model_pricing: "provider",
+	model_catalog: "provider",
 	credit_adjustments: "created_at",
 	werewolf_sessions: "created_at",
 	werewolf_characters: "created_at",

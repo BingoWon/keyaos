@@ -106,7 +106,7 @@ describe("Dispatch: cross-provider effective cost", () => {
 		assert.strictEqual(result.status, 200, `Chat failed: ${result.body}`);
 
 		const prices = dbQuery(
-			"SELECT provider_id, input_price FROM model_pricing WHERE model_id = 'openai/gpt-4o-mini' AND is_active = 1 ORDER BY input_price ASC",
+			"SELECT provider_id, input_price FROM model_catalog WHERE model_id = 'openai/gpt-4o-mini' AND is_active = 1 ORDER BY input_price ASC",
 		) as { provider_id: string; input_price: number }[];
 
 		const credMap = new Map<string, number>();

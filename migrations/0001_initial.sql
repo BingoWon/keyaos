@@ -43,7 +43,7 @@ CREATE INDEX IF NOT EXISTS idx_credentials_owner ON upstream_credentials(owner_i
 CREATE UNIQUE INDEX IF NOT EXISTS idx_credentials_secret_hash ON upstream_credentials(secret_hash);
 CREATE INDEX IF NOT EXISTS idx_credentials_provider ON upstream_credentials(provider_id, is_enabled, health_status);
 
--- 3. Model pricing catalog (auto-synced by cron)
+-- 3. Model catalog (auto-synced by cron, renamed to model_catalog in 0002)
 CREATE TABLE IF NOT EXISTS model_pricing (
     id TEXT PRIMARY KEY,
     provider_id TEXT NOT NULL,

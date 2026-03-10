@@ -36,7 +36,7 @@ export type Modality = "text" | "image" | "audio" | "video" | "file";
 
 export type ModelType = "chat" | "embedding";
 
-export interface DbModelPricing {
+export interface DbModelCatalog {
 	id: string;
 	provider_id: string;
 	model_id: string;

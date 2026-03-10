@@ -1,4 +1,4 @@
-import type { DbModelPricing } from "../db/schema";
+import type { DbModelCatalog } from "../db/schema";
 
 export interface CredentialGuide {
 	placeholder: string;
@@ -23,7 +23,7 @@ export interface ProviderCredits {
 	usage: number | null;
 }
 
-export type ParsedModel = Omit<DbModelPricing, "refreshed_at" | "is_active">;
+export type ParsedModel = Omit<DbModelCatalog, "refreshed_at" | "is_active">;
 
 /** Shared shape for all models/*.json entries. */
 export interface StaticModelEntry {

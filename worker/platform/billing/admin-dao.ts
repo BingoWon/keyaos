@@ -23,7 +23,7 @@ const QUERYABLE_TABLES: Record<string, string> = {
 	wallets: "updated_at",
 	payments: "created_at",
 	api_keys: "created_at",
-	model_catalog: "provider",
+	model_catalog: "provider_id",
 	credit_adjustments: "created_at",
 	werewolf_sessions: "created_at",
 	werewolf_characters: "created_at",
@@ -203,7 +203,7 @@ export class AdminDao {
 		}
 
 		const orderClause =
-			orderCol === "provider"
+			orderCol === "provider_id"
 				? `ORDER BY ${orderCol} ASC`
 				: `ORDER BY ${orderCol} DESC`;
 

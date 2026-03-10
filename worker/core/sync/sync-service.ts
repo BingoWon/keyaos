@@ -12,6 +12,7 @@ import { log } from "../../shared/logger";
 import type { Env } from "../../shared/types";
 import { CatalogDao } from "../db/catalog-dao";
 import { CredentialsDao } from "../db/credentials-dao";
+import type { ParsedModel } from "../providers/interface";
 import {
 	getAllProviders,
 	getProvider,
@@ -171,11 +172,7 @@ export async function syncFromRemote(db: D1Database): Promise<void> {
 		return;
 	}
 
-	type CatalogEntry = Omit<
-		import("../db/schema").DbModelCatalog,
-		"refreshed_at" | "is_active"
-	>;
-	const body = (await res.json()) as { data?: CatalogEntry[] };
+	const body = (await res.json()) as { data?: ParsedModel[] };
 	const entries = body.data;
 	if (!Array.isArray(entries) || entries.length === 0) {
 		log.warn("sync", "Catalog returned 0 entries, skipping");

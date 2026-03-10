@@ -25,3 +25,4 @@ ENCRYPTION_KEY=
 # OPENAI_KEY=sk-proj-xxxxx
 # GEMINI_KEY=AIzaxxxxx
 # ANTHROPIC_KEY=sk-ant-api03-xxxxx
+# XAI_KEY=xai-xxxxx

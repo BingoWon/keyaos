@@ -348,6 +348,28 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 			placeholder: "sk-...",
 		},
 	},
+	{
+		id: "xai",
+		name: "xAI",
+		logoUrl: "https://x.ai/favicon.ico",
+		baseUrl: "https://api.x.ai/v1",
+		currency: "USD",
+		supportsAutoCredits: false,
+		stripModelPrefix: true,
+		systemKeyEnvVar: "XAI_KEY",
+		mapModelId: (id) => {
+			if (id.includes("-non-reasoning")) return `x-ai/${id}`;
+			const cleaned = id
+				.replace(/-reasoning$/, "")
+				.replace(/-\d{4,8}$/, "")
+				.replace(/^(grok-\d+)-(\d+)/, "$1.$2");
+			return `x-ai/${cleaned}`;
+		},
+		credentialGuide: {
+			placeholder: "xai-...",
+			secretPattern: "^xai-[A-Za-z0-9]+$",
+		},
+	},
 ];
 
 // ─── Registry API ───────────────────────────────────────────

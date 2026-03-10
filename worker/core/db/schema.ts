@@ -6,6 +6,11 @@ export interface DbApiKey {
 	encrypted_key: string;
 	key_hint: string;
 	is_enabled: number;
+	expires_at: number | null;
+	quota_limit: number | null;
+	quota_used: number;
+	allowed_models: string | null;
+	allowed_ips: string | null;
 	created_at: number;
 }
 

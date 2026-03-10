@@ -1,6 +1,23 @@
 import { decrypt, encrypt, mask, sha256 } from "../../shared/crypto";
 import type { DbApiKey } from "./schema";
 
+export interface CreateKeyOptions {
+	name: string;
+	expires_at?: number | null;
+	quota_limit?: number | null;
+	allowed_models?: string[] | null;
+	allowed_ips?: string[] | null;
+}
+
+export interface UpdateKeyFields {
+	name?: string;
+	is_enabled?: number;
+	expires_at?: number | null;
+	quota_limit?: number | null;
+	allowed_models?: string[] | null;
+	allowed_ips?: string[] | null;
+}
+
 export class ApiKeysDao {
 	constructor(
 		private db: D1Database,
@@ -9,8 +26,8 @@ export class ApiKeysDao {
 
 	/** Creates a key and returns the plaintext key (shown once, never stored). */
 	async createKey(
-		name: string,
 		owner_id: string,
+		opts: CreateKeyOptions,
 	): Promise<{ record: DbApiKey; plainKey: string }> {
 		const id = `key_${crypto.randomUUID().replace(/-/g, "")}`;
 		const plainKey = `sk-keyaos-${crypto.randomUUID().replace(/-/g, "")}`;
@@ -21,12 +38,31 @@ export class ApiKeysDao {
 		]);
 		const keyHint = mask(plainKey, 10, 4);
 
+		const allowedModels = opts.allowed_models?.length
+			? JSON.stringify(opts.allowed_models)
+			: null;
+		const allowedIps = opts.allowed_ips?.length
+			? JSON.stringify(opts.allowed_ips)
+			: null;
+
 		await this.db
 			.prepare(
-				`INSERT INTO api_keys (id, owner_id, name, key_hash, encrypted_key, key_hint, is_enabled, created_at)
-				 VALUES (?, ?, ?, ?, ?, ?, 1, ?)`,
+				`INSERT INTO api_keys (id, owner_id, name, key_hash, encrypted_key, key_hint, is_enabled, expires_at, quota_limit, quota_used, allowed_models, allowed_ips, created_at)
+				 VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, 0, ?, ?, ?)`,
 			)
-			.bind(id, owner_id, name, keyHash, encryptedKey, keyHint, Date.now())
+			.bind(
+				id,
+				owner_id,
+				opts.name,
+				keyHash,
+				encryptedKey,
+				keyHint,
+				opts.expires_at ?? null,
+				opts.quota_limit ?? null,
+				allowedModels,
+				allowedIps,
+				Date.now(),
+			)
 			.run();
 
 		const record = await this.db
@@ -70,7 +106,7 @@ export class ApiKeysDao {
 	async updateKey(
 		id: string,
 		owner_id: string,
-		updates: { name?: string; is_enabled?: number },
+		updates: UpdateKeyFields,
 	): Promise<boolean> {
 		const sets: string[] = [];
 		const values: unknown[] = [];
@@ -82,6 +118,30 @@ export class ApiKeysDao {
 			sets.push("is_enabled = ?");
 			values.push(updates.is_enabled);
 		}
+		if (updates.expires_at !== undefined) {
+			sets.push("expires_at = ?");
+			values.push(updates.expires_at);
+		}
+		if (updates.quota_limit !== undefined) {
+			sets.push("quota_limit = ?");
+			values.push(updates.quota_limit);
+		}
+		if (updates.allowed_models !== undefined) {
+			sets.push("allowed_models = ?");
+			values.push(
+				updates.allowed_models?.length
+					? JSON.stringify(updates.allowed_models)
+					: null,
+			);
+		}
+		if (updates.allowed_ips !== undefined) {
+			sets.push("allowed_ips = ?");
+			values.push(
+				updates.allowed_ips?.length
+					? JSON.stringify(updates.allowed_ips)
+					: null,
+			);
+		}
 		if (sets.length === 0) return false;
 
 		const result = await this.db
@@ -91,6 +151,14 @@ export class ApiKeysDao {
 			.bind(...values, id, owner_id)
 			.run();
 		return (result.meta?.changes ?? 0) > 0;
+	}
+
+	/** Atomically increment quota_used after a billed request. */
+	async incrementQuotaUsed(keyId: string, cost: number): Promise<void> {
+		await this.db
+			.prepare("UPDATE api_keys SET quota_used = quota_used + ? WHERE id = ?")
+			.bind(cost, keyId)
+			.run();
 	}
 
 	async deleteKey(id: string, owner_id: string): Promise<boolean> {

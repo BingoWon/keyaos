@@ -14,11 +14,56 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
 import { CreateApiKeyModal } from "../components/CreateApiKeyModal";
 import { ToggleSwitch } from "../components/ToggleSwitch";
-import { Button } from "../components/ui";
+import { Badge, Button } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
 import type { ApiKeyInfo } from "../types/api-key";
 import { TOKENS } from "../utils/colors";
+
+function RestrictionBadges({ k, t }: { k: ApiKeyInfo; t: (s: string, o?: Record<string, unknown>) => string }) {
+	const now = Date.now();
+	const badges: { label: string; variant: "brand" | "warning" | "success" | "default" }[] = [];
+
+	if (k.expiresAt) {
+		if (k.expiresAt <= now) {
+			badges.push({ label: t("api_keys.expired"), variant: "warning" });
+		}
+	}
+	if (k.quotaLimit != null) {
+		const pct = k.quotaLimit > 0 ? k.quotaUsed / k.quotaLimit : 1;
+		badges.push({
+			label: t("api_keys.quota_used_of", {
+				used: `$${k.quotaUsed.toFixed(4)}`,
+				limit: `$${k.quotaLimit.toFixed(2)}`,
+			}),
+			variant: pct >= 1 ? "warning" : pct >= 0.8 ? "default" : "success",
+		});
+	}
+	if (k.allowedModels?.length) {
+		badges.push({
+			label: `${k.allowedModels.length} model${k.allowedModels.length > 1 ? "s" : ""}`,
+			variant: "brand",
+		});
+	}
+	if (k.allowedIps?.length) {
+		badges.push({
+			label: `${k.allowedIps.length} IP${k.allowedIps.length > 1 ? "s" : ""}`,
+			variant: "brand",
+		});
+	}
+
+	if (badges.length === 0) return null;
+
+	return (
+		<div className="flex flex-wrap gap-1">
+			{badges.map((b) => (
+				<Badge key={b.label} variant={b.variant}>
+					{b.label}
+				</Badge>
+			))}
+		</div>
+	);
+}
 
 export function ApiKeys() {
 	const { t } = useTranslation();
@@ -182,7 +227,10 @@ export function ApiKeys() {
 											{t("api_keys.key")}
 										</th>
 										<th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
-											{t("api_keys.created_at")}
+											{t("api_keys.permissions")}
+										</th>
+										<th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+											{t("api_keys.expires_at")}
 										</th>
 										<th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
 											{t("api_keys.enabled")}
@@ -204,6 +252,9 @@ export function ApiKeys() {
 													<div className="h-4 w-48 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
 												</td>
 												<td className="px-3 py-4">
+													<div className="h-4 w-24 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
+												</td>
+												<td className="px-3 py-4">
 													<div className="h-4 w-28 rounded bg-gray-100 dark:bg-white/5 animate-pulse" />
 												</td>
 												<td className="px-3 py-4">
@@ -215,7 +266,7 @@ export function ApiKeys() {
 									) : !apiKeys?.length ? (
 										<tr>
 											<td
-												colSpan={5}
+												colSpan={6}
 												className="py-4 text-center text-sm text-gray-500"
 											>
 												{t("api_keys.no_data")}
@@ -302,9 +353,34 @@ export function ApiKeys() {
 														</button>
 													</div>
 												</td>
-												{/* Created */}
+												{/* Permissions */}
+												<td className="px-3 py-4 text-sm">
+													<RestrictionBadges k={k} t={t} />
+													{!k.allowedModels?.length &&
+														!k.allowedIps?.length &&
+														k.quotaLimit == null && (
+															<span className="text-xs text-gray-400">
+																{t("api_keys.no_restrictions")}
+															</span>
+														)}
+												</td>
+												{/* Expires */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-													{formatDateTime(k.createdAt)}
+													{k.expiresAt ? (
+														<span
+															className={
+																k.expiresAt <= Date.now()
+																	? "text-red-500"
+																	: ""
+															}
+														>
+															{formatDateTime(k.expiresAt)}
+														</span>
+													) : (
+														<span className="text-gray-400">
+															{t("api_keys.expires_never")}
+														</span>
+													)}
 												</td>
 												{/* Enabled toggle */}
 												<td className="whitespace-nowrap px-3 py-4 text-sm">

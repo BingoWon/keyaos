@@ -18,7 +18,13 @@ import systemRouter from "./routes/system";
 import threadsRouter from "./routes/threads";
 import werewolfRouter from "./routes/werewolf";
 import { sha256 } from "./shared/crypto";
-import { ApiError, AuthenticationError } from "./shared/errors";
+import {
+	ApiError,
+	AuthenticationError,
+	IpNotAllowedError,
+	KeyExpiredError,
+	KeyQuotaExceededError,
+} from "./shared/errors";
 import { log } from "./shared/logger";
 import type { AppEnv, Env } from "./shared/types";
 
@@ -110,7 +116,29 @@ app.use("/v1/*", async (c, next) => {
 		keyHash,
 	);
 	if (key?.is_enabled === 1) {
+		if (key.expires_at && key.expires_at <= Date.now()) {
+			throw new KeyExpiredError();
+		}
+		if (
+			key.quota_limit != null &&
+			key.quota_used >= key.quota_limit
+		) {
+			throw new KeyQuotaExceededError();
+		}
+		if (key.allowed_ips) {
+			const clientIp =
+				c.req.header("cf-connecting-ip") ||
+				c.req.header("x-forwarded-for")?.split(",")[0]?.trim();
+			const allowed: string[] = JSON.parse(key.allowed_ips);
+			if (clientIp && allowed.length > 0 && !allowed.includes(clientIp)) {
+				throw new IpNotAllowedError();
+			}
+		}
 		c.set("owner_id", key.owner_id);
+		c.set("api_key_id", key.id);
+		if (key.allowed_models) {
+			c.set("allowed_models", JSON.parse(key.allowed_models) as string[]);
+		}
 		return next();
 	}
 

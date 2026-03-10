@@ -14,6 +14,7 @@ import {
 	recordLog,
 } from "../core/billing";
 import * as cb from "../core/circuit-breaker";
+import { ApiKeysDao } from "../core/db/api-keys-dao";
 import { CredentialsDao } from "../core/db/credentials-dao";
 import { dispatchAll } from "../core/dispatcher";
 import { interceptResponse } from "../core/utils/stream";
@@ -25,6 +26,7 @@ import {
 import { WalletDao } from "../platform/billing/wallet-dao";
 import {
 	CreditsExhaustedNoFallbackError,
+	ModelNotAllowedError,
 	NoKeyAvailableError,
 } from "../shared/errors";
 import { requestLogger } from "../shared/logger";
@@ -77,10 +79,16 @@ export async function executeCompletion(
 	req: CompletionRequest,
 ): Promise<CompletionResult> {
 	const consumerId = c.get("owner_id");
+	const apiKeyId = c.get("api_key_id");
+	const allowedModels = c.get("allowed_models");
 	const isPlatform = !!c.env.CLERK_SECRET_KEY;
 	const requestId = crypto.randomUUID();
 	const rlog = requestLogger(requestId, { modelId: req.modelId, consumerId });
 	const encryptionKey = c.env.ENCRYPTION_KEY;
+
+	if (allowedModels && !allowedModels.includes(req.modelId)) {
+		throw new ModelNotAllowedError(req.modelId);
+	}
 
 	let creditsFallback = false;
 	if (isPlatform) {
@@ -217,6 +225,13 @@ export async function executeCompletion(
 										consumerId,
 									);
 								}
+							}
+
+							if (apiKeyId) {
+								await new ApiKeysDao(
+									c.env.DB,
+									encryptionKey,
+								).incrementQuotaUsed(apiKeyId, baseCost);
 							}
 
 							rlog.info("billing", "Recorded", {

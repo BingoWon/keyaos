@@ -3,5 +3,10 @@ export interface ApiKeyInfo {
 	name: string;
 	keyHint: string;
 	isEnabled: boolean;
+	expiresAt: number | null;
+	quotaLimit: number | null;
+	quotaUsed: number;
+	allowedModels: string[] | null;
+	allowedIps: string[] | null;
 	createdAt: number;
 }

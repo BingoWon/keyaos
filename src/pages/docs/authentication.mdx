@@ -94,9 +94,41 @@ curl https://keyaos.com/v1/messages \
   -d '{"model":"anthropic/claude-sonnet-4","max_tokens":1024,"messages":[{"role":"user","content":"Hi"}]}'
 ```
 
+## Key Permissions
+
+Each API key can have optional restrictions to control access and spending. Configure these when creating a key, or update them at any time from the dashboard.
+
+### Expiration
+
+Set an expiration date on a key so it automatically stops working after a given time. Choose a preset (7 days, 30 days, 90 days) or pick a custom date. Expired keys return a `401` error with code `key_expired`.
+
+### Usage Quota
+
+Set a maximum spending limit (in credits/USD) for a key. The gateway tracks usage per key and automatically blocks requests once the quota is exhausted. This returns a `429` error with code `key_quota_exceeded`.
+
+Quota usage is tracked in real time and visible on the API Keys dashboard.
+
+### Model Restrictions
+
+Restrict a key to a specific set of models. Requests for models not in the allowlist return a `403` error with code `model_not_allowed`.
+
+This is useful for:
+- Giving a client access to only cost-effective models (e.g. `gpt-4o-mini` only)
+- Preventing accidental usage of expensive models
+- Separating keys by use case (e.g. one key for chat, another for embeddings)
+
+### IP Allowlist
+
+Restrict a key to requests from specific IP addresses. Requests from IPs not in the list return a `403` error with code `ip_not_allowed`.
+
+Leave the allowlist empty to allow requests from any IP address.
+
 ## Security Best Practices
 
 - **Never expose keys in client-side code** — always call from your backend
 - **Rotate keys regularly** — generate a new key and revoke the old one
 - **Use environment variables** — store keys in `.env` files, not in source code
+- **Set expiration dates** — avoid long-lived keys when possible
+- **Use model restrictions** — limit each key to only the models it needs
+- **Set usage quotas** — prevent runaway costs with per-key spending limits
 - **Keys are encrypted at rest** — all API keys are stored with AES-256-GCM encryption and validated via hash lookup, so even database access does not expose your keys

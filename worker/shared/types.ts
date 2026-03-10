@@ -11,7 +11,14 @@ export type Env = {
 	ASSETS?: Fetcher;
 };
 
-export type AppEnv = { Bindings: Env; Variables: { owner_id: string } };
+export type AppEnv = {
+	Bindings: Env;
+	Variables: {
+		owner_id: string;
+		api_key_id?: string;
+		allowed_models?: string[];
+	};
+};
 
 export interface Settlement {
 	consumerCharged: number;

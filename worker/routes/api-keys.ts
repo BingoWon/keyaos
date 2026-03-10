@@ -10,12 +10,46 @@ const CreateKeyBody = z.object({
 		.string()
 		.optional()
 		.transform((v) => (v?.trim() ? v.trim() : "Untitled Key")),
+	expiresAt: z.number().int().positive().nullable().optional(),
+	quotaLimit: z.number().positive().nullable().optional(),
+	allowedModels: z.array(z.string().min(1)).nullable().optional(),
+	allowedIps: z.array(z.string().min(1)).nullable().optional(),
 });
 
 const UpdateKeyBody = z.object({
 	name: z.string().min(1).optional(),
 	isEnabled: z.number().min(0).max(1).optional(),
+	expiresAt: z.number().int().positive().nullable().optional(),
+	quotaLimit: z.number().positive().nullable().optional(),
+	allowedModels: z.array(z.string().min(1)).nullable().optional(),
+	allowedIps: z.array(z.string().min(1)).nullable().optional(),
 });
+
+function formatKey(k: {
+	id: string;
+	name: string;
+	key_hint: string;
+	is_enabled: number;
+	expires_at: number | null;
+	quota_limit: number | null;
+	quota_used: number;
+	allowed_models: string | null;
+	allowed_ips: string | null;
+	created_at: number;
+}) {
+	return {
+		id: k.id,
+		name: k.name,
+		keyHint: k.key_hint,
+		isEnabled: k.is_enabled === 1,
+		expiresAt: k.expires_at,
+		quotaLimit: k.quota_limit,
+		quotaUsed: k.quota_used,
+		allowedModels: k.allowed_models ? JSON.parse(k.allowed_models) : null,
+		allowedIps: k.allowed_ips ? JSON.parse(k.allowed_ips) : null,
+		createdAt: k.created_at,
+	};
+}
 
 const apiKeysRouter = new Hono<AppEnv>();
 
@@ -28,19 +62,18 @@ apiKeysRouter.post("/", async (c) => {
 	);
 
 	const dao = new ApiKeysDao(c.env.DB, c.env.ENCRYPTION_KEY);
-	const { record, plainKey } = await dao.createKey(
-		body.name,
-		c.get("owner_id"),
-	);
+	const { record, plainKey } = await dao.createKey(c.get("owner_id"), {
+		name: body.name,
+		expires_at: body.expiresAt ?? null,
+		quota_limit: body.quotaLimit ?? null,
+		allowed_models: body.allowedModels ?? null,
+		allowed_ips: body.allowedIps ?? null,
+	});
 
 	return c.json(
 		{
 			data: {
-				id: record.id,
-				name: record.name,
-				keyHint: record.key_hint,
-				isEnabled: record.is_enabled === 1,
-				createdAt: record.created_at,
+				...formatKey(record),
 				plainKey,
 			},
 		},
@@ -51,15 +84,7 @@ apiKeysRouter.post("/", async (c) => {
 apiKeysRouter.get("/", async (c) => {
 	const dao = new ApiKeysDao(c.env.DB, c.env.ENCRYPTION_KEY);
 	const keys = await dao.listKeys(c.get("owner_id"));
-	return c.json({
-		data: keys.map((k) => ({
-			id: k.id,
-			name: k.name,
-			keyHint: k.key_hint,
-			isEnabled: k.is_enabled === 1,
-			createdAt: k.created_at,
-		})),
-	});
+	return c.json({ data: keys.map(formatKey) });
 });
 
 apiKeysRouter.get("/:id/reveal", async (c) => {
@@ -88,6 +113,10 @@ apiKeysRouter.patch("/:id", async (c) => {
 	const success = await dao.updateKey(c.req.param("id"), c.get("owner_id"), {
 		name: body.name,
 		is_enabled: body.isEnabled,
+		expires_at: body.expiresAt,
+		quota_limit: body.quotaLimit,
+		allowed_models: body.allowedModels,
+		allowed_ips: body.allowedIps,
 	});
 	if (!success) {
 		throw new ApiError(

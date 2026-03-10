@@ -57,3 +57,42 @@ export class CreditsExhaustedNoFallbackError extends ApiError {
 		);
 	}
 }
+
+export class KeyExpiredError extends ApiError {
+	constructor() {
+		super("API key has expired", 401, "authentication_error", "key_expired");
+	}
+}
+
+export class KeyQuotaExceededError extends ApiError {
+	constructor() {
+		super(
+			"API key quota exceeded",
+			429,
+			"billing_error",
+			"key_quota_exceeded",
+		);
+	}
+}
+
+export class ModelNotAllowedError extends ApiError {
+	constructor(model: string) {
+		super(
+			`Model "${model}" is not allowed for this API key`,
+			403,
+			"permission_error",
+			"model_not_allowed",
+		);
+	}
+}
+
+export class IpNotAllowedError extends ApiError {
+	constructor() {
+		super(
+			"Request IP is not in the API key's allowlist",
+			403,
+			"permission_error",
+			"ip_not_allowed",
+		);
+	}
+}

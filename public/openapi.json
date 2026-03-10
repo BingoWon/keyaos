@@ -24,12 +24,12 @@
     { "apiKeyHeader": [] }
   ],
   "tags": [
-    { "name": "OpenAI Chat Completions", "description": "OpenAI SDK-compatible chat completions endpoint" },
-    { "name": "Embeddings", "description": "OpenAI SDK-compatible text embeddings endpoint" },
-    { "name": "Anthropic Messages", "description": "Anthropic SDK-compatible messages endpoint" },
-    { "name": "Models", "description": "List available models and pricing" },
-    { "name": "Credits", "description": "Check credit balance" },
-    { "name": "Health", "description": "Service health check" }
+    { "name": "Chat", "description": "OpenAI SDK-compatible chat completions" },
+    { "name": "Embeddings", "description": "OpenAI SDK-compatible text embeddings" },
+    { "name": "Messages", "description": "Anthropic SDK-compatible messages" },
+    { "name": "Model Catalog", "description": "Browse and filter available models" },
+    { "name": "Account", "description": "Credit balance and account info" },
+    { "name": "System", "description": "Health check and service status" }
   ],
   "paths": {
     "/v1/chat/completions": {
@@ -37,7 +37,7 @@
         "operationId": "createChatCompletion",
         "summary": "Create chat completion",
         "description": "Creates a chat completion using the OpenAI-compatible format. Keyaos automatically routes to the best available provider for the requested model.\n\nSupports streaming via `stream: true` (Server-Sent Events).",
-        "tags": ["OpenAI Chat Completions"],
+        "tags": ["Chat"],
         "requestBody": {
           "required": true,
           "content": {
@@ -167,7 +167,7 @@
       "post": {
         "operationId": "createEmbedding",
         "summary": "Create embedding",
-        "description": "Creates embeddings for the given input text using the specified model. Supports single strings, arrays of strings, and token arrays as input.\n\nAll embedding models are available at the `/v1/models` endpoint with `type: \"embedding\"`.",
+        "description": "Creates embeddings for the given input text using the specified model. Supports single strings, arrays of strings, and token arrays as input.\n\nBrowse available embedding models via `GET /v1/models?type=embedding`.",
         "tags": ["Embeddings"],
         "requestBody": {
           "required": true,
@@ -228,7 +228,7 @@
         "operationId": "createMessage",
         "summary": "Create message",
         "description": "Creates a message using the Anthropic Messages API format. Keyaos translates between Anthropic and OpenAI formats internally, so you can use **any model** through this endpoint — not just Anthropic models.\n\nSupports text, images, PDFs, tool use, and extended thinking.",
-        "tags": ["Anthropic Messages"],
+        "tags": ["Messages"],
         "requestBody": {
           "required": true,
           "content": {
@@ -335,8 +335,17 @@
       "get": {
         "operationId": "listModels",
         "summary": "List models",
-        "description": "Returns all available models with pricing, context length, architecture details, and provider information.\n\nResponses are edge-cached for 30 seconds.",
-        "tags": ["Models"],
+        "description": "Returns all available models with pricing, context length, architecture details, and provider information.\n\nUse `?type=chat` or `?type=embedding` to filter by model type. Without the parameter, all models are returned.\n\nResponses are edge-cached for 30 seconds.",
+        "tags": ["Model Catalog"],
+        "parameters": [
+          {
+            "name": "type",
+            "in": "query",
+            "description": "Filter by model type",
+            "required": false,
+            "schema": { "type": "string", "enum": ["chat", "embedding"] }
+          }
+        ],
         "responses": {
           "200": {
             "description": "List of available models",
@@ -363,7 +372,7 @@
         "operationId": "getCredits",
         "summary": "Get credit balance",
         "description": "Returns the authenticated user's current credit balance in USD.",
-        "tags": ["Credits"],
+        "tags": ["Account"],
         "responses": {
           "200": {
             "description": "Credit balance",
@@ -394,7 +403,7 @@
         "operationId": "healthCheck",
         "summary": "Health check",
         "description": "Simple health check endpoint. No authentication required.",
-        "tags": ["Health"],
+        "tags": ["System"],
         "security": [],
         "responses": {
           "200": {

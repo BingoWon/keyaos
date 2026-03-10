@@ -73,9 +73,14 @@ publicModelsRouter.get("/", edgeCache(), async (c) => {
 	}
 
 	const keyAllowedModels = c.get("allowed_models");
+	const typeFilter = c.req.query("type");
 
 	const data = [...groups.entries()]
-		.filter(([id]) => !keyAllowedModels || keyAllowedModels.includes(id))
+		.filter(([id, g]) => {
+			if (keyAllowedModels && !keyAllowedModels.includes(id)) return false;
+			if (typeFilter && g.modelType !== typeFilter) return false;
+			return true;
+		})
 		.map(([id, g]) => {
 		const m = g.meta;
 

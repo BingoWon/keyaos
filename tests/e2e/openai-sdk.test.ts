@@ -91,6 +91,34 @@ test("OpenAI SDK: tool calling", async () => {
 	console.log(`  Tool: ${tc[0].function.name}(${tc[0].function.arguments})`);
 });
 
+test("OpenAI SDK: embeddings", async () => {
+	const res = await client.embeddings.create({
+		model: "qwen/qwen3-embedding-4b",
+		input: "OpenAI SDK embeddings test",
+	});
+
+	assert.strictEqual(res.object, "list");
+	assert.ok(res.data.length > 0);
+	assert.strictEqual(res.data[0].object, "embedding");
+	assert.ok(res.data[0].embedding.length > 0, "Should have embedding vector");
+	assert.ok(res.usage.prompt_tokens > 0);
+	console.log(
+		`  Dims: ${res.data[0].embedding.length}, Tokens: ${res.usage.prompt_tokens}`,
+	);
+});
+
+test("OpenAI SDK: embeddings batch", async () => {
+	const res = await client.embeddings.create({
+		model: "qwen/qwen3-embedding-4b",
+		input: ["First text", "Second text"],
+	});
+
+	assert.strictEqual(res.data.length, 2);
+	assert.strictEqual(res.data[0].index, 0);
+	assert.strictEqual(res.data[1].index, 1);
+	console.log(`  Batch: ${res.data.length} embeddings`);
+});
+
 test("OpenAI SDK: structured output (JSON mode)", async () => {
 	const res = await client.chat.completions.create({
 		model: MODEL,

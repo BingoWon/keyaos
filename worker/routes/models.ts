@@ -70,7 +70,11 @@ publicModelsRouter.get("/", edgeCache(), async (c) => {
 		}
 	}
 
-	const data = [...groups.entries()].map(([id, g]) => {
+	const keyAllowedModels = c.get("allowed_models");
+
+	const data = [...groups.entries()]
+		.filter(([id]) => !keyAllowedModels || keyAllowedModels.includes(id))
+		.map(([id, g]) => {
 		const m = g.meta;
 
 		// Build pricing from candle data

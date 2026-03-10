@@ -41,7 +41,9 @@
 		"actions": "Actions",
 		"free": "Free",
 		"copied": "Copied",
-		"optional": "optional"
+		"optional": "optional",
+		"reveal": "Reveal",
+		"hide": "Hide"
 	},
 	"nav": {
 		"dashboard": "Dashboard",
@@ -120,7 +122,22 @@
 		"quota_hint": "Maximum spending in credits (USD). Key stops working once exceeded.",
 		"edit_title": "Edit API Key",
 		"edit_permissions": "Edit permissions",
-		"expiry_keep": "Keep current"
+		"expiry_keep": "Keep current",
+		"expiry_custom": "Custom",
+		"models_selected_one": "{{count}} model selected",
+		"models_selected_other": "{{count}} models selected",
+		"search_models": "Search models…",
+		"clear_selection": "Clear",
+		"no_models_found": "No models found",
+		"my_ip": "My IP",
+		"models_badge_one": "{{count}} model",
+		"models_badge_other": "{{count}} models",
+		"ips_badge_one": "{{count}} IP",
+		"ips_badge_other": "{{count}} IPs",
+		"current_expiry": "Current: {{value}}",
+		"name_placeholder": "e.g. Production",
+		"quota_reset": "Reset usage",
+		"quota_reset_confirm": "Reset quota usage to $0?"
 	},
 	"credentials": {
 		"title": "Bring Your Own Key",

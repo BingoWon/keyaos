@@ -87,7 +87,7 @@ export function IpAllowlistInput({ value, onChange }: Props) {
 					className="flex items-center gap-1 rounded-lg border border-brand-200 bg-brand-50 px-2.5 py-1.5 text-xs font-medium text-brand-700 transition-colors hover:bg-brand-100 disabled:opacity-50 dark:border-brand-500/20 dark:bg-brand-500/10 dark:text-brand-300 dark:hover:bg-brand-500/15"
 				>
 					<GlobeAltIcon className="size-3.5" />
-					{fetching ? "..." : "My IP"}
+					{fetching ? "…" : t("api_keys.my_ip")}
 				</button>
 			</div>
 

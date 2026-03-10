@@ -50,13 +50,13 @@ function RestrictionBadges({
 	}
 	if (k.allowedModels?.length) {
 		badges.push({
-			label: `${k.allowedModels.length} model${k.allowedModels.length > 1 ? "s" : ""}`,
+			label: t("api_keys.models_badge", { count: k.allowedModels.length }),
 			variant: "brand",
 		});
 	}
 	if (k.allowedIps?.length) {
 		badges.push({
-			label: `${k.allowedIps.length} IP${k.allowedIps.length > 1 ? "s" : ""}`,
+			label: t("api_keys.ips_badge", { count: k.allowedIps.length }),
 			variant: "brand",
 		});
 	}
@@ -308,7 +308,9 @@ export function ApiKeys() {
 															onClick={() => toggleReveal(k.id)}
 															className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 disabled:opacity-50"
 															title={
-																revealedKeys.has(k.id) ? "Hide" : "Reveal"
+																revealedKeys.has(k.id)
+																	? t("common.hide")
+																	: t("common.reveal")
 															}
 														>
 															{revealingId === k.id ? (
@@ -323,7 +325,7 @@ export function ApiKeys() {
 															type="button"
 															onClick={() => copyKey(k)}
 															className="text-gray-400 hover:text-brand-500"
-															title="Copy"
+															title={t("common.copy")}
 														>
 															<ClipboardDocumentIcon className="size-4" />
 														</button>

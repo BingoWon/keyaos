@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { z } from "zod";
 import { ApiKeysDao } from "../core/db/api-keys-dao";
+import type { DbApiKey } from "../core/db/schema";
 import { ApiError, BadRequestError } from "../shared/errors";
 import type { AppEnv } from "../shared/types";
 import { parse } from "../shared/validate";
@@ -25,18 +26,7 @@ const UpdateKeyBody = z.object({
 	allowedIps: z.array(z.string().min(1)).nullable().optional(),
 });
 
-function formatKey(k: {
-	id: string;
-	name: string;
-	key_hint: string;
-	is_enabled: number;
-	expires_at: number | null;
-	quota_limit: number | null;
-	quota_used: number;
-	allowed_models: string | null;
-	allowed_ips: string | null;
-	created_at: number;
-}) {
+function formatKey(k: DbApiKey) {
 	return {
 		id: k.id,
 		name: k.name,
@@ -127,6 +117,23 @@ apiKeysRouter.patch("/:id", async (c) => {
 		);
 	}
 	return c.json({ message: "API Key updated" });
+});
+
+apiKeysRouter.post("/:id/reset-quota", async (c) => {
+	const dao = new ApiKeysDao(c.env.DB, c.env.ENCRYPTION_KEY);
+	const success = await dao.resetQuotaUsed(
+		c.req.param("id"),
+		c.get("owner_id"),
+	);
+	if (!success) {
+		throw new ApiError(
+			"API Key not found",
+			404,
+			"not_found",
+			"api_key_not_found",
+		);
+	}
+	return c.json({ message: "Quota usage reset" });
 });
 
 apiKeysRouter.delete("/:id", async (c) => {

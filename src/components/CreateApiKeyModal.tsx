@@ -9,6 +9,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
 import { TOKENS } from "../utils/colors";
+import { type ExpiryPreset, expiryToTimestamp } from "../utils/expiry";
 import { IpAllowlistInput } from "./IpAllowlistInput";
 import { Modal } from "./Modal";
 import { ModelMultiSelect } from "./ModelMultiSelect";
@@ -25,20 +26,6 @@ interface CreateApiKeyModalProps {
 	open: boolean;
 	onClose: () => void;
 	onCreated?: (key: CreatedKey) => void;
-}
-
-type ExpiryPreset = "never" | "7d" | "30d" | "90d" | "custom";
-
-function expiryToTimestamp(
-	preset: ExpiryPreset,
-	customDate: string,
-): number | null {
-	if (preset === "never") return null;
-	if (preset === "custom" && customDate)
-		return new Date(customDate).getTime();
-	const days = { "7d": 7, "30d": 30, "90d": 90 }[preset];
-	if (days) return Date.now() + days * 86_400_000;
-	return null;
 }
 
 export function CreateApiKeyModal({
@@ -191,7 +178,7 @@ export function CreateApiKeyModal({
 							value={name}
 							onChange={(e) => setName(e.target.value)}
 							className="mt-1"
-							placeholder="e.g. Production"
+							placeholder={t("api_keys.name_placeholder")}
 							autoFocus
 						/>
 					</div>
@@ -238,7 +225,7 @@ export function CreateApiKeyModal({
 											["7d", "7d"],
 											["30d", "30d"],
 											["90d", "90d"],
-											["custom", "Custom"],
+											["custom", t("api_keys.expiry_custom")],
 										] as const
 									).map(([val, label]) => (
 										<button

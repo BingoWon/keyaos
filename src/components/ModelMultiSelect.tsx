@@ -5,6 +5,7 @@ import {
 	XMarkIcon,
 } from "@heroicons/react/20/solid";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useFetch } from "../hooks/useFetch";
 import type { ModelEntry } from "../types/model";
 import { aggregateModels } from "../utils/models";
@@ -16,6 +17,7 @@ interface Props {
 }
 
 export function ModelMultiSelect({ value, onChange, placeholder }: Props) {
+	const { t } = useTranslation();
 	const { data: models } = useFetch<ModelEntry[]>("/api/models", {
 		requireAuth: false,
 	});
@@ -75,8 +77,8 @@ export function ModelMultiSelect({ value, onChange, placeholder }: Props) {
 			>
 				<span className="flex-1 truncate text-gray-500 dark:text-gray-400">
 					{value.length === 0
-						? (placeholder ?? "All models")
-						: `${value.length} model${value.length > 1 ? "s" : ""} selected`}
+						? (placeholder ?? t("api_keys.allowed_models_all"))
+						: t("api_keys.models_selected", { count: value.length })}
 				</span>
 				<ChevronUpDownIcon className="size-4 shrink-0 text-gray-400" />
 			</button>
@@ -113,7 +115,7 @@ export function ModelMultiSelect({ value, onChange, placeholder }: Props) {
 							type="text"
 							value={search}
 							onChange={(e) => setSearch(e.target.value)}
-							placeholder="Search models..."
+							placeholder={t("api_keys.search_models")}
 							className="w-full bg-transparent text-sm text-gray-900 placeholder:text-gray-400 focus:outline-none dark:text-white dark:placeholder:text-gray-500"
 						/>
 						{value.length > 0 && (
@@ -122,7 +124,7 @@ export function ModelMultiSelect({ value, onChange, placeholder }: Props) {
 								onClick={() => onChange([])}
 								className="shrink-0 text-xs text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
 							>
-								Clear
+								{t("api_keys.clear_selection")}
 							</button>
 						)}
 					</div>
@@ -131,7 +133,7 @@ export function ModelMultiSelect({ value, onChange, placeholder }: Props) {
 					<div className="max-h-52 overflow-y-auto overscroll-contain py-1">
 						{filtered.length === 0 ? (
 							<div className="px-3 py-4 text-center text-xs text-gray-400">
-								No models found
+								{t("api_keys.no_models_found")}
 							</div>
 						) : (
 							filtered.map((id) => {

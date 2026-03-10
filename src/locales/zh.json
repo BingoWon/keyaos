@@ -41,7 +41,9 @@
 		"actions": "操作",
 		"free": "免费",
 		"copied": "已复制",
-		"optional": "可选"
+		"optional": "可选",
+		"reveal": "显示",
+		"hide": "隐藏"
 	},
 	"nav": {
 		"dashboard": "控制台",
@@ -120,7 +122,22 @@
 		"quota_hint": "最大消费额度（美元），超出后密钥将停止工作。",
 		"edit_title": "编辑 API 密钥",
 		"edit_permissions": "编辑权限",
-		"expiry_keep": "保持当前"
+		"expiry_keep": "保持当前",
+		"expiry_custom": "自定义",
+		"models_selected_one": "已选 {{count}} 个模型",
+		"models_selected_other": "已选 {{count}} 个模型",
+		"search_models": "搜索模型…",
+		"clear_selection": "清除",
+		"no_models_found": "未找到模型",
+		"my_ip": "我的 IP",
+		"models_badge_one": "{{count}} 个模型",
+		"models_badge_other": "{{count}} 个模型",
+		"ips_badge_one": "{{count}} 个 IP",
+		"ips_badge_other": "{{count}} 个 IP",
+		"current_expiry": "当前：{{value}}",
+		"name_placeholder": "例如 生产环境",
+		"quota_reset": "重置用量",
+		"quota_reset_confirm": "确认将配额用量重置为 $0？"
 	},
 	"credentials": {
 		"title": "自有密钥 (Bring Your Own Key)",

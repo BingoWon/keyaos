@@ -161,6 +161,16 @@ export class ApiKeysDao {
 			.run();
 	}
 
+	async resetQuotaUsed(id: string, owner_id: string): Promise<boolean> {
+		const result = await this.db
+			.prepare(
+				"UPDATE api_keys SET quota_used = 0 WHERE id = ? AND owner_id = ?",
+			)
+			.bind(id, owner_id)
+			.run();
+		return (result.meta?.changes ?? 0) > 0;
+	}
+
 	async deleteKey(id: string, owner_id: string): Promise<boolean> {
 		const result = await this.db
 			.prepare("DELETE FROM api_keys WHERE id = ? AND owner_id = ?")

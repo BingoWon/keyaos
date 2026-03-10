@@ -3,6 +3,7 @@ import toast from "react-hot-toast";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
 import type { ApiKeyInfo } from "../types/api-key";
+import { type ExpiryPreset, expiryToTimestamp } from "../utils/expiry";
 import { IpAllowlistInput } from "./IpAllowlistInput";
 import { Modal } from "./Modal";
 import { ModelMultiSelect } from "./ModelMultiSelect";
@@ -14,22 +15,6 @@ interface Props {
 	onClose: () => void;
 	apiKey: ApiKeyInfo | null;
 	onUpdated: () => void;
-}
-
-type ExpiryPreset = "keep" | "never" | "7d" | "30d" | "90d" | "custom";
-
-function expiryToTimestamp(
-	preset: ExpiryPreset,
-	customDate: string,
-	currentExpiry: number | null,
-): number | null | undefined {
-	if (preset === "keep") return undefined;
-	if (preset === "never") return null;
-	if (preset === "custom" && customDate)
-		return new Date(customDate).getTime();
-	const days = { "7d": 7, "30d": 30, "90d": 90 }[preset];
-	if (days) return Date.now() + days * 86_400_000;
-	return currentExpiry;
 }
 
 export function EditApiKeyModal({
@@ -69,20 +54,20 @@ export function EditApiKeyModal({
 		const body: Record<string, unknown> = {};
 		if (name !== apiKey.name) body.name = name;
 
-		const newExpiry = expiryToTimestamp(expiryPreset, customDate, apiKey.expiresAt);
+		const newExpiry = expiryToTimestamp(expiryPreset, customDate);
 		if (newExpiry !== undefined) body.expiresAt = newExpiry;
 
 		const newQuota = quotaEnabled && quotaLimit ? Number(quotaLimit) : null;
 		if (newQuota !== apiKey.quotaLimit) body.quotaLimit = newQuota;
 
 		const modelsChanged =
-			JSON.stringify(allowedModels.sort()) !==
-			JSON.stringify((apiKey.allowedModels ?? []).sort());
+			JSON.stringify([...allowedModels].sort()) !==
+			JSON.stringify([...(apiKey.allowedModels ?? [])].sort());
 		if (modelsChanged) body.allowedModels = allowedModels.length ? allowedModels : null;
 
 		const ipsChanged =
-			JSON.stringify(allowedIps.sort()) !==
-			JSON.stringify((apiKey.allowedIps ?? []).sort());
+			JSON.stringify([...allowedIps].sort()) !==
+			JSON.stringify([...(apiKey.allowedIps ?? [])].sort());
 		if (ipsChanged) body.allowedIps = allowedIps.length ? allowedIps : null;
 
 		if (Object.keys(body).length === 0) {
@@ -140,11 +125,41 @@ export function EditApiKeyModal({
 
 				{/* Quota display */}
 				{apiKey.quotaLimit != null && (
-					<div className="rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:bg-white/5 dark:text-gray-400">
-						{t("api_keys.quota_used_of", {
-							used: `$${apiKey.quotaUsed.toFixed(4)}`,
-							limit: `$${apiKey.quotaLimit.toFixed(2)}`,
-						})}
+					<div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-500 dark:bg-white/5 dark:text-gray-400">
+						<span>
+							{t("api_keys.quota_used_of", {
+								used: `$${apiKey.quotaUsed.toFixed(4)}`,
+								limit: `$${apiKey.quotaLimit.toFixed(2)}`,
+							})}
+						</span>
+						{apiKey.quotaUsed > 0 && (
+							<button
+								type="button"
+								onClick={async () => {
+									if (!confirm(t("api_keys.quota_reset_confirm"))) return;
+									try {
+										const res = await fetch(
+											`/api/api-keys/${apiKey.id}/reset-quota`,
+											{
+												method: "POST",
+												headers: {
+													Authorization: `Bearer ${await getToken()}`,
+												},
+											},
+										);
+										if (res.ok) {
+											toast.success(t("common.success"));
+											onUpdated();
+										}
+									} catch {
+										toast.error(t("common.error"));
+									}
+								}}
+								className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300"
+							>
+								{t("api_keys.quota_reset")}
+							</button>
+						)}
 					</div>
 				)}
 
@@ -152,9 +167,11 @@ export function EditApiKeyModal({
 				<div>
 					<label className={labelCls}>{t("api_keys.expires_at")}</label>
 					<p className="mt-0.5 text-xs text-gray-400 dark:text-gray-500">
-						{apiKey.expiresAt
-							? `Current: ${new Date(apiKey.expiresAt).toLocaleString()}`
-							: `Current: ${t("api_keys.expires_never")}`}
+						{t("api_keys.current_expiry", {
+							value: apiKey.expiresAt
+								? new Date(apiKey.expiresAt).toLocaleString()
+								: t("api_keys.expires_never"),
+						})}
 					</p>
 					<div className="mt-2 flex flex-wrap gap-1.5">
 						{(
@@ -164,7 +181,7 @@ export function EditApiKeyModal({
 								["7d", "7d"],
 								["30d", "30d"],
 								["90d", "90d"],
-								["custom", "Custom"],
+								["custom", t("api_keys.expiry_custom")],
 							] as const
 						).map(([val, label]) => (
 							<button

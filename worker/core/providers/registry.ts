@@ -113,7 +113,9 @@ function parseZenMuxModels(raw: Record<string, unknown>): ParsedModel[] {
 	return results;
 }
 
-/** DeepInfra: metadata.pricing.input_tokens/output_tokens in USD/M tokens */
+/** DeepInfra: metadata.pricing.input_tokens/output_tokens in USD/M tokens.
+ *  Models without pricing (e.g. embeddings) are emitted with price = -1;
+ *  the sync service enriches them from the OpenRouter canonical catalog. */
 function parseDeepInfraModels(raw: Record<string, unknown>): ParsedModel[] {
 	const data = raw.data as Record<string, unknown>[] | undefined;
 	if (!data) return [];
@@ -121,13 +123,13 @@ function parseDeepInfraModels(raw: Record<string, unknown>): ParsedModel[] {
 
 	for (const m of data) {
 		const id = m.id as string;
+		if (!id) continue;
+
 		const metadata = m.metadata as Record<string, unknown> | undefined;
 		const pricing = metadata?.pricing as
 			| { input_tokens: number; output_tokens: number }
 			| undefined;
-		if (!id || !pricing) continue;
 
-		// Normalize to lowercase to match OpenRouter/ZenMux canonical format
 		const canonicalId = id.toLowerCase();
 		results.push({
 			id: `deepinfra:${canonicalId}`,
@@ -135,13 +137,13 @@ function parseDeepInfraModels(raw: Record<string, unknown>): ParsedModel[] {
 			model_id: canonicalId,
 			name: null,
 			model_type: "chat",
-			input_price: pricing.input_tokens,
-			output_price: pricing.output_tokens,
+			input_price: pricing?.input_tokens ?? -1,
+			output_price: pricing?.output_tokens ?? -1,
 			context_length: (metadata?.context_length as number) || null,
 			input_modalities: null,
 			output_modalities: null,
 			sort_order: 999999,
-			upstream_model_id: id,
+			upstream_model_id: id !== canonicalId ? id : null,
 			metadata: null,
 			created_at: Date.now(),
 		});

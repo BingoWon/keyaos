@@ -69,11 +69,10 @@ export async function syncAllModels(
 	];
 	await dao.deactivateMissing("openrouter", allOrIds);
 
-	// Build the canonical model_id allowlist (chat + embedding)
-	const allowedModelIds = new Set([
-		...orModels.map((m) => m.model_id),
-		...orEmbedModels.map((m) => m.model_id),
-	]);
+	// Build canonical lookup: model_id → OpenRouter pricing/metadata
+	const allOrModels = [...orModels, ...orEmbedModels];
+	const allowedModelIds = new Set(allOrModels.map((m) => m.model_id));
+	const canonicalMap = new Map(allOrModels.map((m) => [m.model_id, m]));
 
 	// ─── Phase 3: Sync other providers, filtering to allowlist ──
 	const otherProviders = allProviders.filter(
@@ -92,6 +91,21 @@ export async function syncAllModels(
 			const filtered = models.filter((m) =>
 				allowedModelIds.has(m.model_id),
 			);
+
+			// Enrich models that lack upstream pricing (price == -1)
+			// with the canonical OpenRouter data
+			for (const m of filtered) {
+				if (m.input_price >= 0) continue;
+				const canonical = canonicalMap.get(m.model_id);
+				if (!canonical) continue;
+				m.input_price = canonical.input_price;
+				m.output_price = canonical.output_price;
+				m.model_type = canonical.model_type;
+				m.name ??= canonical.name;
+				m.context_length ??= canonical.context_length;
+				m.input_modalities ??= canonical.input_modalities;
+				m.output_modalities ??= canonical.output_modalities;
+			}
 
 			if (filtered.length > 0) {
 				await dao.upsertPricing(filtered);

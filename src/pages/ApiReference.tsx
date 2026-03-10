@@ -1,6 +1,10 @@
 import { ApiReferenceReact } from "@scalar/api-reference-react";
-import "@scalar/api-reference-react/style.css";
 import { useEffect, useState } from "react";
+
+// Vite resolves this to a hashed asset URL without injecting the CSS globally.
+// We manage the <link> lifecycle ourselves so the styles are removed on unmount.
+// @ts-expect-error Vite ?url suffix — see https://vite.dev/guide/assets#explicit-url-imports
+import scalarCssUrl from "@scalar/api-reference-react/style.css?url";
 
 const NAV_HEIGHT = "56px";
 
@@ -18,6 +22,16 @@ export function ApiReference() {
 	const [darkMode, setDarkMode] = useState(
 		document.documentElement.classList.contains("dark"),
 	);
+
+	useEffect(() => {
+		const link = document.createElement("link");
+		link.rel = "stylesheet";
+		link.href = scalarCssUrl;
+		document.head.appendChild(link);
+		return () => {
+			link.remove();
+		};
+	}, []);
 
 	useEffect(() => {
 		const observer = new MutationObserver(() => {

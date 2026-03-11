@@ -49,7 +49,7 @@ export function ProviderChip({
 	className = "",
 }: ProviderChipProps) {
 	const base =
-		"inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-gray-200/80 dark:bg-white/10 dark:border-white/10 transition-colors";
+		"inline-flex items-center gap-1.5 rounded-lg bg-white px-2.5 py-1.5 border border-gray-200/80 dark:bg-white/15 dark:border-white/10 transition-colors";
 	const interactive = onClick
 		? "cursor-pointer hover:border-brand-300 dark:hover:border-brand-500/30"
 		: "";

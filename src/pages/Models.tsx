@@ -355,7 +355,7 @@ export function Models() {
 												</td>
 												<td className="py-2.5 pl-2 pr-4 sm:pr-5">
 													<div className="flex justify-end">
-														<span className="inline-flex items-center gap-1 rounded-lg bg-white px-1.5 py-1 ring-1 ring-gray-950/[0.06] dark:bg-white/10 dark:ring-white/[0.1]">
+														<span className="inline-flex items-center gap-1 rounded-md bg-white px-1.5 py-1 ring-1 ring-gray-950/[0.06] dark:bg-white/15 dark:ring-white/[0.1]">
 															{g.providers.slice(0, 5).map((p) => {
 																const meta = providerMap.get(p.provider_id);
 																return meta ? (

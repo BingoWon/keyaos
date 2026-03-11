@@ -28,12 +28,14 @@ export function loadGA() {
 	document.head.appendChild(script);
 
 	const w = window as typeof window & {
-		dataLayer: unknown[];
+		dataLayer: IArguments[];
 		gtag: (...args: unknown[]) => void;
 	};
 	w.dataLayer = w.dataLayer || [];
-	w.gtag = (...args: unknown[]) => {
-		w.dataLayer.push(args);
+	// Must use `arguments` (not rest params) — gtag.js expects Arguments objects
+	// biome-ignore lint/style/noArguments: required by Google Analytics
+	w.gtag = function () {
+		w.dataLayer.push(arguments);
 	};
 	w.gtag("js", new Date());
 	w.gtag("config", gaId);

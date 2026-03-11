@@ -6,9 +6,6 @@
  */
 
 import type { ModelType } from "../db/schema";
-import moonshotModels from "../models/moonshot.json";
-import oaiproModels from "../models/oaipro.json";
-import qwenCodeModels from "../models/qwen-code.json";
 import { anthropicAdapter } from "./anthropic-adapter";
 import { antigravityAdapter, geminiCliAdapter } from "./google-oauth-adapter";
 import {
@@ -16,6 +13,7 @@ import {
 	type ParsedModel,
 	type ProviderAdapter,
 	type ProviderCredits,
+	type StaticModelEntry,
 } from "./interface";
 import { kiroAdapter } from "./kiro-adapter";
 import {
@@ -291,7 +289,34 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 		supportsAutoCredits: false,
 		staticModels: true,
 		stripModelPrefix: true,
-		parseModels: () => parseStaticModels("oaipro", oaiproModels),
+		parseModels: () =>
+			parseStaticModels("oaipro", [
+				{ id: "openai/gpt-3.5-turbo" },
+				{ id: "openai/gpt-3.5-turbo-16k" },
+				{ id: "openai/gpt-3.5-turbo-instruct" },
+				{ id: "openai/gpt-4" },
+				{ id: "openai/gpt-4-1106-preview" },
+				{ id: "openai/gpt-4-turbo" },
+				{ id: "openai/gpt-4-turbo-preview" },
+				{ id: "openai/gpt-4.1" },
+				{ id: "openai/gpt-4.1-mini" },
+				{ id: "openai/gpt-4.1-nano" },
+				{ id: "openai/gpt-4o" },
+				{ id: "openai/gpt-4o-2024-05-13" },
+				{ id: "openai/gpt-4o-2024-08-06" },
+				{ id: "openai/gpt-4o-2024-11-20" },
+				{ id: "openai/gpt-4o-mini" },
+				{ id: "openai/gpt-4o-mini-2024-07-18" },
+				{ id: "openai/gpt-5" },
+				{ id: "openai/gpt-5-mini" },
+				{ id: "openai/gpt-5-nano" },
+				{ id: "openai/gpt-5.1" },
+				{ id: "openai/gpt-5.2" },
+				{ id: "openai/o1" },
+				{ id: "openai/o3" },
+				{ id: "openai/o3-mini" },
+				{ id: "openai/o4-mini" },
+			]),
 		credentialGuide: {
 			placeholder: "sk-...",
 			secretPattern: "^sk-[A-Za-z0-9]+$",
@@ -322,7 +347,16 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 		isSubscription: true,
 		staticModels: true,
 		stripModelPrefix: true,
-		parseModels: () => parseStaticModels("qwen-code", qwenCodeModels),
+		parseModels: () =>
+			parseStaticModels("qwen-code", [
+				{ id: "qwen/qwen3-coder-plus" },
+				{ id: "qwen/qwen3-coder-next" },
+				{ id: "qwen/qwen3-max", upstream_model_id: "qwen3-max-2026-01-23" },
+				{ id: "z-ai/glm-5" },
+				{ id: "z-ai/glm-4.7" },
+				{ id: "moonshotai/kimi-k2.5" },
+				{ id: "minimax/minimax-m2.5", upstream_model_id: "MiniMax-M2.5" },
+			]),
 		customValidateKey: validateViaChat(
 			"https://coding.dashscope.aliyuncs.com/v1/chat/completions",
 			"qwen3-coder-plus",
@@ -343,7 +377,13 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 		parseCredits: parseMoonshotCredits,
 		staticModels: true,
 		stripModelPrefix: true,
-		parseModels: () => parseStaticModels("moonshot", moonshotModels),
+		parseModels: () =>
+			parseStaticModels("moonshot", [
+				{ id: "moonshotai/kimi-k2.5" },
+				{ id: "moonshotai/kimi-k2-thinking" },
+				{ id: "moonshotai/kimi-k2-0905", upstream_model_id: "kimi-k2-0905-preview" },
+				{ id: "moonshotai/kimi-k2", upstream_model_id: "kimi-k2-0711-preview" },
+			]),
 		credentialGuide: {
 			placeholder: "sk-...",
 		},

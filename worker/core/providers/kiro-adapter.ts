@@ -6,7 +6,6 @@
  * No client_id/client_secret needed for social auth — only refreshToken.
  */
 
-import kiroModels from "../models/kiro.json";
 import {
 	createKiroToOpenAIStream,
 	toKiroRequest,
@@ -249,7 +248,15 @@ export class KiroAdapter implements ProviderAdapter {
 	}
 
 	async fetchModels(_cnyUsdRate?: number): Promise<ParsedModel[]> {
-		return parseStaticModels("kiro", kiroModels);
+		return parseStaticModels("kiro", [
+			{ id: "anthropic/claude-3.7-sonnet" },
+			{ id: "anthropic/claude-sonnet-4" },
+			{ id: "anthropic/claude-haiku-4.5" },
+			{ id: "anthropic/claude-sonnet-4.5" },
+			{ id: "anthropic/claude-opus-4.5" },
+			{ id: "anthropic/claude-sonnet-4.6" },
+			{ id: "anthropic/claude-opus-4.6" },
+		]);
 	}
 
 	private contextLengthFor(_model: string): number {

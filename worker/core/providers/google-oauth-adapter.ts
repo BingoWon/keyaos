@@ -7,8 +7,6 @@
  * Each provider is a configuration object — no subclassing needed.
  */
 
-import antigravityModels from "../models/antigravity.json";
-import geminiCliModels from "../models/gemini-cli.json";
 import {
 	createGeminiToOpenAIStream,
 	toGeminiRequest,
@@ -294,7 +292,14 @@ export const geminiCliAdapter = new GoogleOAuthAdapter({
 	clientId: `${GEMINI_CID}.apps.googleusercontent.com`,
 	clientSecret: `GOCSPX${"-"}4uHgMPm-1o7Sk-geV6Cu5clXFsxl`,
 	baseUrls: ["https://cloudcode-pa.googleapis.com"],
-	models: geminiCliModels,
+	models: [
+		{ id: "google/gemini-2.5-pro" },
+		{ id: "google/gemini-2.5-flash" },
+		{ id: "google/gemini-2.5-flash-lite" },
+		{ id: "google/gemini-2.0-flash" },
+		{ id: "google/gemini-3-pro-preview" },
+		{ id: "google/gemini-3-flash-preview" },
+	],
 	credentialHint: "~/.gemini/oauth_creds.json",
 	credentialCommand: "cat ~/.gemini/oauth_creds.json",
 });
@@ -311,7 +316,20 @@ export const antigravityAdapter = new GoogleOAuthAdapter({
 		"https://cloudcode-pa.googleapis.com",
 	],
 	userAgent: "antigravity",
-	models: antigravityModels,
+	models: [
+		{ id: "google/gemini-2.5-pro" },
+		{ id: "google/gemini-2.5-flash" },
+		{ id: "google/gemini-2.5-flash-lite" },
+		{ id: "google/gemini-2.0-flash" },
+		{ id: "google/gemini-2.5-flash-thinking" },
+		{ id: "google/gemini-3-flash" },
+		{ id: "google/gemini-3-pro-high" },
+		{ id: "google/gemini-3-pro-low" },
+		{ id: "google/gemini-3.1-pro-high" },
+		{ id: "google/gemini-3.1-pro-low" },
+		{ id: "anthropic/claude-sonnet-4-6" },
+		{ id: "anthropic/claude-opus-4-6-thinking" },
+	],
 	credentialHint: "~/.antigravity_tools/accounts/<uuid>.json",
 	credentialCommand: [
 		"ls ~/.antigravity_tools/accounts/",

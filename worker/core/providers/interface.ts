@@ -25,7 +25,7 @@ export interface ProviderCredits {
 
 export type ParsedModel = Omit<DbModelCatalog, "refreshed_at" | "is_active">;
 
-/** Shared shape for all models/*.json entries — ID-only, pricing from OpenRouter enrichment. */
+/** Static model entry — ID-only, pricing enriched from OpenRouter canonical catalog. */
 export interface StaticModelEntry {
 	id: string;
 	upstream_model_id?: string;

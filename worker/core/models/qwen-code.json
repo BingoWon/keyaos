@@ -1,9 +1,0 @@
-[
-	{ "id": "qwen/qwen3-coder-plus" },
-	{ "id": "qwen/qwen3-coder-next" },
-	{ "id": "qwen/qwen3-max", "upstream_model_id": "qwen3-max-2026-01-23" },
-	{ "id": "z-ai/glm-5" },
-	{ "id": "z-ai/glm-4.7" },
-	{ "id": "moonshotai/kimi-k2.5" },
-	{ "id": "minimax/minimax-m2.5", "upstream_model_id": "MiniMax-M2.5" }
-]

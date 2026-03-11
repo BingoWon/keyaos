@@ -1,6 +1,0 @@
-[
-	{ "id": "moonshotai/kimi-k2.5" },
-	{ "id": "moonshotai/kimi-k2-thinking" },
-	{ "id": "moonshotai/kimi-k2-0905", "upstream_model_id": "kimi-k2-0905-preview" },
-	{ "id": "moonshotai/kimi-k2", "upstream_model_id": "kimi-k2-0711-preview" }
-]

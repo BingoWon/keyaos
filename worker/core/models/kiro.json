@@ -1,9 +1,0 @@
-[
-	{ "id": "anthropic/claude-3.7-sonnet" },
-	{ "id": "anthropic/claude-sonnet-4" },
-	{ "id": "anthropic/claude-haiku-4.5" },
-	{ "id": "anthropic/claude-sonnet-4.5" },
-	{ "id": "anthropic/claude-opus-4.5" },
-	{ "id": "anthropic/claude-sonnet-4.6" },
-	{ "id": "anthropic/claude-opus-4.6" }
-]

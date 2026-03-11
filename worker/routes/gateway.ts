@@ -103,8 +103,12 @@ async function execute(
 	const rlog = requestLogger(requestId, { modelId: req.modelId, consumerId });
 	const encryptionKey = c.env.ENCRYPTION_KEY;
 
-	if (allowedModels && !allowedModels.includes(req.modelId)) {
-		throw new ModelNotAllowedError(req.modelId);
+	if (allowedModels) {
+		const id = req.modelId.toLowerCase();
+		const matched = allowedModels.some(
+			(a) => a === id || (!id.includes("/") && a.endsWith(`/${id}`)),
+		);
+		if (!matched) throw new ModelNotAllowedError(req.modelId);
 	}
 
 	let creditsFallback = false;
@@ -170,7 +174,9 @@ async function execute(
 					? await provider.forwardRequest(secret, upstreamBody)
 					: await provider.forwardEmbedding?.(secret, upstreamBody);
 
-			if (!response?.ok) {
+			if (!response) continue;
+
+			if (!response.ok) {
 				await credDao.reportFailure(credential.id, response.status, isSub);
 				cb.recordFailure(provider.info.id, modelId);
 

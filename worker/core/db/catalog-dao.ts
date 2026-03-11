@@ -85,14 +85,29 @@ export class CatalogDao {
 		return res.results || [];
 	}
 
-	async findByModelId(modelId: string): Promise<DbModelCatalog[]> {
-		const res = await this.db
+	/** Fuzzy model lookup: case-insensitive, org-prefix optional. */
+	async findByModelId(rawModelId: string): Promise<DbModelCatalog[]> {
+		const id = rawModelId.toLowerCase();
+
+		const exact = await this.db
 			.prepare(
 				"SELECT * FROM model_catalog WHERE model_id = ? AND is_active = 1 ORDER BY input_price ASC",
 			)
-			.bind(modelId)
+			.bind(id)
 			.all<DbModelCatalog>();
-		return res.results || [];
+		if (exact.results?.length) return exact.results;
+
+		if (!id.includes("/")) {
+			const suffix = await this.db
+				.prepare(
+					"SELECT * FROM model_catalog WHERE model_id LIKE ? AND is_active = 1 ORDER BY input_price ASC",
+				)
+				.bind(`%/${id}`)
+				.all<DbModelCatalog>();
+			return suffix.results || [];
+		}
+
+		return [];
 	}
 
 	async getActiveWithBestMultiplier(): Promise<

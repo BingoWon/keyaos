@@ -137,13 +137,15 @@
 		"current_expiry": "当前：{{value}}",
 		"name_placeholder": "例如 生产环境",
 		"quota_reset": "重置用量",
-		"quota_reset_confirm": "确认将配额用量重置为 $0？"
+		"quota_reset_confirm": "确认将配额用量重置为 $0？",
+		"promo_title": "🔑 万钥归一",
+		"promo_desc": "一个 Key 接入所有模型。路由到自带凭证分文不收——告别 <OpenRouterLink>OpenRouter 的 5%</OpenRouterLink>。"
 	},
 	"credentials": {
 		"title": "自有密钥 (Bring Your Own Key)",
 		"subtitle": "管理你的上游供应商凭证",
-		"promo_title": "🚀 零“过路费”的自带凭证直连",
-		"promo_desc": "当请求通过你自己的凭证路由时，氪钥枢绝不收取任何费用。与其为你的自有凭证向 <OpenRouterLink>OpenRouter 缴纳 5% 的“过路费”</OpenRouterLink>，不如享受 100% 的原价直连。没有层层加收，只有纯粹的技术极客精神。",
+		"promo_title": "💰 闲置密钥赚额度",
+		"promo_desc": "共享凭证赚取的额度全平台通用，一个余额，所有模型，价格更优。",
 		"add_new": "添加凭证",
 		"provider": "供应商",
 		"secret": "凭证",
@@ -199,7 +201,10 @@
 				"前往 https://aistudio.google.com/apikey",
 				"创建新的 API 密钥并复制"
 			],
-			"oaipro": ["前往 https://oaipro.com 控制面板", "创建新的 API 密钥并复制"],
+			"oaipro": [
+				"前往 https://oaipro.com 控制面板",
+				"创建新的 API 密钥并复制"
+			],
 			"openai": [
 				"前往 https://platform.openai.com/api-keys",
 				"创建新的密钥并复制"

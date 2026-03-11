@@ -17,7 +17,7 @@ import {
 import type React from "react";
 import { useCallback, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { Trans, useTranslation } from "react-i18next";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
 import { HealthBadge, type HealthStatus } from "../components/HealthBadge";
 import { Modal } from "../components/Modal";
@@ -313,22 +313,7 @@ export function Byok() {
 			<PromoBanner
 				id="byok"
 				title={t("credentials.promo_title")}
-				description={
-					<Trans
-						i18nKey="credentials.promo_desc"
-						components={{
-							OpenRouterLink: (
-								// biome-ignore lint/a11y/useAnchorContent: Trans injects children at runtime
-								<a
-									href="https://openrouter.ai/announcements/bring-your-own-api-keys"
-									target="_blank"
-									rel="noopener noreferrer"
-									className="font-semibold text-white hover:text-white/90 underline underline-offset-4 decoration-white/40 hover:decoration-white/80 transition-colors"
-								/>
-							),
-						}}
-					/>
-				}
+				description={t("credentials.promo_desc")}
 			/>
 
 			<Modal

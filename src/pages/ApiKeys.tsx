@@ -9,12 +9,12 @@ import {
 } from "@heroicons/react/20/solid";
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { useTranslation } from "react-i18next";
+import { Trans, useTranslation } from "react-i18next";
 import { useAuth } from "../auth";
 import { CreateApiKeyModal } from "../components/CreateApiKeyModal";
 import { EditApiKeyModal } from "../components/EditApiKeyModal";
 import { ToggleSwitch } from "../components/ToggleSwitch";
-import { Badge, Button } from "../components/ui";
+import { Badge, Button, PromoBanner } from "../components/ui";
 import { useFetch } from "../hooks/useFetch";
 import { useFormatDateTime } from "../hooks/useFormatDateTime";
 import type { ApiKeyInfo } from "../types/api-key";
@@ -213,6 +213,27 @@ export function ApiKeys() {
 					</Button>
 				</div>
 			</div>
+
+			<PromoBanner
+				id="api-keys"
+				title={t("api_keys.promo_title")}
+				description={
+					<Trans
+						i18nKey="api_keys.promo_desc"
+						components={{
+							OpenRouterLink: (
+								// biome-ignore lint/a11y/useAnchorContent: Trans injects children at runtime
+								<a
+									href="https://openrouter.ai/announcements/bring-your-own-api-keys"
+									target="_blank"
+									rel="noopener noreferrer"
+									className="font-semibold text-white hover:text-white/90 underline underline-offset-4 decoration-white/40 hover:decoration-white/80 transition-colors"
+								/>
+							),
+						}}
+					/>
+				}
+			/>
 
 			<CreateApiKeyModal
 				open={isAddOpen}

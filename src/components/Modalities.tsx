@@ -7,8 +7,8 @@ import {
 import { Icon } from "@iconify/react";
 import type { Modality } from "../../worker/core/db/schema";
 
-/** Canonical display order */
-const MODALITY_ORDER: Modality[] = [
+/** Canonical display order — single source of truth. */
+export const MODALITY_ORDER: Modality[] = [
 	"text",
 	"image",
 	"file",
@@ -17,33 +17,30 @@ const MODALITY_ORDER: Modality[] = [
 	"embeddings",
 ];
 
-function TextIcon({ size }: { size: number }) {
-	return <Icon icon="solar:text-square-bold" width={size} height={size} />;
-}
-
-const ICON_MAP: Record<
+/** Modality → icon component — single source of truth. */
+export const MODALITY_ICON: Record<
 	Modality,
-	React.FC<{ className?: string; style?: React.CSSProperties }>
+	React.FC<{ className?: string }>
 > = {
-	text: ({ style }) => <TextIcon size={(style?.width as number) ?? 16} />,
+	text: ({ className }) => (
+		<Icon icon="solar:text-square-bold" className={className} />
+	),
 	image: PhotoIcon,
 	file: DocumentArrowUpIcon,
 	audio: MicrophoneIcon,
 	video: VideoCameraIcon,
-	embeddings: ({ style }) => (
-		<Icon
-			icon="solar:three-squares-bold"
-			width={(style?.width as number) ?? 16}
-			height={(style?.height as number) ?? 16}
-		/>
+	embeddings: ({ className }) => (
+		<Icon icon="solar:three-squares-bold" className={className} />
 	),
 };
 
 function ModalityDot({ modality, size }: { modality: Modality; size: number }) {
-	const IconComp = ICON_MAP[modality];
+	const IconComp = MODALITY_ICON[modality];
 	return (
 		<span className="group/tip relative inline-flex">
-			<IconComp className="shrink-0" style={{ width: size, height: size }} />
+			<span className="shrink-0" style={{ width: size, height: size }}>
+				<IconComp className="size-full" />
+			</span>
 			<span className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded bg-gray-900 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover/tip:opacity-100 dark:bg-gray-700">
 				{modality}
 			</span>

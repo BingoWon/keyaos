@@ -2,13 +2,8 @@ import { Popover, PopoverButton, PopoverPanel } from "@headlessui/react";
 import {
 	CheckIcon,
 	ChevronDownIcon,
-	DocumentArrowUpIcon,
-	MicrophoneIcon,
-	PhotoIcon,
-	VideoCameraIcon,
 	XMarkIcon,
 } from "@heroicons/react/20/solid";
-import { Icon } from "@iconify/react";
 import { useCallback, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import type { Modality } from "../../worker/core/db/schema";
@@ -16,6 +11,7 @@ import type { ProviderMeta } from "../types/provider";
 import { type ColorToken, TOKENS } from "../utils/colors";
 import type { ModelGroup } from "../utils/models";
 import { getOrgName, getOrgSlug } from "../utils/orgMeta";
+import { MODALITY_ICON, MODALITY_ORDER } from "./Modalities";
 import { OrgLogo } from "./OrgLogo";
 import { ProviderLogo } from "./ProviderLogo";
 
@@ -132,29 +128,8 @@ const GREEN = filterTheme("green");
 const ROSE = filterTheme("rose");
 const TEAL = filterTheme("teal");
 
-// ─── Modality icons ──────────────────────────────────────
-
-const MODALITY_ICON: Record<Modality, React.FC<{ className?: string }>> = {
-	text: ({ className }) => (
-		<Icon icon="solar:text-square-bold" className={className} />
-	),
-	image: PhotoIcon,
-	file: DocumentArrowUpIcon,
-	audio: MicrophoneIcon,
-	video: VideoCameraIcon,
-	embeddings: ({ className }) => (
-		<Icon icon="solar:three-squares-bold" className={className} />
-	),
-};
-
-const ALL_MODALITIES: Modality[] = [
-	"text",
-	"image",
-	"file",
-	"audio",
-	"video",
-	"embeddings",
-];
+// Re-exported as ALL_MODALITIES for readability in filter context
+const ALL_MODALITIES = MODALITY_ORDER;
 
 // ─── Context steps ───────────────────────────────────────
 

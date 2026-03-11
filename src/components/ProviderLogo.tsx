@@ -1,5 +1,7 @@
 import { type ReactNode, useState } from "react";
 
+// ─── Single logo ─────────────────────────────────────────
+
 interface ProviderLogoProps {
 	src: string;
 	name: string;
@@ -12,7 +14,7 @@ export function ProviderLogo({ src, name, size = 20 }: ProviderLogoProps) {
 	if (failed) {
 		return (
 			<span
-				className="inline-flex items-center justify-center rounded bg-gray-200 dark:bg-gray-700 text-[10px] font-bold text-gray-500 dark:text-gray-400 shrink-0"
+				className="inline-flex items-center justify-center rounded-sm bg-gray-200 dark:bg-gray-700 text-[10px] font-bold text-gray-500 dark:text-gray-400 shrink-0"
 				style={{ width: size, height: size }}
 			>
 				{name.charAt(0).toUpperCase()}
@@ -24,12 +26,51 @@ export function ProviderLogo({ src, name, size = 20 }: ProviderLogoProps) {
 		<img
 			src={src}
 			alt={name}
-			className="rounded object-contain shrink-0"
+			className="rounded-sm object-contain shrink-0"
 			style={{ width: size, height: size }}
 			onError={() => setFailed(true)}
 		/>
 	);
 }
+
+// ─── Logo group (table cells) ────────────────────────────
+
+interface ProviderLogoGroupProps {
+	providers: { provider_id: string }[];
+	providerMap: ReadonlyMap<string, { logoUrl: string; name: string }>;
+	max?: number;
+	size?: number;
+}
+
+export function ProviderLogoGroup({
+	providers,
+	providerMap,
+	max = 5,
+	size = 16,
+}: ProviderLogoGroupProps) {
+	return (
+		<span className="inline-flex items-center gap-1 rounded-md bg-white px-1.5 py-1 ring-1 ring-gray-950/[0.06] dark:bg-white/15 dark:ring-white/10">
+			{providers.slice(0, max).map((p) => {
+				const meta = providerMap.get(p.provider_id);
+				return meta ? (
+					<ProviderLogo
+						key={p.provider_id}
+						src={meta.logoUrl}
+						name={meta.name}
+						size={size}
+					/>
+				) : null;
+			})}
+			{providers.length > max && (
+				<span className="text-[11px] text-gray-400 dark:text-gray-500">
+					+{providers.length - max}
+				</span>
+			)}
+		</span>
+	);
+}
+
+// ─── Chip (logo + name card) ─────────────────────────────
 
 interface ProviderChipProps {
 	src: string;

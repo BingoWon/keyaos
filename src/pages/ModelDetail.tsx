@@ -4,20 +4,14 @@ import {
 	CubeTransparentIcon,
 	ServerStackIcon,
 } from "@heroicons/react/24/outline";
-import {
-	ChatBubbleLeftRightIcon,
-	DocumentArrowUpIcon,
-	MicrophoneIcon,
-	PhotoIcon,
-	VideoCameraIcon,
-} from "@heroicons/react/24/solid";
-import { Icon } from "@iconify/react";
+import { ChatBubbleLeftRightIcon } from "@heroicons/react/24/solid";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router-dom";
 import type { Modality } from "../../worker/core/db/schema";
 import { CodeSamples, detectCodeVariant } from "../components/CodeSamples";
 import { CopyButton } from "../components/CopyButton";
+import { MODALITY_ICON, MODALITY_ORDER } from "../components/Modalities";
 import { OrgLogo } from "../components/OrgLogo";
 import { PriceChart } from "../components/PriceChart";
 import { ProviderChip } from "../components/ProviderLogo";
@@ -261,28 +255,6 @@ export function ModelDetail() {
 }
 
 // ─── Modality pills (detail page only) ───────────────────
-
-const MODALITY_ORDER: Modality[] = [
-	"text",
-	"image",
-	"file",
-	"audio",
-	"video",
-	"embeddings",
-];
-
-const MODALITY_ICON: Record<Modality, React.FC<{ className?: string }>> = {
-	text: ({ className }) => (
-		<Icon icon="solar:text-square-bold" className={className} />
-	),
-	image: PhotoIcon,
-	file: DocumentArrowUpIcon,
-	audio: MicrophoneIcon,
-	video: VideoCameraIcon,
-	embeddings: ({ className }) => (
-		<Icon icon="solar:three-squares-bold" className={className} />
-	),
-};
 
 function ModalityPill({
 	input,

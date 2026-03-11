@@ -13,7 +13,7 @@ import { DirectionBadge } from "../components/DirectionBadge";
 import { ModalityBadges } from "../components/Modalities";
 import { OrgLogo } from "../components/OrgLogo";
 import { ProviderGrid } from "../components/ProviderGrid";
-import { ProviderLogo } from "../components/ProviderLogo";
+import { ProviderLogoGroup } from "../components/ProviderLogo";
 import { RefreshControl } from "../components/RefreshControl";
 import { Sparkline, type SparklineData } from "../components/Sparkline";
 import { Badge, DualPrice } from "../components/ui";
@@ -371,24 +371,10 @@ export function Dashboard() {
 											</td>
 											<td className="py-2.5 pl-2 pr-5">
 												<div className="flex justify-end">
-													<span className="inline-flex items-center gap-1 rounded-md bg-white px-1.5 py-1 ring-1 ring-gray-950/[0.06] dark:bg-white/15 dark:ring-white/[0.1]">
-														{g.providers.slice(0, 5).map((p) => {
-															const meta = providerMap.get(p.provider_id);
-															return meta ? (
-																<ProviderLogo
-																	key={p.provider_id}
-																	src={meta.logoUrl}
-																	name={meta.name}
-																	size={16}
-																/>
-															) : null;
-														})}
-														{g.providers.length > 5 && (
-															<span className="text-[11px] text-gray-400 dark:text-gray-500">
-																+{g.providers.length - 5}
-															</span>
-														)}
-													</span>
+													<ProviderLogoGroup
+														providers={g.providers}
+														providerMap={providerMap}
+													/>
 												</div>
 											</td>
 										</tr>

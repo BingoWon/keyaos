@@ -195,6 +195,15 @@ function validateViaChat(
 	};
 }
 
+/** Keyaos /v1/credits → { data: { balance } } (USD) */
+function parseKeyaosCredits(
+	json: Record<string, unknown>,
+): ProviderCredits | null {
+	const data = json.data as { balance?: number } | undefined;
+	if (data?.balance == null) return null;
+	return { remaining: data.balance, usage: null };
+}
+
 // ─── Keyaos self-provider catalog parser ────────────────────
 
 /** Parse /api/catalog response into ParsedModel[], deduplicated by model_id (best price wins). */
@@ -461,7 +470,9 @@ const PROVIDER_CONFIGS: OpenAICompatibleConfig[] = [
 		logoUrl: "https://keyaos.com/favicon.ico",
 		baseUrl: "https://keyaos.com/v1",
 		currency: "USD",
-		supportsAutoCredits: false,
+		supportsAutoCredits: true,
+		creditsUrl: "https://keyaos.com/v1/credits",
+		parseCredits: parseKeyaosCredits,
 		hidden: true,
 		modelsUrl: "https://keyaos.com/api/catalog",
 		parseModels: parseKeyaosCatalog,

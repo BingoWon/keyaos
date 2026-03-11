@@ -81,13 +81,6 @@ credentialsRouter.post("/", async (c) => {
 		);
 	}
 
-	const isValid = await provider.validateKey(secret);
-	if (!isValid) {
-		throw new BadRequestError(
-			`Invalid credential for ${body.provider_id}. The secret was rejected by the provider.`,
-		);
-	}
-
 	if (body.provider_id === "keyaos") {
 		const keyHash = await sha256(secret);
 		const ownKey = await c.env.DB.prepare(
@@ -100,6 +93,13 @@ credentialsRouter.post("/", async (c) => {
 				"Cannot add your own Keyaos API key as a credential — this would cause circular routing.",
 			);
 		}
+	}
+
+	const isValid = await provider.validateKey(secret);
+	if (!isValid) {
+		throw new BadRequestError(
+			`Invalid credential for ${body.provider_id}. The secret was rejected by the provider.`,
+		);
 	}
 
 	const dao = new CredentialsDao(c.env.DB, c.env.ENCRYPTION_KEY);

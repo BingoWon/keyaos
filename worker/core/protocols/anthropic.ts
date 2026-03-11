@@ -511,11 +511,11 @@ export function toAnthropicNativeRequest(
 		if (budget > 0 && maxTokens < budget + 256) maxTokens = budget + 256;
 	} else if (effort && effort !== "none") {
 		const budgetMap: Record<string, number> = {
-			low: 1280,
-			medium: 2048,
-			high: 4096,
+			low: 1024,
+			medium: 8192,
+			high: 24576,
 		};
-		const budget = budgetMap[effort] ?? 2048;
+		const budget = budgetMap[effort] ?? 8192;
 		result.thinking = { type: "enabled", budget_tokens: budget };
 		result.temperature = 1;
 		if (maxTokens < budget + 256) maxTokens = budget + 256;

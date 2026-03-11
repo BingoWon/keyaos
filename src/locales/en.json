@@ -138,7 +138,7 @@
 		"name_placeholder": "e.g. Production",
 		"quota_reset": "Reset usage",
 		"quota_reset_confirm": "Reset quota usage to $0?",
-		"promo_title": "🔑 The only API key you'll need.",
+		"promo_title": "🔑 One Key for All",
 		"promo_desc": "All models, all providers, auto-routed. Self-use is 100% free — unlike <OpenRouterLink>OpenRouter's 5%</OpenRouterLink>."
 	},
 	"credentials": {

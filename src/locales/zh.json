@@ -201,10 +201,7 @@
 				"前往 https://aistudio.google.com/apikey",
 				"创建新的 API 密钥并复制"
 			],
-			"oaipro": [
-				"前往 https://oaipro.com 控制面板",
-				"创建新的 API 密钥并复制"
-			],
+			"oaipro": ["前往 https://oaipro.com 控制面板", "创建新的 API 密钥并复制"],
 			"openai": [
 				"前往 https://platform.openai.com/api-keys",
 				"创建新的密钥并复制"

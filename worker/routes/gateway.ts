@@ -69,7 +69,10 @@ function sanitizeMessages(
 function normalizeReasoning(body: Record<string, unknown>): void {
 	if (body.reasoning_effort) return;
 	const r = body.reasoning as { effort?: string } | undefined;
-	if (r?.effort) body.reasoning_effort = r.effort;
+	if (r?.effort) {
+		body.reasoning_effort = r.effort;
+		delete body.reasoning;
+	}
 }
 
 type RequestMode = "chat" | "embedding";
@@ -152,6 +155,8 @@ async function execute(
 		mode,
 	});
 
+	if (mode === "chat") normalizeReasoning(req.body);
+
 	let lastError: unknown;
 
 	for (let attempt = 0; attempt < candidates.length; attempt++) {
@@ -170,7 +175,6 @@ async function execute(
 		}
 
 		const upstreamModel = upstreamModelId ?? modelId;
-		if (mode === "chat") normalizeReasoning(req.body);
 		const upstreamBody =
 			mode === "chat"
 				? {

@@ -33,8 +33,8 @@ export function loadGA() {
 	};
 	w.dataLayer = w.dataLayer || [];
 	// Must use `arguments` (not rest params) — gtag.js expects Arguments objects
-	// biome-ignore lint/style/noArguments: required by Google Analytics
 	w.gtag = function () {
+		// biome-ignore lint/complexity/noArguments: gtag.js expects Arguments objects
 		w.dataLayer.push(arguments);
 	};
 	w.gtag("js", new Date());

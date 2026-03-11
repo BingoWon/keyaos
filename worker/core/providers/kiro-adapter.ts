@@ -252,12 +252,8 @@ export class KiroAdapter implements ProviderAdapter {
 		return parseStaticModels("kiro", kiroModels);
 	}
 
-	private contextLengthFor(model: string): number {
-		const bare = model.replace(/^[^/]+\//, "");
-		const entry = kiroModels.find(
-			(m) => m.id === model || m.id === bare || m.id.endsWith(`/${bare}`),
-		);
-		return entry?.context_length ?? DEFAULT_CONTEXT;
+	private contextLengthFor(_model: string): number {
+		return DEFAULT_CONTEXT;
 	}
 }
 

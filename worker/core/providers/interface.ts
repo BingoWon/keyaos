@@ -25,17 +25,13 @@ export interface ProviderCredits {
 
 export type ParsedModel = Omit<DbModelCatalog, "refreshed_at" | "is_active">;
 
-/** Shared shape for all models/*.json entries. */
+/** Shared shape for all models/*.json entries — ID-only, pricing from OpenRouter enrichment. */
 export interface StaticModelEntry {
 	id: string;
-	name: string;
-	input_usd: number;
-	output_usd: number;
-	context_length: number;
 	upstream_model_id?: string;
 }
 
-/** Convert a static JSON model list into ParsedModel[]. */
+/** Convert a static JSON model list into ParsedModel[] with sentinel pricing (-1). */
 export function parseStaticModels(
 	provider: string,
 	models: StaticModelEntry[],
@@ -45,11 +41,11 @@ export function parseStaticModels(
 		id: `${provider}:${m.id}`,
 		provider_id: provider,
 		model_id: m.id,
-		name: m.name,
+		name: null,
 		model_type: "chat" as const,
-		input_price: m.input_usd,
-		output_price: m.output_usd,
-		context_length: m.context_length,
+		input_price: -1,
+		output_price: -1,
+		context_length: null,
 		input_modalities: null,
 		output_modalities: null,
 		upstream_model_id: m.upstream_model_id ?? null,

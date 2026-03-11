@@ -61,6 +61,17 @@ function sanitizeMessages(
 	return changed ? { ...body, messages: cleaned } : body;
 }
 
+/**
+ * Normalize reasoning parameters so downstream code sees a single format.
+ * Accepts OpenRouter-style `reasoning: { effort }` and extracts it to the
+ * flat `reasoning_effort` field used by OpenAI / xAI / Google AI Studio.
+ */
+function normalizeReasoning(body: Record<string, unknown>): void {
+	if (body.reasoning_effort) return;
+	const r = body.reasoning as { effort?: string } | undefined;
+	if (r?.effort) body.reasoning_effort = r.effort;
+}
+
 type RequestMode = "chat" | "embedding";
 
 export interface GatewayRequest {
@@ -159,6 +170,7 @@ async function execute(
 		}
 
 		const upstreamModel = upstreamModelId ?? modelId;
+		if (mode === "chat") normalizeReasoning(req.body);
 		const upstreamBody =
 			mode === "chat"
 				? {

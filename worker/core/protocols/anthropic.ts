@@ -109,6 +109,7 @@ export function toOpenAIRequest(
 	if (body.top_p != null) result.top_p = body.top_p;
 	if (body.stop_sequences) result.stop = body.stop_sequences;
 	if (body.stream != null) result.stream = body.stream;
+	if (body.thinking) result.thinking = body.thinking;
 
 	const tools = body.tools as Record<string, unknown>[] | undefined;
 	if (tools?.length) {
@@ -485,17 +486,45 @@ export function toAnthropicNativeRequest(
 		}
 	}
 
+	let maxTokens = (body.max_tokens ??
+		body.max_completion_tokens ??
+		4096) as number;
+
 	const result: Record<string, unknown> = {
 		model: body.model,
 		messages: nativeMsgs,
-		max_tokens: body.max_tokens ?? body.max_completion_tokens ?? 4096,
 	};
 
 	if (system) result.system = system;
-	if (body.temperature != null) result.temperature = body.temperature;
-	if (body.top_p != null) result.top_p = body.top_p;
 	if (body.stop) result.stop_sequences = body.stop;
 	if (body.stream === true) result.stream = true;
+
+	// Reasoning: pass-through native `thinking`, or convert `reasoning_effort`.
+	const thinking = body.thinking as Record<string, unknown> | undefined;
+	const effort = body.reasoning_effort as string | undefined;
+	if (thinking) {
+		result.thinking = thinking;
+		result.temperature = 1;
+		const budget =
+			(thinking.budget_tokens as number) ??
+			(thinking.type === "adaptive" ? 0 : 2048);
+		if (budget > 0 && maxTokens < budget + 256) maxTokens = budget + 256;
+	} else if (effort && effort !== "none") {
+		const budgetMap: Record<string, number> = {
+			low: 1280,
+			medium: 2048,
+			high: 4096,
+		};
+		const budget = budgetMap[effort] ?? 2048;
+		result.thinking = { type: "enabled", budget_tokens: budget };
+		result.temperature = 1;
+		if (maxTokens < budget + 256) maxTokens = budget + 256;
+	} else {
+		if (body.temperature != null) result.temperature = body.temperature;
+	}
+	if (body.top_p != null) result.top_p = body.top_p;
+
+	result.max_tokens = maxTokens;
 
 	const tools = body.tools as Record<string, unknown>[] | undefined;
 	if (tools?.length) {

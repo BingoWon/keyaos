@@ -278,7 +278,16 @@
 		"no_match": "No models matching \"{{query}}\"",
 		"type_all": "All",
 		"type_chat": "Chat",
-		"type_embedding": "Embedding"
+		"type_embedding": "Embedding",
+		"api_integration": "API Integration",
+		"code_intro_standard": "Keyaos provides an OpenAI-compatible API. Use any standard SDK — just point it to our base URL and start building.",
+		"code_intro_reasoning": "This model supports chain-of-thought reasoning. Enable the reasoning parameter to access the model's step-by-step thinking process alongside the final answer.",
+		"code_intro_image": "This model supports image generation. Set modalities to [\"image\", \"text\"] to receive generated images as base64 data URLs in the response.",
+		"code_intro_embedding": "Keyaos provides an OpenAI-compatible embeddings API. Pass a single string or an array of strings to get vector representations. Supports batch processing for multiple inputs in one request.",
+		"learn_more_reasoning": "Learn more about reasoning effort",
+		"learn_more_image": "Learn more about image generation",
+		"learn_more_embedding": "Learn more about embeddings API",
+		"view_api_docs": "View full API documentation"
 	},
 	"providers": {
 		"title": "Providers",

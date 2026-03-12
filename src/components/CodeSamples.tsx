@@ -476,15 +476,11 @@ const LEARN_MORE: Record<CodeVariant, { href: string; label: string } | null> =
 			href: "/docs/multimodal-image-generation",
 			label: "Learn more about image generation",
 		},
-		embedding: null,
+		embedding: {
+			href: "/api-reference#tag/embeddings/POST/v1/embeddings",
+			label: "Learn more about embeddings API",
+		},
 	};
-
-const DOCS_LINK: Record<CodeVariant, string> = {
-	standard: "/api-reference#tag/chat/POST/v1/chat/completions",
-	reasoning: "/docs/models-routing#reasoning-effort",
-	image: "/docs/multimodal-image-generation",
-	embedding: "/api-reference#tag/embeddings/POST/v1/embeddings",
-};
 
 /* ── API key placeholder replacement ────────────────── */
 
@@ -608,7 +604,7 @@ export function CodeSamples({ modelId, variant }: CodeSamplesProps) {
 
 			<p className="mt-3 text-sm">
 				<Link
-					to={DOCS_LINK[variant]}
+					to="/api-reference"
 					className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
 				>
 					{t("models.view_api_docs", "View full API documentation")} &rarr;

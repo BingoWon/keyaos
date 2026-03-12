@@ -120,8 +120,6 @@ with open("output.wav", "wb") as f:
 | `voice` | Voice to use: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer` (availability varies by model) |
 | `format` | Output format: `wav`, `mp3`, `flac`, `opus`, `pcm16` (availability varies by model) |
 
-> When streaming, only `pcm16` is supported as the output format. For non-streaming audio, use `wav` or `mp3`.
-
 ### Streaming Chunk Format
 
 Audio data and transcript arrive incrementally via `delta.audio`:

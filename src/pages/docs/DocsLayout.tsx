@@ -7,7 +7,6 @@ import {
 import {
 	Bars3Icon,
 	BookOpenIcon,
-	CameraIcon,
 	ChatBubbleLeftRightIcon,
 	CheckIcon,
 	ClipboardDocumentIcon,
@@ -28,7 +27,6 @@ import {
 } from "@heroicons/react/24/outline";
 import {
 	BookOpenIcon as BookOpenIconSolid,
-	CameraIcon as CameraIconSolid,
 	ChatBubbleLeftRightIcon as ChatBubbleLeftRightIconSolid,
 	CreditCardIcon as CreditCardIconSolid,
 	CurrencyDollarIcon as CurrencyDollarIconSolid,

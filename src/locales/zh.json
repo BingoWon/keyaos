@@ -283,6 +283,7 @@
 		"code_intro_embedding": "Keyaos 提供 OpenAI 兼容的向量化 API。传入单个字符串或字符串数组即可获取向量表示，支持批量处理。",
 		"learn_more_reasoning": "了解更多推理控制",
 		"learn_more_image": "了解更多图片生成",
+		"learn_more_embedding": "了解更多向量化 API",
 		"view_api_docs": "查看完整 API 文档"
 	},
 	"providers": {

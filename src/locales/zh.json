@@ -275,7 +275,15 @@
 		"no_match": "没有匹配 \"{{query}}\" 的模型",
 		"type_all": "全部",
 		"type_chat": "对话",
-		"type_embedding": "向量化"
+		"type_embedding": "向量化",
+		"api_integration": "API 接入",
+		"code_intro_standard": "Keyaos 提供 OpenAI 兼容的 API。使用任何标准 SDK，只需指向我们的 Base URL 即可开始构建。",
+		"code_intro_reasoning": "此模型支持思维链推理。启用 reasoning 参数可获取模型的逐步思考过程及最终答案。",
+		"code_intro_image": "此模型支持图片生成。将 modalities 设为 [\"image\", \"text\"] 即可在响应中接收 base64 编码的图片数据。",
+		"code_intro_embedding": "Keyaos 提供 OpenAI 兼容的向量化 API。传入单个字符串或字符串数组即可获取向量表示，支持批量处理。",
+		"learn_more_reasoning": "了解更多推理控制",
+		"learn_more_image": "了解更多图片生成",
+		"view_api_docs": "查看完整 API 文档"
 	},
 	"providers": {
 		"title": "供应商",

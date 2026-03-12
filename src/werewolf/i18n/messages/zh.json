@@ -32,7 +32,7 @@
 	},
 	"welcome": {
 		"sponsor": {
-			"showcaseLabel": "Keyaos 驱动的 AI 供应商",
+			"showcaseLabel": "Keyaos 驱动的 AI 服务商",
 			"cards": {
 				"openai": "GPT-4o、o3-mini 等 —— 语言 AI 的黄金标准。",
 				"anthropic": "Claude Sonnet & Haiku —— 为每场辩论注入细腻推理。",
@@ -1977,7 +1977,7 @@
 		"dayBreak": "天亮了",
 		"voteStart": "进入投票环节",
 		"you": "你",
-		"zenmux401": "供应商 401 认证失败",
+		"zenmux401": "服务商 401 认证失败",
 		"requestFailed": "请求失败",
 		"errorOccurred": "出错了: {error}",
 		"guardNoRepeat": "守卫不能连续两晚守护同一人",

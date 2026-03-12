@@ -21,6 +21,8 @@ import {
 
 const OPENROUTER_EMBEDDINGS_URL =
 	"https://openrouter.ai/api/v1/embeddings/models";
+const OPENROUTER_IMAGE_MODELS_URL =
+	"https://openrouter.ai/api/v1/models?output_modality=image";
 
 export async function syncAllModels(
 	db: D1Database,
@@ -66,15 +68,42 @@ export async function syncAllModels(
 		});
 	}
 
-	// Deactivate missing OpenRouter models (chat + embedding combined)
+	// ─── Phase 2b: Sync OpenRouter image-only models ─────────
+	// Image-only models (Flux, Sourceful, etc.) are excluded from the default
+	// /models endpoint and require the ?output_modality=image query parameter.
+	let orImageModels: typeof orModels = [];
+	try {
+		const res = await fetch(OPENROUTER_IMAGE_MODELS_URL);
+		if (res.ok) {
+			const raw = (await res.json()) as Record<string, unknown>;
+			const allImageModels = parseOpenRouterModels(raw);
+			const existingIds = new Set(orModels.map((m) => m.model_id));
+			orImageModels = allImageModels.filter(
+				(m) => !existingIds.has(m.model_id),
+			);
+			if (orImageModels.length > 0) {
+				await dao.upsert(orImageModels);
+			}
+			log.info("sync", "OpenRouter image-only models synced", {
+				count: orImageModels.length,
+			});
+		}
+	} catch (err) {
+		log.error("sync", "Image model sync failed", {
+			error: err instanceof Error ? err.message : String(err),
+		});
+	}
+
+	// Deactivate missing OpenRouter models (chat + embedding + image combined)
 	const allOrIds = [
 		...orModels.map((m) => m.id),
 		...orEmbedModels.map((m) => m.id),
+		...orImageModels.map((m) => m.id),
 	];
 	await dao.deactivateMissing("openrouter", allOrIds);
 
 	// Build canonical lookup: model_id → OpenRouter pricing/metadata
-	const allOrModels = [...orModels, ...orEmbedModels];
+	const allOrModels = [...orModels, ...orEmbedModels, ...orImageModels];
 	const allowedModelIds = new Set(allOrModels.map((m) => m.model_id));
 	const canonicalMap = new Map(allOrModels.map((m) => [m.model_id, m]));
 

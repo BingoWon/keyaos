@@ -56,7 +56,7 @@ export async function recordLog(
 		settlement,
 	} = params;
 
-	if (inputTokens + outputTokens <= 0) return;
+	if (inputTokens + outputTokens <= 0 && baseCost <= 0) return;
 
 	try {
 		await new LogsDao(db).createEntry({

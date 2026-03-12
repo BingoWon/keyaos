@@ -1,0 +1,129 @@
+# PDF Inputs
+
+Send PDF documents to models for summarization, Q&A, and data extraction through the `/v1/chat/completions` endpoint. PDFs are passed using the `file` content type and work with any model.
+
+When a model supports file input natively, the PDF is passed directly. Otherwise, the PDF is automatically parsed and the extracted text is sent to the model.
+
+## Using PDF URLs
+
+For publicly accessible PDFs, send the URL directly:
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+response = client.chat.completions.create(
+    model="anthropic/claude-sonnet-4",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Summarize the key points of this paper."},
+                {
+                    "type": "file",
+                    "file": {
+                        "filename": "bitcoin.pdf",
+                        "file_data": "https://bitcoin.org/bitcoin.pdf",
+                    },
+                },
+            ],
+        }
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+## Using Base64 Encoded PDFs
+
+For local PDFs, encode as a base64 data URL:
+
+```python
+import base64
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+def encode_pdf(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+data_url = f"data:application/pdf;base64,{encode_pdf('document.pdf')}"
+
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "What are the main findings?"},
+                {
+                    "type": "file",
+                    "file": {
+                        "filename": "document.pdf",
+                        "file_data": data_url,
+                    },
+                },
+            ],
+        }
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+## PDF Processing Engines
+
+You can configure which parsing engine to use via the `plugins` parameter:
+
+| Engine | Best For | Cost |
+|---|---|---|
+| `native` | Models with built-in file support | Charged as input tokens |
+| `pdf-text` | Well-structured PDFs with clear text | Free |
+| `mistral-ocr` | Scanned documents or PDFs with images | Per-page fee |
+
+```python
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[...],
+    extra_body={
+        "plugins": [
+            {
+                "id": "file-parser",
+                "pdf": {"engine": "mistral-ocr"},
+            }
+        ]
+    },
+)
+```
+
+If no engine is specified, the model's native file processing is used when available, with `pdf-text` as the fallback.
+
+## Reusing Parsed Results
+
+When a PDF is parsed, the response includes `annotations` with the extracted content. Include these annotations in follow-up requests to skip re-parsing:
+
+```python
+# First request — PDF is parsed
+result = client.chat.completions.create(model="...", messages=[...])
+annotations = result.choices[0].message.annotations
+
+# Follow-up — reuse parsed content (no re-parsing cost)
+follow_up = client.chat.completions.create(
+    model="...",
+    messages=[
+        {"role": "user", "content": [...]},
+        {
+            "role": "assistant",
+            "content": result.choices[0].message.content,
+            "annotations": annotations,
+        },
+        {"role": "user", "content": "Tell me more about section 3."},
+    ],
+)
+```

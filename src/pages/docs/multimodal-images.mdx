@@ -1,0 +1,102 @@
+# Image Inputs
+
+Send images to vision-capable models for analysis, description, OCR, and more through the `/v1/chat/completions` endpoint.
+
+Images are passed in the message `content` array using the `image_url` type. You can send images as **direct URLs** (recommended for public images) or **base64-encoded data URLs** (required for local files).
+
+> Send the text prompt first, then the images. If images must come first, place them in the system prompt.
+
+## Using Image URLs
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "What's in this image?"},
+                {
+                    "type": "image_url",
+                    "image_url": {
+                        "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/dd/Gfp-wisconsin-madison-the-nature-boardwalk.jpg/2560px-Gfp-wisconsin-madison-the-nature-boardwalk.jpg"
+                    },
+                },
+            ],
+        }
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+## Using Base64 Encoded Images
+
+For local files, encode the image as a base64 data URL:
+
+```python
+import base64
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+def encode_image(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+data_url = f"data:image/jpeg;base64,{encode_image('photo.jpg')}"
+
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Describe this image in detail."},
+                {"type": "image_url", "image_url": {"url": data_url}},
+            ],
+        }
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+## Multiple Images
+
+You can send multiple images in separate `content` entries within the same message:
+
+```python
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Compare these two images."},
+                {"type": "image_url", "image_url": {"url": "https://example.com/image1.jpg"}},
+                {"type": "image_url", "image_url": {"url": "https://example.com/image2.jpg"}},
+            ],
+        }
+    ],
+)
+```
+
+The number of images you can send per request varies by model and provider.
+
+## Supported Formats
+
+| Format | MIME Type |
+|---|---|
+| JPEG | `image/jpeg` |
+| PNG | `image/png` |
+| WebP | `image/webp` |
+| GIF | `image/gif` |

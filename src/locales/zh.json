@@ -24,6 +24,13 @@
 		"nav_privacy": "隐私政策",
 		"nav_terms": "服务条款",
 		"nav_contact": "联系我们",
+		"section_multimodal": "多模态",
+		"nav_multimodal": "概览",
+		"nav_multimodal_images": "图片输入",
+		"nav_multimodal_image_gen": "图片生成",
+		"nav_multimodal_pdfs": "PDF 处理",
+		"nav_multimodal_audio": "音频",
+		"nav_multimodal_video": "视频",
 		"search_placeholder": "搜索文档...",
 		"search_no_results": "未找到结果"
 	},

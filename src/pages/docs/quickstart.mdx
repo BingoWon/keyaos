@@ -84,6 +84,20 @@ print(response.choices[0].message.content)
 
 See [Models & Routing](/docs/models-routing#reasoning-effort) for all supported formats and providers.
 
+### Image Generation
+
+Generate images via the same chat completions endpoint:
+
+```python
+response = client.chat.completions.create(
+    model="openai/gpt-5-image-mini",
+    messages=[{"role": "user", "content": "A watercolor painting of a sunset over the ocean"}],
+    extra_body={"modalities": ["image", "text"]},
+)
+```
+
+See [Multimodal](/docs/multimodal) for image inputs, PDFs, audio, and video.
+
 ## 3. Explore
 
 - Browse available models on the [Models page](/models)
@@ -93,5 +107,6 @@ See [Models & Routing](/docs/models-routing#reasoning-effort) for all supported 
 ## Next Steps
 
 - [Models & Routing](/docs/models-routing) — how smart routing finds the cheapest provider
+- [Multimodal](/docs/multimodal) — image inputs, image generation, PDFs, audio, and video
 - [Authentication](/docs/authentication) — SDK configuration for all languages
 - [Credentials Sharing](/docs/credentials-sharing) — earn credits by sharing idle API keys

@@ -113,6 +113,24 @@ const TermsOfServiceMdx = lazyWithRetry(
 	() => import("./pages/docs/terms-of-service.mdx"),
 );
 const ContactMdx = lazyWithRetry(() => import("./pages/docs/contact.mdx"));
+const MultimodalMdx = lazyWithRetry(
+	() => import("./pages/docs/multimodal.mdx"),
+);
+const MultimodalImagesMdx = lazyWithRetry(
+	() => import("./pages/docs/multimodal-images.mdx"),
+);
+const MultimodalImageGenMdx = lazyWithRetry(
+	() => import("./pages/docs/multimodal-image-generation.mdx"),
+);
+const MultimodalPdfsMdx = lazyWithRetry(
+	() => import("./pages/docs/multimodal-pdfs.mdx"),
+);
+const MultimodalAudioMdx = lazyWithRetry(
+	() => import("./pages/docs/multimodal-audio.mdx"),
+);
+const MultimodalVideoMdx = lazyWithRetry(
+	() => import("./pages/docs/multimodal-video.mdx"),
+);
 const ApiReference = lazyWithRetry(() =>
 	import("./pages/ApiReference").then((m) => ({
 		default: m.ApiReference,
@@ -205,6 +223,27 @@ const docsChildren = [
 	{
 		path: "authentication",
 		element: <MdxPage Component={AuthenticationMdx} />,
+	},
+	{ path: "multimodal", element: <MdxPage Component={MultimodalMdx} /> },
+	{
+		path: "multimodal-images",
+		element: <MdxPage Component={MultimodalImagesMdx} />,
+	},
+	{
+		path: "multimodal-image-generation",
+		element: <MdxPage Component={MultimodalImageGenMdx} />,
+	},
+	{
+		path: "multimodal-pdfs",
+		element: <MdxPage Component={MultimodalPdfsMdx} />,
+	},
+	{
+		path: "multimodal-audio",
+		element: <MdxPage Component={MultimodalAudioMdx} />,
+	},
+	{
+		path: "multimodal-video",
+		element: <MdxPage Component={MultimodalVideoMdx} />,
 	},
 	{
 		path: "privacy-policy",

@@ -24,6 +24,13 @@
 		"nav_privacy": "Privacy Policy",
 		"nav_terms": "Terms of Service",
 		"nav_contact": "Contact Us",
+		"section_multimodal": "Multimodal",
+		"nav_multimodal": "Overview",
+		"nav_multimodal_images": "Image Inputs",
+		"nav_multimodal_image_gen": "Image Generation",
+		"nav_multimodal_pdfs": "PDFs",
+		"nav_multimodal_audio": "Audio",
+		"nav_multimodal_video": "Video",
 		"search_placeholder": "Search docs...",
 		"search_no_results": "No results found"
 	},

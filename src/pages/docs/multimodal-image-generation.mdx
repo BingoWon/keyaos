@@ -1,0 +1,186 @@
+# Image Generation
+
+Generate images from text prompts using models with `"image"` in their output modalities. All image generation goes through the standard `/v1/chat/completions` endpoint — just add the `modalities` parameter.
+
+## Basic Usage
+
+Set `modalities` based on the model's capabilities:
+
+- **Text + image models** (Gemini, GPT-5-image): `modalities: ["image", "text"]`
+- **Image-only models** (Flux, Sourceful): `modalities: ["image"]`
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+response = client.chat.completions.create(
+    model="openai/gpt-5-image-mini",
+    messages=[
+        {"role": "user", "content": "A serene Japanese garden with cherry blossoms at sunset"}
+    ],
+    extra_body={"modalities": ["image", "text"]},
+)
+
+message = response.choices[0].message
+print(message.content)
+```
+
+### Using fetch / curl
+
+```bash
+curl https://keyaos.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer $KEYAOS_API_KEY" \
+  -d '{
+    "model": "openai/gpt-5-image-mini",
+    "messages": [
+      {"role": "user", "content": "A serene Japanese garden with cherry blossoms at sunset"}
+    ],
+    "modalities": ["image", "text"]
+  }'
+```
+
+## Response Format
+
+Generated images are returned in the `images` field of the assistant message as base64 data URLs:
+
+```json
+{
+  "choices": [
+    {
+      "message": {
+        "role": "assistant",
+        "content": "Here's the image you requested.",
+        "images": [
+          {
+            "type": "image_url",
+            "image_url": {
+              "url": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAA..."
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+Access images in code:
+
+```python
+for img in message.images:
+    print(f"Image URL: {img['image_url']['url'][:60]}...")
+```
+
+```typescript
+for (const img of data.choices[0].message.images ?? []) {
+  console.log("Generated:", img.image_url.url.slice(0, 60));
+}
+```
+
+## Image Configuration
+
+Some models support the `image_config` parameter for controlling output dimensions.
+
+### Aspect Ratio
+
+| Ratio | Resolution | Ratio | Resolution |
+|---|---|---|---|
+| `1:1` | 1024×1024 (default) | `4:3` | 1184×864 |
+| `2:3` | 832×1248 | `4:5` | 896×1152 |
+| `3:2` | 1248×832 | `5:4` | 1152×896 |
+| `3:4` | 864×1184 | `9:16` | 768×1344 |
+| `16:9` | 1344×768 | `21:9` | 1536×672 |
+
+### Image Size
+
+| Size | Description |
+|---|---|
+| `1K` | Standard resolution (default) |
+| `2K` | Higher resolution |
+| `4K` | Highest resolution |
+| `0.5K` | Lower resolution, faster |
+
+### Example with Configuration
+
+```python
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash-image",
+    messages=[
+        {"role": "user", "content": "A panoramic mountain landscape at dawn"}
+    ],
+    extra_body={
+        "modalities": ["image", "text"],
+        "image_config": {
+            "aspect_ratio": "16:9",
+            "image_size": "4K",
+        },
+    },
+)
+```
+
+## Streaming
+
+Image generation works with streaming. The image data arrives in the `delta.images` field:
+
+```typescript
+const response = await fetch("https://keyaos.com/v1/chat/completions", {
+  method: "POST",
+  headers: {
+    Authorization: "Bearer YOUR_API_KEY",
+    "Content-Type": "application/json",
+  },
+  body: JSON.stringify({
+    model: "openai/gpt-5-image-mini",
+    messages: [{ role: "user", content: "A futuristic city at night" }],
+    modalities: ["image", "text"],
+    stream: true,
+  }),
+});
+
+const reader = response.body.getReader();
+const decoder = new TextDecoder();
+
+while (true) {
+  const { done, value } = await reader.read();
+  if (done) break;
+  for (const line of decoder.decode(value).split("\n")) {
+    if (!line.startsWith("data: ") || line === "data: [DONE]") continue;
+    const chunk = JSON.parse(line.slice(6));
+    const images = chunk.choices?.[0]?.delta?.images;
+    if (images) {
+      images.forEach((img) =>
+        console.log("Image:", img.image_url.url.slice(0, 60))
+      );
+    }
+  }
+}
+```
+
+## Compatible Models
+
+Find image generation models on the [Models page](/models) by filtering for `image` output modality. Current examples:
+
+| Model | Output Type | Notes |
+|---|---|---|
+| `openai/gpt-5-image-mini` | text + image | OpenAI, supports reasoning |
+| `openai/gpt-5-image` | text + image | OpenAI, highest quality |
+| `google/gemini-2.5-flash-image` | text + image | Fast, supports `image_config` |
+| `google/gemini-3.1-flash-image-preview` | text + image | Extended aspect ratios, 0.5K support |
+| `black-forest-labs/flux.2-pro` | image only | Use `modalities: ["image"]` |
+| `black-forest-labs/flux.2-flex` | image only | Flexible aspect ratios |
+| `sourceful/riverflow-v2-pro` | image only | Supports custom fonts |
+
+## Troubleshooting
+
+**No images in response?**
+- Verify the model has `"image"` in its output modalities
+- Set `modalities: ["image", "text"]` or `["image"]` — without this parameter, text-only output is returned
+- Ensure your prompt requests image generation
+
+**Model not found?**
+- Browse the [Models page](/models) and filter by image output modality

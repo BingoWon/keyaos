@@ -1,0 +1,144 @@
+# Audio
+
+Keyaos supports both sending audio files to models and receiving audio responses through the `/v1/chat/completions` endpoint.
+
+## Audio Input
+
+Send audio files to compatible models for transcription, analysis, and processing. Audio must be **base64-encoded** — URLs are not supported for audio content.
+
+Find audio-input models on the [Models page](/models) by filtering for `audio` input modality.
+
+### Sending Audio Files
+
+```python
+import base64
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+def encode_audio(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Please transcribe this audio file."},
+                {
+                    "type": "input_audio",
+                    "input_audio": {
+                        "data": encode_audio("recording.wav"),
+                        "format": "wav",
+                    },
+                },
+            ],
+        }
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+### Supported Input Formats
+
+Supported formats vary by model. Common formats include:
+
+| Format | Type | Format | Type |
+|---|---|---|---|
+| `wav` | WAV audio | `ogg` | OGG Vorbis |
+| `mp3` | MP3 audio | `flac` | FLAC audio |
+| `aac` | AAC audio | `m4a` | M4A audio |
+| `aiff` | AIFF audio | `pcm16` | PCM16 audio |
+
+## Audio Output
+
+Receive spoken audio responses from models with audio output capabilities. Audio output requires **streaming** (`stream: true`).
+
+Find audio-output models on the [Models page](/models) by filtering for `audio` output modality.
+
+### Requesting Audio Output
+
+Set `modalities: ["text", "audio"]` and provide the `audio` configuration:
+
+```python
+import requests
+import json
+import base64
+
+response = requests.post(
+    "https://keyaos.com/v1/chat/completions",
+    headers={
+        "Authorization": "Bearer sk-keyaos-xxxxxxxx",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "openai/gpt-audio-mini",
+        "messages": [{"role": "user", "content": "Say hello in a friendly tone."}],
+        "modalities": ["text", "audio"],
+        "audio": {"voice": "alloy", "format": "pcm16"},
+        "stream": True,
+    },
+    stream=True,
+)
+
+audio_chunks = []
+transcript_chunks = []
+
+for line in response.iter_lines():
+    if not line:
+        continue
+    decoded = line.decode("utf-8")
+    if not decoded.startswith("data: "):
+        continue
+    data = decoded[len("data: "):]
+    if data.strip() == "[DONE]":
+        break
+    chunk = json.loads(data)
+    audio = chunk["choices"][0].get("delta", {}).get("audio", {})
+    if audio.get("data"):
+        audio_chunks.append(audio["data"])
+    if audio.get("transcript"):
+        transcript_chunks.append(audio["transcript"])
+
+print("Transcript:", "".join(transcript_chunks))
+
+# Save audio
+audio_bytes = base64.b64decode("".join(audio_chunks))
+with open("output.wav", "wb") as f:
+    f.write(audio_bytes)
+```
+
+### Audio Configuration
+
+| Option | Description |
+|---|---|
+| `voice` | Voice to use: `alloy`, `echo`, `fable`, `onyx`, `nova`, `shimmer` (availability varies by model) |
+| `format` | Output format: `wav`, `mp3`, `flac`, `opus`, `pcm16` (availability varies by model) |
+
+> When streaming, only `pcm16` is supported as the output format. For non-streaming audio, use `wav` or `mp3`.
+
+### Streaming Chunk Format
+
+Audio data and transcript arrive incrementally via `delta.audio`:
+
+```json
+{
+  "choices": [
+    {
+      "delta": {
+        "audio": {
+          "data": "<base64-encoded audio chunk>",
+          "transcript": "Hello"
+        }
+      }
+    }
+  ]
+}
+```
+
+Concatenate all `data` chunks and decode the combined base64 string to get the full audio file.

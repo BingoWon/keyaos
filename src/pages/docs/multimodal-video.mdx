@@ -1,0 +1,87 @@
+# Video Inputs
+
+Send video files to video-capable models for analysis, description, object detection, and action recognition through the `/v1/chat/completions` endpoint.
+
+Videos are passed using the `video_url` content type. You can send videos as **direct URLs** or **base64-encoded data URLs**.
+
+> Video URL support varies by provider. For example, Google Gemini on AI Studio only supports YouTube links.
+
+## Using Video URLs
+
+```python
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "Describe what's happening in this video."},
+                {
+                    "type": "video_url",
+                    "video_url": {
+                        "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+                    },
+                },
+            ],
+        }
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+## Using Base64 Encoded Videos
+
+For local video files:
+
+```python
+import base64
+from openai import OpenAI
+
+client = OpenAI(
+    api_key="sk-keyaos-xxxxxxxx",
+    base_url="https://keyaos.com/v1",
+)
+
+def encode_video(path):
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
+
+data_url = f"data:video/mp4;base64,{encode_video('clip.mp4')}"
+
+response = client.chat.completions.create(
+    model="google/gemini-2.5-flash",
+    messages=[
+        {
+            "role": "user",
+            "content": [
+                {"type": "text", "text": "What objects appear in this video?"},
+                {"type": "video_url", "video_url": {"url": data_url}},
+            ],
+        }
+    ],
+)
+print(response.choices[0].message.content)
+```
+
+## Supported Formats
+
+| Format | MIME Type |
+|---|---|
+| MP4 | `video/mp4` |
+| MPEG | `video/mpeg` |
+| MOV | `video/mov` |
+| WebM | `video/webm` |
+
+## Best Practices
+
+- **Compress videos** to reduce upload size — lower resolution (720p) is sufficient for most analysis tasks
+- **Trim to relevant segments** rather than sending full-length videos
+- **Check model limits** for maximum video duration and file size
+- For YouTube links, only Google Gemini on AI Studio supports direct URLs; other providers require base64 encoding

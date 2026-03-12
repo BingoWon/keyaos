@@ -1,0 +1,60 @@
+# Multimodal
+
+Keyaos supports multiple input and output modalities beyond text through the same `/v1/chat/completions` endpoint. Send images, PDFs, audio, and video to compatible models, or generate images and audio in responses — no special endpoints needed.
+
+## Supported Modalities
+
+### Image Inputs
+
+Send images to vision-capable models for analysis, description, OCR, and more. Supports both URL-based and base64-encoded images.
+
+[Learn more about image inputs →](/docs/multimodal-images)
+
+### Image Generation
+
+Generate images from text prompts using models with image output capabilities. Set `modalities: ["image", "text"]` to receive images as base64 data URLs.
+
+[Learn more about image generation →](/docs/multimodal-image-generation)
+
+### PDFs
+
+Send PDF documents to models for summarization, Q&A, and extraction. Works with any model — PDFs are parsed automatically when native file support is unavailable.
+
+[Learn more about PDF processing →](/docs/multimodal-pdfs)
+
+### Audio
+
+Send audio files for transcription and analysis, or receive audio responses from models with audio output. Common formats like WAV, MP3, and FLAC are supported.
+
+[Learn more about audio →](/docs/multimodal-audio)
+
+### Video
+
+Send video files to video-capable models for analysis, description, and understanding. Supports MP4, WebM, and other common formats.
+
+[Learn more about video inputs →](/docs/multimodal-video)
+
+## Getting Started
+
+All multimodal inputs use the same `/v1/chat/completions` endpoint. Different content types are specified in the message `content` array:
+
+| Content Type | Usage |
+|---|---|
+| `image_url` | Image inputs (URL or base64) |
+| `file` | PDF documents |
+| `input_audio` | Audio inputs (base64 only) |
+| `video_url` | Video inputs (URL or base64) |
+
+For **outputs**, use the `modalities` request parameter:
+
+| Value | Usage |
+|---|---|
+| `["image", "text"]` | Image generation (models with text + image output) |
+| `["image"]` | Image-only generation (Flux, Sourceful, etc.) |
+| `["text", "audio"]` | Audio output (requires `stream: true`) |
+
+## Model Compatibility
+
+Not all models support every modality. Use the [Models page](/models) to filter by input and output modalities. The modality badges on each model card show what's supported.
+
+> You can combine multiple modalities in a single request. For example, send an image and text together to ask questions about the image.

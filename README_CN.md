@@ -60,13 +60,13 @@ flowchart LR
         More["+9 个"]
     end
 
-    Client -- "/v1/chat/completions\n/v1/embeddings\n/v1/messages" --> Auth
+    Client --> Auth
     Auth --> Router
-    Router -- "最便宜的\n健康密钥" --> CB
+    Router --> CB
     CB --> Intercept
-    Intercept -- 流式转发 --> OR & DI & DS & OAI & Anthr & More
-    Intercept -. "tee：提取用量" .-> Billing
-    Sync -. "每 60 秒" .-> Router
+    Intercept --> OR & DI & DS & OAI & Anthr & More
+    Intercept -.-> Billing
+    Sync -.-> Router
 ```
 
 **请求流程：** 客户端向任一端点发起请求。Auth 校验 API Key 并检查权限（模型限制、配额、到期时间、IP）。路由器按 `单价 × 倍率` 对所有凭证排序，选出最便宜的健康选项。熔断器跳过近期故障的服务商。SSE 拦截器对响应流做 tee — 实时转发给客户端的同时，在后台提取用量数据用于计费。Cron 任务每分钟同步模型可用性和价格。

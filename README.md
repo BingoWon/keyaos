@@ -60,13 +60,13 @@ flowchart LR
         More["+9 more"]
     end
 
-    Client -- "/v1/chat/completions\n/v1/embeddings\n/v1/messages" --> Auth
+    Client --> Auth
     Auth --> Router
-    Router -- "cheapest\nhealthy key" --> CB
+    Router --> CB
     CB --> Intercept
-    Intercept -- stream --> OR & DI & DS & OAI & Anthr & More
-    Intercept -. "tee: extract usage" .-> Billing
-    Sync -. "every 60s" .-> Router
+    Intercept --> OR & DI & DS & OAI & Anthr & More
+    Intercept -.-> Billing
+    Sync -.-> Router
 ```
 
 **Request flow:** Client sends a request to any supported endpoint. Auth validates the API key and checks permissions (model restrictions, quota, expiry, IP). The router ranks all available credentials by `unit_price × multiplier` and picks the cheapest healthy one. The circuit breaker skips providers with recent failures. The SSE interceptor tee's the response stream — forwarding it to the client in real time while extracting usage data for billing in the background. A Cron job syncs model availability and pricing every minute.

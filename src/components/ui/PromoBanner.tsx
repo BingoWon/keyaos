@@ -34,7 +34,7 @@ export function PromoBanner({ id, title, description }: PromoBannerProps) {
 
 	return (
 		<div
-			className={`relative mt-4 overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 ${
+			className={`relative mt-4 overflow-hidden rounded-xl px-4 py-3 transition-all duration-300 ring-1 ring-white/15 shadow-sm dark:ring-white/[0.08] dark:shadow-lg dark:shadow-black/30 ${
 				leaving ? "opacity-0 scale-[0.98]" : "opacity-100"
 			}`}
 		>
@@ -45,9 +45,9 @@ export function PromoBanner({ id, title, description }: PromoBannerProps) {
 				className="absolute inset-0 hidden dark:block"
 				style={{
 					background: [
-						"radial-gradient(circle at 25% 20%, rgba(127,57,173,0.25), transparent 55%)",
-						"radial-gradient(circle at 80% 75%, rgba(208,144,96,0.18), transparent 55%)",
-						"linear-gradient(180deg, rgba(27,7,54,0.92), rgba(18,4,33,0.78))",
+						"radial-gradient(circle at 25% 20%, rgba(127,57,173,0.28), transparent 55%)",
+						"radial-gradient(circle at 80% 75%, rgba(208,144,96,0.20), transparent 55%)",
+						"linear-gradient(180deg, rgba(30,10,56,0.95), rgba(20,6,38,0.88))",
 					].join(", "),
 				}}
 			/>

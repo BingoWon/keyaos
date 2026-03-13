@@ -10,7 +10,9 @@ import {
 import { AuthGuard, isPlatform, SignupContent, useAuth } from "./auth";
 import { PageLoader } from "./components/PageLoader";
 import { RouteError } from "./components/RouteError";
+import { SidebarLayout } from "./components/SidebarLayout";
 import { TopNav } from "./components/TopNav";
+import { AdminLayout } from "./pages/admin/AdminLayout";
 import { MdxPage } from "./pages/docs/MdxPage";
 import { Landing } from "./pages/Landing";
 import { Login } from "./pages/Login";
@@ -58,11 +60,6 @@ const WerewolfGame = lazyWithRetry(() => import("./werewolf/WerewolfEntry"));
 
 // ─── Lazy-loaded admin pages ─────────────────────────────
 
-const AdminLayout = lazyWithRetry(() =>
-	import("./pages/admin/AdminLayout").then((m) => ({
-		default: m.AdminLayout,
-	})),
-);
 const Overview = lazyWithRetry(() =>
 	import("./pages/admin/Overview").then((m) => ({ default: m.Overview })),
 );
@@ -74,14 +71,6 @@ const Data = lazyWithRetry(() =>
 );
 const GiftCards = lazyWithRetry(() =>
 	import("./pages/admin/GiftCards").then((m) => ({ default: m.GiftCards })),
-);
-
-// ─── Lazy-loaded layouts ─────────────────────────────────
-
-const SidebarLayout = lazyWithRetry(() =>
-	import("./components/SidebarLayout").then((m) => ({
-		default: m.SidebarLayout,
-	})),
 );
 
 // ─── Lazy-loaded docs ────────────────────────────────────
@@ -323,9 +312,7 @@ export const router = createBrowserRouter([
 				path: "/dashboard",
 				element: (
 					<AuthGuard fallback={<Navigate to="/login" replace />}>
-						<Suspense fallback={<PageLoader />}>
-							<SidebarLayout />
-						</Suspense>
+						<SidebarLayout />
 					</AuthGuard>
 				),
 				children: dashboardChildren,
@@ -337,9 +324,7 @@ export const router = createBrowserRouter([
 							path: "/admin",
 							element: (
 								<AuthGuard fallback={<Navigate to="/login" replace />}>
-									<Suspense fallback={<PageLoader />}>
-										<AdminLayout />
-									</Suspense>
+									<AdminLayout />
 								</AuthGuard>
 							),
 							children: [

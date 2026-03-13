@@ -536,10 +536,7 @@ export function CodeSamples({ modelId, variant }: CodeSamplesProps) {
 							to={LEARN_MORE[variant].href}
 							className="font-medium text-brand-600 hover:text-brand-700 dark:text-brand-400 dark:hover:text-brand-300 transition-colors"
 						>
-							{t(
-								`models.learn_more_${variant}`,
-								LEARN_MORE[variant].label,
-							)}
+							{t(`models.learn_more_${variant}`, LEARN_MORE[variant].label)}
 						</Link>
 						.
 					</>

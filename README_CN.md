@@ -5,7 +5,14 @@
 <h1 align="center">Keyaos（氪钥枢）</h1>
 
 <p align="center">
-  开源 AI API 网关 — 聚合多个服务商的密钥，自动路由到最低价，流式响应零延迟。
+  边缘原生 AI API 网关 — 跨服务商最优价格路由，多协议支持，构建于 Cloudflare Workers。
+</p>
+
+<p align="center">
+  <a href="https://github.com/BingoWon/Keyaos/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-BSL_1.1-blue" alt="License" /></a>
+  <img src="https://img.shields.io/badge/runtime-Cloudflare_Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19" />
 </p>
 
 <p align="center">
@@ -24,9 +31,45 @@
 
 ---
 
-你同时在用 OpenRouter、DeepSeek、Google AI Studio、xAI 等多个 AI 服务，每个都有各自的 API Key、计费方式和用量限制。**Keyaos 把它们统一在一个 OpenAI 兼容的端点背后**，每次请求自动选择当前价格最低的健康服务商。
+你同时在用 OpenRouter、DeepSeek、Google AI Studio、xAI 等多个 AI 服务，每个都有各自的 API Key、计费方式和用量限制。**Keyaos 把它们统一在多协议 API 端点背后**（OpenAI、Anthropic 等），每次请求自动选择当前价格最低的健康服务商。
 
-完全基于 **Cloudflare Workers + D1 + Cron Triggers** 构建，免费套餐即可运行。
+完全基于 **Cloudflare Workers + D1 + Cron Triggers** 构建。自部署无需服务器，Cloudflare 免费额度即可承载。
+
+## 架构
+
+```mermaid
+flowchart LR
+    Client([客户端])
+
+    subgraph Keyaos ["Keyaos（Cloudflare Workers）"]
+        direction TB
+        Auth[认证 & Key 权限]
+        Router[最优价格路由]
+        CB[熔断器]
+        Intercept[SSE 流拦截器]
+        Billing[用量追踪 & 计费]
+        Sync[Cron：模型 & 价格同步]
+    end
+
+    subgraph Upstream [上游服务商]
+        OR[OpenRouter]
+        DI[DeepInfra]
+        DS[DeepSeek]
+        OAI[OpenAI]
+        Anthr[Anthropic]
+        More["+9 个"]
+    end
+
+    Client -- "/v1/chat/completions\n/v1/embeddings\n/v1/messages" --> Auth
+    Auth --> Router
+    Router -- "最便宜的\n健康密钥" --> CB
+    CB --> Intercept
+    Intercept -- 流式转发 --> OR & DI & DS & OAI & Anthr & More
+    Intercept -. "tee：提取用量" .-> Billing
+    Sync -. "每 60 秒" .-> Router
+```
+
+**请求流程：** 客户端向任一端点发起请求。Auth 校验 API Key 并检查权限（模型限制、配额、到期时间、IP）。路由器按 `单价 × 倍率` 对所有凭证排序，选出最便宜的健康选项。熔断器跳过近期故障的服务商。SSE 拦截器对响应流做 tee — 实时转发给客户端的同时，在后台提取用量数据用于计费。Cron 任务每分钟同步模型可用性和价格。
 
 ## 功能特性
 
@@ -34,9 +77,8 @@
 - **自动故障转移** — 配额耗尽或被限速？自动切换到下一个最优选项
 - **零延迟流式** — SSE 响应实时拆分转发，不做缓冲
 - **自动同步目录** — 模型可用性和价格通过 Cron 定时更新
-- **多协议支持** — OpenAI、Anthropic Messages、Google Gemini、AWS Event Stream
+- **多协议支持** — OpenAI Chat & Embeddings、Anthropic Messages、Google Gemini、AWS Event Stream
 - **多模态** — 图片生成、图片/音频/视频/PDF 输入，通过 chat completions 透传
-- **嵌入** — 完整的 `/v1/embeddings` 端点
 - **推理强度** — 跨服务商统一归一化 `reasoning_effort` 参数
 - **熔断器** — 自动检测故障并绕过异常服务商
 - **API Key 权限** — 模型限制、到期时间、用量配额、IP 白名单
@@ -75,7 +117,7 @@ pnpm dev                             # http://localhost:5173
 
 ## 使用方式
 
-将任何 OpenAI 兼容的客户端指向你的 Worker：
+### OpenAI Chat Completions
 
 ```bash
 curl https://keyaos.<you>.workers.dev/v1/chat/completions \
@@ -84,20 +126,6 @@ curl https://keyaos.<you>.workers.dev/v1/chat/completions \
   -d '{
     "model": "openai/gpt-4o-mini",
     "messages": [{"role": "user", "content": "Hello"}]
-  }'
-```
-
-兼容 Cursor、Continue、Cline、aider、LiteLLM 及任何支持自定义 OpenAI Base URL 的工具。
-
-### 嵌入
-
-```bash
-curl https://keyaos.<you>.workers.dev/v1/embeddings \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "openai/text-embedding-3-small",
-    "input": "Hello world"
   }'
 ```
 
@@ -114,14 +142,19 @@ curl https://keyaos.<you>.workers.dev/v1/messages \
   }'
 ```
 
-## 路由原理
+### 嵌入
 
-```
-请求 → 查找模型 → 按实际成本排序所有凭证 → 选择最便宜的健康密钥 → 流式响应
-                                                ↳ 失败？→ 熔断器 → 下一个密钥
+```bash
+curl https://keyaos.<you>.workers.dev/v1/embeddings \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/text-embedding-3-small",
+    "input": "Hello world"
+  }'
 ```
 
-每条凭证按 `单价 × 价格倍率` 计算有效成本，最便宜的健康选项始终优先。如果某个服务商失败，熔断器自动介入，请求无感切换到下一个候选 — 客户端完全无感知。
+兼容 Cursor、Continue、Cline、aider、LiteLLM 及任何支持自定义 OpenAI 或 Anthropic Base URL 的工具。
 
 ## 支持的服务商
 
@@ -144,7 +177,7 @@ curl https://keyaos.<you>.workers.dev/v1/messages \
 
 新增一个 OpenAI 兼容的服务商只需在 registry 中添加一条配置。
 
-## 架构
+## Core 与 Platform
 
 ```
 Core（自部署）               Platform（多用户）

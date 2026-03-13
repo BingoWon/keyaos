@@ -5,7 +5,14 @@
 <h1 align="center">Keyaos</h1>
 
 <p align="center">
-  Open-source AI API gateway — pool credentials, auto-route to the cheapest provider, stream with zero latency.
+  Edge-native AI API gateway — cost-optimized routing across providers, multi-protocol support, built on Cloudflare Workers.
+</p>
+
+<p align="center">
+  <a href="https://github.com/BingoWon/Keyaos/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-BSL_1.1-blue" alt="License" /></a>
+  <img src="https://img.shields.io/badge/runtime-Cloudflare_Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
+  <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
+  <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19" />
 </p>
 
 <p align="center">
@@ -24,9 +31,45 @@
 
 ---
 
-You subscribe to multiple AI services — OpenRouter, DeepSeek, Google AI Studio, xAI, and more. Each has its own API key, pricing, and quota. **Keyaos unifies them behind a single OpenAI-compatible endpoint**, automatically routing every request to the cheapest healthy provider.
+You subscribe to multiple AI services — OpenRouter, DeepSeek, Google AI Studio, xAI, and more. Each has its own API key, pricing, and quota. **Keyaos unifies them behind multi-protocol API endpoints** (OpenAI, Anthropic, and more), automatically routing every request to the cheapest healthy provider.
 
-Built entirely on **Cloudflare Workers + D1 + Cron Triggers**. Runs on the free tier.
+Built entirely on **Cloudflare Workers + D1 + Cron Triggers**. Self-hosted deployments require no servers and fit within Cloudflare's free tier.
+
+## Architecture
+
+```mermaid
+flowchart LR
+    Client([Client])
+
+    subgraph Keyaos ["Keyaos (Cloudflare Workers)"]
+        direction TB
+        Auth[Auth & Key Permissions]
+        Router[Cost-Optimal Router]
+        CB[Circuit Breaker]
+        Intercept[SSE Stream Interceptor]
+        Billing[Usage Tracking & Billing]
+        Sync[Cron: Model & Price Sync]
+    end
+
+    subgraph Upstream [Upstream Providers]
+        OR[OpenRouter]
+        DI[DeepInfra]
+        DS[DeepSeek]
+        OAI[OpenAI]
+        Anthr[Anthropic]
+        More["+9 more"]
+    end
+
+    Client -- "/v1/chat/completions\n/v1/embeddings\n/v1/messages" --> Auth
+    Auth --> Router
+    Router -- "cheapest\nhealthy key" --> CB
+    CB --> Intercept
+    Intercept -- stream --> OR & DI & DS & OAI & Anthr & More
+    Intercept -. "tee: extract usage" .-> Billing
+    Sync -. "every 60s" .-> Router
+```
+
+**Request flow:** Client sends a request to any supported endpoint. Auth validates the API key and checks permissions (model restrictions, quota, expiry, IP). The router ranks all available credentials by `unit_price × multiplier` and picks the cheapest healthy one. The circuit breaker skips providers with recent failures. The SSE interceptor tee's the response stream — forwarding it to the client in real time while extracting usage data for billing in the background. A Cron job syncs model availability and pricing every minute.
 
 ## Features
 
@@ -34,9 +77,8 @@ Built entirely on **Cloudflare Workers + D1 + Cron Triggers**. Runs on the free 
 - **Automatic failover** — quota exceeded or rate limited? The next cheapest option takes over
 - **Zero-latency streaming** — SSE responses are tee'd and forwarded in real time
 - **Auto-synced catalog** — model availability and pricing stay up to date via Cron
-- **Multi-protocol** — OpenAI, Anthropic Messages, Google Gemini, AWS Event Stream
+- **Multi-protocol** — OpenAI Chat & Embeddings, Anthropic Messages, Google Gemini, AWS Event Stream
 - **Multimodal** — image generation, image/audio/video/PDF inputs via chat completions
-- **Embeddings** — full `/v1/embeddings` endpoint
 - **Reasoning effort** — unified `reasoning_effort` normalization across providers
 - **Circuit breaker** — automatic failure detection and provider bypass
 - **API key permissions** — model restrictions, expiration, spending quota, IP allowlist
@@ -75,7 +117,7 @@ pnpm dev                             # http://localhost:5173
 
 ## Usage
 
-Point any OpenAI-compatible client at your Worker:
+### OpenAI Chat Completions
 
 ```bash
 curl https://keyaos.<you>.workers.dev/v1/chat/completions \
@@ -84,20 +126,6 @@ curl https://keyaos.<you>.workers.dev/v1/chat/completions \
   -d '{
     "model": "openai/gpt-4o-mini",
     "messages": [{"role": "user", "content": "Hello"}]
-  }'
-```
-
-Works with Cursor, Continue, Cline, aider, LiteLLM, and any tool that supports custom OpenAI base URLs.
-
-### Embeddings
-
-```bash
-curl https://keyaos.<you>.workers.dev/v1/embeddings \
-  -H "Authorization: Bearer YOUR_TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "model": "openai/text-embedding-3-small",
-    "input": "Hello world"
   }'
 ```
 
@@ -114,14 +142,19 @@ curl https://keyaos.<you>.workers.dev/v1/messages \
   }'
 ```
 
-## How Routing Works
+### Embeddings
 
-```
-Request → Model lookup → Rank credentials by effective cost → Try cheapest healthy key → Stream response
-                                                               ↳ fail? → circuit breaker → next key
+```bash
+curl https://keyaos.<you>.workers.dev/v1/embeddings \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/text-embedding-3-small",
+    "input": "Hello world"
+  }'
 ```
 
-Every credential is scored by `unit_price × price_multiplier`. The cheapest healthy option always wins. If a provider fails, the circuit breaker kicks in and the request retries with the next candidate — all transparent to the client.
+Works with Cursor, Continue, Cline, aider, LiteLLM, and any tool that supports custom OpenAI or Anthropic base URLs.
 
 ## Supported Providers
 
@@ -144,7 +177,7 @@ Every credential is scored by `unit_price × price_multiplier`. The cheapest hea
 
 Adding a new OpenAI-compatible provider takes a single entry in the provider registry.
 
-## Architecture
+## Core vs Platform
 
 ```
 Core (self-hosted)           Platform (multi-user)

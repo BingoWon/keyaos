@@ -88,7 +88,8 @@ app.use("/api/*", async (c, next) => {
 		(c.req.path === "/api/providers" ||
 			c.req.path === "/api/models" ||
 			c.req.path === "/api/catalog" ||
-			c.req.path.startsWith("/api/sparklines/"))
+			c.req.path.startsWith("/api/sparklines/") ||
+			c.req.path.startsWith("/api/candles/"))
 	)
 		return next();
 

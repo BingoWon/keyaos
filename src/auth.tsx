@@ -5,7 +5,7 @@ import {
 	UserButton,
 	useAuth as useClerkAuth,
 	useUser,
-} from "@clerk/clerk-react";
+} from "@clerk/react";
 import { enUS, zhCN } from "@clerk/localizations";
 import { dark } from "@clerk/themes";
 import { Crisp } from "crisp-sdk-web";
@@ -159,12 +159,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 				signInUrl="/login"
 				signUpUrl="/signup"
 				afterSignOutUrl="/login"
-				afterSignInUrl="/dashboard"
-				afterSignUpUrl="/dashboard"
+				signInFallbackRedirectUrl="/dashboard"
+				signUpFallbackRedirectUrl="/dashboard"
 				localization={clerkLocales[i18n.language] ?? enUS}
 				appearance={{
 					baseTheme: isDark ? dark : undefined,
-					layout: { socialButtonsVariant: "blockButton" },
+					options: { socialButtonsVariant: "blockButton" },
 					elements: {
 						socialButtons: {
 							display: "flex",

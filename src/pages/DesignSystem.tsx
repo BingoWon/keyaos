@@ -213,9 +213,9 @@ export function DesignSystem() {
 							Design System
 						</h2>
 						<p className="mt-2 text-sm leading-relaxed text-gray-500 dark:text-gray-400">
-							Brand identity, color palette, typography, and reusable UI
-							components derived from the Keyaos logo. Click any color swatch to
-							copy its hex value.
+							Brand identity, color palette, typography (Inter + JetBrains
+							Mono), and reusable UI components derived from the Keyaos logo.
+							Click any color swatch to copy its hex value.
 						</p>
 					</div>
 				</div>
@@ -326,53 +326,191 @@ export function DesignSystem() {
 				{/* Typography */}
 				<Section
 					title="Typography"
-					desc="System font stack with a clear size hierarchy."
+					desc="Inter for UI clarity with optical sizing, JetBrains Mono for code. Both are variable fonts."
 				>
-					<Card>
-						<dl className="space-y-6">
-							{(
-								[
-									[
-										"text-3xl / bold",
-										"text-3xl font-bold text-gray-900 dark:text-white",
-										"The quick brown fox",
-									],
-									[
-										"text-xl / semibold",
-										"text-xl font-semibold text-gray-900 dark:text-white",
-										"The quick brown fox jumps over the lazy dog",
-									],
-									[
-										"text-base / medium",
-										"text-base font-medium text-gray-900 dark:text-white",
-										"The quick brown fox jumps over the lazy dog",
-									],
-									[
-										"text-sm",
-										"text-sm text-gray-600 dark:text-gray-300",
-										"The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.",
-									],
-									[
-										"text-xs / muted",
-										"text-xs text-gray-500 dark:text-gray-400",
-										"The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.",
-									],
-									[
-										"mono",
-										"font-mono text-sm text-gray-600 dark:text-gray-300",
-										'const gateway = "https://keyaos.dev/v1";',
-									],
-								] as const
-							).map(([label, cls, text]) => (
-								<div key={label}>
-									<dt className="mb-1 font-mono text-[10px] text-gray-400 dark:text-gray-500">
-										{label}
-									</dt>
-									<dd className={cls}>{text}</dd>
+					<div className="space-y-8">
+						{/* Font Family Showcase */}
+						<div className="grid gap-4 md:grid-cols-2">
+							<Card>
+								<div className="mb-4 flex items-baseline justify-between">
+									<h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+										Inter
+									</h3>
+									<span className="text-xs text-gray-400 dark:text-gray-500">
+										Sans-serif · Variable · Optical sizing
+									</span>
 								</div>
-							))}
-						</dl>
-					</Card>
+								<p className="text-5xl font-extralight tracking-tight text-gray-900 dark:text-white">
+									Aa
+								</p>
+								<div className="mt-4 space-y-1">
+									<p className="text-sm text-gray-500 dark:text-gray-400">
+										ABCDEFGHIJKLMNOPQRSTUVWXYZ
+									</p>
+									<p className="text-sm text-gray-500 dark:text-gray-400">
+										abcdefghijklmnopqrstuvwxyz
+									</p>
+									<p className="text-sm text-gray-500 dark:text-gray-400">
+										0123456789 !@#$%^&amp;*()
+									</p>
+								</div>
+								<div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-gray-100 pt-4 dark:border-white/10">
+									{(
+										[
+											["Thin", "font-thin"],
+											["Light", "font-light"],
+											["Regular", "font-normal"],
+											["Medium", "font-medium"],
+											["Semibold", "font-semibold"],
+											["Bold", "font-bold"],
+											["Black", "font-black"],
+										] as const
+									).map(([label, cls]) => (
+										<span
+											key={label}
+											className={`text-sm text-gray-700 dark:text-gray-300 ${cls}`}
+										>
+											{label}
+										</span>
+									))}
+								</div>
+							</Card>
+
+							<Card>
+								<div className="mb-4 flex items-baseline justify-between">
+									<h3 className="font-mono text-lg font-semibold text-gray-900 dark:text-white">
+										JetBrains Mono
+									</h3>
+									<span className="text-xs text-gray-400 dark:text-gray-500">
+										Monospace · Variable · Ligatures
+									</span>
+								</div>
+								<p className="font-mono text-5xl font-extralight tracking-tight text-gray-900 dark:text-white">
+									Aa
+								</p>
+								<div className="mt-4 space-y-1">
+									<p className="font-mono text-sm text-gray-500 dark:text-gray-400">
+										ABCDEFGHIJKLMNOPQRSTUVWXYZ
+									</p>
+									<p className="font-mono text-sm text-gray-500 dark:text-gray-400">
+										abcdefghijklmnopqrstuvwxyz
+									</p>
+									<p className="font-mono text-sm text-gray-500 dark:text-gray-400">
+										0123456789 {"->"} !== === {"<="} {">="} {"!="}
+									</p>
+								</div>
+								<div className="mt-4 flex flex-wrap gap-x-4 gap-y-1 border-t border-gray-100 pt-4 dark:border-white/10">
+									{(
+										[
+											["Thin", "font-thin"],
+											["Light", "font-light"],
+											["Regular", "font-normal"],
+											["Medium", "font-medium"],
+											["Bold", "font-bold"],
+											["ExtraBold", "font-extrabold"],
+										] as const
+									).map(([label, cls]) => (
+										<span
+											key={label}
+											className={`font-mono text-sm text-gray-700 dark:text-gray-300 ${cls}`}
+										>
+											{label}
+										</span>
+									))}
+								</div>
+							</Card>
+						</div>
+
+						{/* Type Scale */}
+						<Card>
+							<SubLabel>Type Scale</SubLabel>
+							<dl className="space-y-5">
+								{(
+									[
+										[
+											"text-5xl / bold / tracking-tight",
+											"text-5xl font-bold tracking-tight text-gray-900 dark:text-white",
+											"Order in Chaos",
+										],
+										[
+											"text-3xl / bold / tracking-tight",
+											"text-3xl font-bold tracking-tight text-gray-900 dark:text-white",
+											"The quick brown fox",
+										],
+										[
+											"text-xl / semibold",
+											"text-xl font-semibold text-gray-900 dark:text-white",
+											"The quick brown fox jumps over the lazy dog",
+										],
+										[
+											"text-base / medium",
+											"text-base font-medium text-gray-900 dark:text-white",
+											"The quick brown fox jumps over the lazy dog",
+										],
+										[
+											"text-sm",
+											"text-sm text-gray-600 dark:text-gray-300",
+											"The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.",
+										],
+										[
+											"text-xs / muted",
+											"text-xs text-gray-500 dark:text-gray-400",
+											"The quick brown fox jumps over the lazy dog. Pack my box with five dozen liquor jugs.",
+										],
+										[
+											"mono / text-sm",
+											"font-mono text-sm text-gray-600 dark:text-gray-300",
+											'const gateway = "https://keyaos.dev/v1";',
+										],
+										[
+											"mono / text-xs / muted",
+											"font-mono text-xs text-gray-500 dark:text-gray-400",
+											"sk-keyaos-a1b2c3d4e5f6 → 200 OK  42ms  gpt-4o",
+										],
+									] as const
+								).map(([label, cls, text]) => (
+									<div key={label}>
+										<dt className="mb-1 font-mono text-[10px] text-gray-400 dark:text-gray-500">
+											{label}
+										</dt>
+										<dd className={cls}>{text}</dd>
+									</div>
+								))}
+							</dl>
+						</Card>
+
+						{/* Special Treatments */}
+						<Card>
+							<SubLabel>Special Treatments</SubLabel>
+							<div className="space-y-6">
+								<div>
+									<dt className="mb-1 font-mono text-[10px] text-gray-400 dark:text-gray-500">
+										gradient text
+									</dt>
+									<dd className="bg-gradient-to-r from-brand-500 to-accent-400 bg-clip-text text-3xl font-bold tracking-tight text-transparent">
+										One endpoint, every AI provider
+									</dd>
+								</div>
+								<div>
+									<dt className="mb-1 font-mono text-[10px] text-gray-400 dark:text-gray-500">
+										uppercase / tracking-widest / font-medium
+									</dt>
+									<dd className="text-xs font-medium uppercase tracking-widest text-gray-400 dark:text-gray-500">
+										AI API Gateway
+									</dd>
+								</div>
+								<div>
+									<dt className="mb-1 font-mono text-[10px] text-gray-400 dark:text-gray-500">
+										tabular-nums (data / prices)
+									</dt>
+									<dd className="font-mono text-sm tabular-nums text-gray-600 dark:text-gray-300">
+										$0.150 / 1M &nbsp; $0.600 / 1M &nbsp; 1,048,576 ctx &nbsp;
+										42ms
+									</dd>
+								</div>
+							</div>
+						</Card>
+					</div>
 				</Section>
 
 				{/* Buttons */}

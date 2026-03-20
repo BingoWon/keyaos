@@ -3,6 +3,14 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
+	/* Typography — Inter (UI) + JetBrains Mono (code) */
+	--font-sans: "Inter", ui-sans-serif, system-ui, -apple-system,
+		BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial,
+		"Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+		"Segoe UI Symbol", "Noto Color Emoji";
+	--font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+		Consolas, "Liberation Mono", "Courier New", monospace;
+
 	/* Brand — Keyaos Purple (logo #7F39AD at 600) */
 	--color-brand-50: #faf5ff;
 	--color-brand-100: #f3e8ff;
@@ -33,6 +41,11 @@
 @layer base {
 	html {
 		scroll-padding-top: 3rem;
+		-webkit-font-smoothing: antialiased;
+		-moz-osx-font-smoothing: grayscale;
+		font-feature-settings: "cv11", "ss01";
+		font-variation-settings: "opsz" 32;
+		text-rendering: optimizeLegibility;
 	}
 
 	:root {

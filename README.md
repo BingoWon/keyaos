@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://keyaos.com/logo.png" width="80" height="80" alt="Keyaos Logo" />
+  <img src="public/logo.png" width="80" height="80" alt="Keyaos Logo" />
 </p>
 
 <h1 align="center">Keyaos</h1>
@@ -21,10 +21,11 @@
 </p>
 
 <p align="center">
-  <a href="README_CN.md">中文</a> ·
-  <a href="https://keyaos.com">Website</a> ·
-  <a href="https://keyaos.com/docs">Docs</a> ·
-  <a href="https://keyaos.com/api-reference">API Reference</a>
+  <a href="README_CN.md">🌏 中文</a> ·
+  <a href="https://keyaos.com">🌐 Website</a> ·
+  <a href="https://keyaos.com/werewolf">🐺 Werewolf</a> ·
+  <a href="https://keyaos.com/docs">📖 Docs</a> ·
+  <a href="https://keyaos.com/api-reference">📡 API Reference</a>
 </p>
 
 ---

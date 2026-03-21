@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://keyaos.com/logo.png" width="80" height="80" alt="Keyaos Logo" />
+  <img src="public/logo.png" width="80" height="80" alt="Keyaos Logo" />
 </p>
 
 <h1 align="center">Keyaos（氪钥枢）</h1>
@@ -21,10 +21,11 @@
 </p>
 
 <p align="center">
-  <a href="README.md">English</a> ·
-  <a href="https://keyaos.com">官网</a> ·
-  <a href="https://keyaos.com/docs">文档</a> ·
-  <a href="https://keyaos.com/api-reference">API 参考</a>
+  <a href="README.md">🌏 English</a> ·
+  <a href="https://keyaos.com">🌐 官网</a> ·
+  <a href="https://keyaos.com/werewolf">🐺 狼人杀</a> ·
+  <a href="https://keyaos.com/docs">📖 文档</a> ·
+  <a href="https://keyaos.com/api-reference">📡 API 参考</a>
 </p>
 
 ---

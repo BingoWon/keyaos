@@ -33,7 +33,7 @@ You subscribe to multiple AI services — OpenRouter, DeepSeek, Google AI Studio
 
 Built entirely on **Cloudflare Workers + D1 + Cron Triggers**. Self-hosted deployments require no servers and fit within Cloudflare's free tier.
 
-## Architecture
+## 🏗 Architecture
 
 ```mermaid
 flowchart LR
@@ -69,7 +69,7 @@ flowchart LR
 
 **Request flow:** Client sends a request to any supported endpoint. Auth validates the API key and checks permissions (model restrictions, quota, expiry, IP). The router ranks all available credentials by `unit_price × multiplier` and picks the cheapest healthy one. The circuit breaker skips providers with recent failures. The SSE interceptor tee's the response stream — forwarding it to the client in real time while extracting usage data for billing in the background. A Cron job syncs model availability and pricing every minute.
 
-## Features
+## ✨ Features
 
 - **Cost-optimized routing** — every request goes to the cheapest available provider
 - **Automatic failover** — quota exceeded or rate limited? The next cheapest option takes over
@@ -82,9 +82,9 @@ flowchart LR
 - **API key permissions** — model restrictions, expiration, spending quota, IP allowlist
 - **Two modes** — self-hosted (single user) or platform (multi-user with Clerk + Stripe)
 
-## Quick Start
+## 🚀 Quick Start
 
-### One-Click Deploy
+### ☁️ One-Click Deploy
 
 Click the **Deploy to Cloudflare** button above, then set one secret:
 
@@ -94,7 +94,7 @@ npx wrangler secret put ADMIN_TOKEN
 
 Done — D1 database, Cron Triggers, and schema are all provisioned automatically.
 
-### Manual Setup
+### 🔧 Manual Setup
 
 ```bash
 pnpm install
@@ -104,7 +104,7 @@ npx wrangler secret put ADMIN_TOKEN
 pnpm deploy                          # builds, applies migrations, deploys
 ```
 
-### Local Development
+### 💻 Local Development
 
 ```bash
 cp .env.example .env.local           # fill in provider keys
@@ -113,7 +113,7 @@ pnpm db:setup:local
 pnpm dev                             # http://localhost:5173
 ```
 
-## Usage
+## 📡 Usage
 
 ### OpenAI Chat Completions
 
@@ -154,7 +154,7 @@ curl https://keyaos.<you>.workers.dev/v1/embeddings \
 
 Works with Cursor, Continue, Cline, aider, LiteLLM, and any tool that supports custom OpenAI or Anthropic base URLs.
 
-## Supported Providers
+## 🔌 Supported Providers
 
 | Provider | Protocol | Pricing Source |
 |----------|----------|----------------|
@@ -175,7 +175,7 @@ Works with Cursor, Continue, Cline, aider, LiteLLM, and any tool that supports c
 
 Adding a new OpenAI-compatible provider takes a single entry in the provider registry.
 
-## Core vs Platform
+## ⚙️ Core vs Platform
 
 ```
 Core (self-hosted)           Platform (multi-user)
@@ -191,7 +191,7 @@ Core (self-hosted)           Platform (multi-user)
 
 Platform is strictly additive — Core runs independently and never depends on Platform.
 
-## Frontend
+## 🖥 Frontend
 
 Keyaos ships with a full frontend built with React 19, Vite 7, and Tailwind CSS 4:
 
@@ -204,7 +204,7 @@ Keyaos ships with a full frontend built with React 19, Vite 7, and Tailwind CSS 
 - **Dark mode** — full light / dark / system theme support
 - **i18n** — English and Chinese
 
-## Tech Stack
+## 🛠 Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
@@ -219,17 +219,14 @@ Keyaos ships with a full frontend built with React 19, Vite 7, and Tailwind CSS 
 | Charts | Lightweight Charts (OHLC) |
 | Docs | MDX · Scalar (OpenAPI) |
 
-<details>
-<summary>Platform Secrets</summary>
+## 🤝 Contributing
 
-```bash
-npx wrangler secret put CLERK_SECRET_KEY
-npx wrangler secret put STRIPE_SECRET_KEY
-npx wrangler secret put STRIPE_WEBHOOK_SECRET
-npx wrangler secret put PLATFORM_OWNER_ID
-npx wrangler secret put VITE_CLERK_PUBLISHABLE_KEY
-```
+Contributions are welcome! Whether it's a bug fix, new provider integration, feature request, or documentation improvement — we'd love your help.
 
-See `.dev.vars.example` and `.env.example` for all configuration options.
+1. **Fork** the repository
+2. **Create** a feature branch (`git checkout -b feat/amazing-feature`)
+3. **Commit** your changes (`git commit -m "feat: add amazing feature"`)
+4. **Push** to the branch (`git push origin feat/amazing-feature`)
+5. **Open** a Pull Request
 
-</details>
+If you're unsure where to start, check out the [open issues](https://github.com/BingoWon/Keyaos/issues) or start a [discussion](https://github.com/BingoWon/Keyaos/discussions). All contributions, big or small, are greatly appreciated.

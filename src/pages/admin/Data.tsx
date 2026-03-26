@@ -11,7 +11,6 @@ const TABLES = [
 	"payments",
 	"api_keys",
 	"model_catalog",
-	"price_candles",
 	"credit_adjustments",
 	"auto_topup_config",
 	"chat_threads",

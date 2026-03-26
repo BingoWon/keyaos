@@ -1,3 +1,4 @@
+import { enUS, zhCN } from "@clerk/localizations";
 import {
 	ClerkProvider,
 	SignIn,
@@ -6,7 +7,6 @@ import {
 	useAuth as useClerkAuth,
 	useUser,
 } from "@clerk/react";
-import { enUS, zhCN } from "@clerk/localizations";
 import { dark } from "@clerk/themes";
 import { Crisp } from "crisp-sdk-web";
 import {

@@ -56,8 +56,8 @@ DropdownMenuCheckboxItem.displayName =
 
 export {
 	DropdownMenu,
-	DropdownMenuTrigger,
-	DropdownMenuPortal,
-	DropdownMenuContent,
 	DropdownMenuCheckboxItem,
+	DropdownMenuContent,
+	DropdownMenuPortal,
+	DropdownMenuTrigger,
 };

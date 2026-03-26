@@ -155,7 +155,8 @@ export class AdminDao {
 
 	/**
 	 * Aggregated candle activity for admin overview charts.
-	 * Returns hourly buckets of volume, total_tokens, and record count.
+	 * Filters to 'model:input' to avoid triple-counting across dimensions
+	 * while leveraging idx_candles_dimension_time for efficient range scan.
 	 */
 	async getActivity(
 		hours: number,
@@ -172,7 +173,7 @@ export class AdminDao {
 					COALESCE(SUM(total_tokens), 0) AS tokens,
 					COUNT(*) AS records
 				 FROM price_candles
-				 WHERE interval_start >= ?
+				 WHERE dimension = 'model:input' AND interval_start >= ?
 				 GROUP BY bucket
 				 ORDER BY bucket ASC`,
 			)

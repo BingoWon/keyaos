@@ -253,21 +253,25 @@ export default {
 	): Promise<void> {
 		const candleDao = new CandleDao(env.DB);
 		const rate = Number.parseFloat(env.CNY_USD_RATE || "7");
+		const isHeavyMinute = Math.floor(Date.now() / 60_000) % 5 === 0;
 
 		ctx.waitUntil(
 			(async () => {
+				// Light tasks — every minute
 				await candleDao.aggregate(Date.now() - 60_000);
 				await candleDao.generateQuotedCandles();
 				await sweepAutoTopUp(env.DB, env.STRIPE_SECRET_KEY);
 
-				if (env.LOCAL_SYNC) {
-					await syncAllModels(env.DB, rate, env);
-				} else {
-					await syncFromRemote(env.DB);
+				// Heavy tasks — every 5 minutes
+				if (isHeavyMinute) {
+					if (env.LOCAL_SYNC) {
+						await syncAllModels(env.DB, rate, env);
+					} else {
+						await syncFromRemote(env.DB);
+					}
+					await syncAutoCredits(env.DB, env.ENCRYPTION_KEY, rate);
+					await candleDao.pruneOldCandles();
 				}
-
-				await syncAutoCredits(env.DB, env.ENCRYPTION_KEY, rate);
-				await candleDao.pruneOldCandles();
 			})(),
 		);
 	},

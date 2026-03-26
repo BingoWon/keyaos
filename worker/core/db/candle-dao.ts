@@ -2,7 +2,7 @@ import { log } from "../../shared/logger";
 import type { DbPriceCandle } from "./schema";
 
 const INTERVAL_MS = 60 * 1000;
-const RETENTION_DAYS = 30;
+const RETENTION_DAYS = 7;
 
 export type CandleDimension = "model:input" | "model:output" | "provider";
 

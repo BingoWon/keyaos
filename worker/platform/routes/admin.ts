@@ -169,7 +169,6 @@ admin.post("/sync-models", async (c) => {
 	}
 
 	await syncAutoCredits(c.env.DB, c.env.ENCRYPTION_KEY, rate);
-	await new CandleDao(c.env.DB).pruneOldCandles();
 	return c.json({ message: "Models synced", elapsed: Date.now() - start });
 });
 

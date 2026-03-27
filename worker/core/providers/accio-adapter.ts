@@ -37,6 +37,7 @@ function mapAccioModelId(adkModelName: string): string | null {
 // ─── Adapter ────────────────────────────────────────────
 
 export class AccioAdapter implements ProviderAdapter {
+	systemKeyEnvVar = "ACCIO_KEY";
 	info: ProviderInfo = {
 		id: "accio",
 		name: "Accio",
@@ -248,22 +249,11 @@ export class AccioAdapter implements ProviderAdapter {
 					return parseStaticModels("accio", models);
 				}
 			} catch {
-				// Fall back to static config
+				// No token or fetch failed — return empty so sync skips gracefully
 			}
 		}
 
-		return parseStaticModels("accio", [
-			{ id: "anthropic/claude-sonnet-4.6" },
-			{ id: "anthropic/claude-opus-4.6" },
-			{ id: "google/gemini-3.1-pro-preview" },
-			{ id: "google/gemini-3-flash-preview" },
-			{ id: "openai/gpt-5.4" },
-			{ id: "openai/gpt-5.2-1211" },
-			{ id: "openai/gpt-4o" },
-			{ id: "qwen/qwen3-max" },
-			{ id: "moonshot/kimi-k2.5" },
-			{ id: "zhipu/glm-5" },
-		]);
+		return [];
 	}
 }
 

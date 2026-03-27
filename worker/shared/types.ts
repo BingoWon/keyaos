@@ -14,6 +14,7 @@ export type Env = {
 	OPENAI_KEY?: string;
 	GEMINI_KEY?: string;
 	ANTHROPIC_KEY?: string;
+	ACCIO_KEY?: string;
 	/** When set, run local three-phase syncAllModels instead of fetching from keyaos.com */
 	LOCAL_SYNC?: string;
 };

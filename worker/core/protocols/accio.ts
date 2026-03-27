@@ -24,15 +24,15 @@ export const ACCIO_MODEL_MAP: Record<string, string> = {
 	"gemini-2.5-flash": "google/gemini-2.5-flash",
 	"gemini-2.5-pro": "google/gemini-2.5-pro",
 	"gpt-5.4": "openai/gpt-5.4",
-	"gpt-5.2-1211": "openai/gpt-5.2-1211",
+	"gpt-5.2-1211": "openai/gpt-5.2",
 	"gpt-4o": "openai/gpt-4o",
 	"gpt-4o-mini": "openai/gpt-4o-mini",
 	"gpt-4-turbo": "openai/gpt-4-turbo",
 	"gpt-5-preview": "openai/gpt-5-preview",
 	"qwen3-max-2026-01-23": "qwen/qwen3-max",
 	"qwen3-max": "qwen/qwen3-max",
-	"kimi-k2.5": "moonshot/kimi-k2.5",
-	"glm-5": "zhipu/glm-5",
+	"kimi-k2.5": "moonshotai/kimi-k2.5",
+	"glm-5": "z-ai/glm-5",
 	"minimax-m2.5": "minimax/minimax-m2.5",
 };
 

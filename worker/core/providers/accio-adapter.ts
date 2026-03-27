@@ -58,9 +58,7 @@ export class AccioAdapter implements ProviderAdapter {
 
 		// Handle full cookie string: extract accessToken from phoenix_cookie
 		if (trimmed.includes("phoenix_cookie=")) {
-			const match = trimmed.match(
-				/phoenix_cookie=.*?accessToken=([^&;\s]+)/,
-			);
+			const match = trimmed.match(/phoenix_cookie=.*?accessToken=([^&;\s]+)/);
 			if (match?.[1]) return match[1];
 		}
 
@@ -84,8 +82,7 @@ export class AccioAdapter implements ProviderAdapter {
 			}
 
 			const at =
-				(parsed.accessToken as string) ??
-				(parsed.access_token as string);
+				(parsed.accessToken as string) ?? (parsed.access_token as string);
 			if (at) return at;
 
 			throw new Error(
@@ -106,7 +103,7 @@ export class AccioAdapter implements ProviderAdapter {
 					Accept: "text/event-stream",
 				},
 				body: JSON.stringify({
-					model: "gemini-2.5-flash",
+					model: "gemini-3-flash-preview",
 					token: secret,
 					empid: "",
 					tenant: "",
@@ -159,9 +156,7 @@ export class AccioAdapter implements ProviderAdapter {
 			return new Response(
 				JSON.stringify({
 					error: {
-						message:
-							errText ||
-							`Accio upstream error: ${upstream.status}`,
+						message: errText || `Accio upstream error: ${upstream.status}`,
 						type: "api_error",
 					},
 				}),
@@ -203,13 +198,10 @@ export class AccioAdapter implements ProviderAdapter {
 			}
 		}
 
-		return new Response(
-			JSON.stringify(toOpenAIResponse(frames, model)),
-			{
-				status: 200,
-				headers: { "Content-Type": "application/json" },
-			},
-		);
+		return new Response(JSON.stringify(toOpenAIResponse(frames, model)), {
+			status: 200,
+			headers: { "Content-Type": "application/json" },
+		});
 	}
 
 	async fetchModels(

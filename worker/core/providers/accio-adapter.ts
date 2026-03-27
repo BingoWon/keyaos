@@ -21,8 +21,48 @@ import {
 
 // ─── Constants ──────────────────────────────────────────
 
-const GATEWAY_BASE = "https://phoenix-gw.alibaba.com/api/adk/llm";
-const API_URL = `${GATEWAY_BASE}/generateContent`;
+const GATEWAY_BASE = "https://phoenix-gw.alibaba.com/api";
+const LLM_BASE = `${GATEWAY_BASE}/adk/llm`;
+const API_URL = `${LLM_BASE}/generateContent`;
+const CONFIG_URL = `${GATEWAY_BASE}/llm/config`;
+
+// ─── Model Mapping ──────────────────────────────────────
+
+function mapAccioModelId(adkModelName: string): string | null {
+	const m = adkModelName.toLowerCase();
+
+	// Anthropic
+	if (m === "claude-sonnet-4-6") return "anthropic/claude-sonnet-4.6";
+	if (m === "claude-opus-4-6") return "anthropic/claude-opus-4.6";
+	if (m === "claude-sonnet-4-20250514") return "anthropic/claude-sonnet-4-20250514";
+
+	// Google
+	if (m === "gemini-3.1-flash-image-preview") return "google/gemini-3.1-flash-image";
+	if (m === "gemini-3-flash-preview") return "google/gemini-3-flash-preview";
+	if (m === "gemini-3.1-pro-preview") return "google/gemini-3.1-pro-preview";
+	if (m === "gemini-3-pro-image-preview") return "google/gemini-3-pro-image";
+	if (m === "gemini-3-pro-preview") return "google/gemini-3-pro-preview";
+	if (m === "gemini-2.5-flash") return "google/gemini-2.5-flash";
+	if (m === "gemini-2.5-pro") return "google/gemini-2.5-pro";
+
+	// OpenAI
+	if (m === "gpt-5.4") return "openai/gpt-5.4";
+	if (m === "gpt-5.2-1211") return "openai/gpt-5.2-1211";
+	if (m === "gpt-4o") return "openai/gpt-4o";
+	if (m === "gpt-4o-mini") return "openai/gpt-4o-mini";
+	if (m === "gpt-4-turbo") return "openai/gpt-4-turbo";
+	if (m === "gpt-5-preview") return "openai/gpt-5-preview";
+
+	// Qwen
+	if (m === "qwen3-max-2026-01-23" || m === "qwen3-max") return "qwen/qwen3-max";
+
+	// Others
+	if (m === "kimi-k2.5") return "moonshot/kimi-k2.5";
+	if (m === "glm-5") return "zhipu/glm-5";
+	if (m === "minimax-m2.5") return "minimax/minimax-m2.5";
+
+	return null;
+}
 
 // ─── Adapter ────────────────────────────────────────────
 
@@ -212,18 +252,54 @@ export class AccioAdapter implements ProviderAdapter {
 		);
 	}
 
-	async fetchModels(_cnyUsdRate?: number): Promise<ParsedModel[]> {
+	async fetchModels(
+		_cnyUsdRate?: number,
+		secret?: string,
+	): Promise<ParsedModel[]> {
+		if (secret) {
+			try {
+				const res = await fetch(CONFIG_URL, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Accept: "application/json",
+					},
+					body: JSON.stringify({ token: secret }),
+				});
+
+				if (res.ok) {
+					const data = (await res.json()) as {
+						data: { modelList: { modelName: string; visible: boolean }[] }[];
+					};
+
+					const models: { id: string }[] = [];
+					for (const provider of data.data || []) {
+						for (const model of provider.modelList || []) {
+							if (model.visible) {
+								const mapped = mapAccioModelId(model.modelName);
+								if (mapped) models.push({ id: mapped });
+							}
+						}
+					}
+
+					return parseStaticModels("accio", models);
+				}
+			} catch {
+				// Fall back to static config
+			}
+		}
+
 		return parseStaticModels("accio", [
-			{ id: "anthropic/claude-sonnet-4-20250514" },
-			{ id: "google/gemini-2.5-flash" },
-			{ id: "google/gemini-2.5-pro" },
+			{ id: "anthropic/claude-sonnet-4.6" },
+			{ id: "anthropic/claude-opus-4.6" },
+			{ id: "google/gemini-3.1-pro-preview" },
 			{ id: "google/gemini-3-flash-preview" },
-			{ id: "google/gemini-3-pro-preview" },
-			{ id: "google/gemini-3-pro-image-preview" },
+			{ id: "openai/gpt-5.4" },
+			{ id: "openai/gpt-5.2-1211" },
 			{ id: "openai/gpt-4o" },
-			{ id: "openai/gpt-4o-mini" },
-			{ id: "openai/gpt-4-turbo" },
-			{ id: "openai/gpt-5-preview" },
+			{ id: "qwen/qwen3-max" },
+			{ id: "moonshot/kimi-k2.5" },
+			{ id: "zhipu/glm-5" },
 		]);
 	}
 }

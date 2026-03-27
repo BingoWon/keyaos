@@ -43,7 +43,29 @@ export function toAccioRequest(
 	}
 
 	const rawModel = body.model as string;
-	const model = rawModel.replace(/^[^/]+\//, "");
+	let model = rawModel.replace(/^[^/]+\//, "");
+
+	// Reverse mapping: OpenRouter -> Accio
+	if (rawModel === "anthropic/claude-sonnet-4.6") model = "claude-sonnet-4-6";
+	if (rawModel === "anthropic/claude-opus-4.6") model = "claude-opus-4-6";
+	if (rawModel === "anthropic/claude-sonnet-4-20250514") model = "claude-sonnet-4-20250514";
+	if (rawModel === "google/gemini-3.1-flash-image") model = "gemini-3.1-flash-image-preview";
+	if (rawModel === "google/gemini-3-flash-preview") model = "gemini-3-flash-preview";
+	if (rawModel === "google/gemini-3.1-pro-preview") model = "gemini-3.1-pro-preview";
+	if (rawModel === "google/gemini-3-pro-image") model = "gemini-3-pro-image-preview";
+	if (rawModel === "google/gemini-3-pro-preview") model = "gemini-3-pro-preview";
+	if (rawModel === "google/gemini-2.5-flash") model = "gemini-2.5-flash";
+	if (rawModel === "google/gemini-2.5-pro") model = "gemini-2.5-pro";
+	if (rawModel === "openai/gpt-5.4") model = "gpt-5.4";
+	if (rawModel === "openai/gpt-5.2-1211") model = "gpt-5.2-1211";
+	if (rawModel === "openai/gpt-4o") model = "gpt-4o";
+	if (rawModel === "openai/gpt-4o-mini") model = "gpt-4o-mini";
+	if (rawModel === "openai/gpt-4-turbo") model = "gpt-4-turbo";
+	if (rawModel === "openai/gpt-5-preview") model = "gpt-5-preview";
+	if (rawModel === "qwen/qwen3-max") model = "qwen3-max-2026-01-23";
+	if (rawModel === "moonshot/kimi-k2.5") model = "kimi-k2.5";
+	if (rawModel === "zhipu/glm-5") model = "glm-5";
+	if (rawModel === "minimax/minimax-m2.5") model = "MiniMax-M2.5";
 
 	const request: Record<string, unknown> = {
 		model,

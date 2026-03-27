@@ -251,6 +251,7 @@
 			],
 			"accio": [
 				"Go to https://www.accio.com and sign in",
+				"Log out, then sign in again to ensure the cookie is generated",
 				"Open Developer Tools (F12) > Application > Cookies",
 				"Find the phoenix_cookie, copy the entire string or just the accessToken value",
 				"Paste it into the Credential field below"

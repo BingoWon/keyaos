@@ -248,6 +248,7 @@
 			],
 			"accio": [
 				"前往 https://www.accio.com 并完成登录",
+				"先退出登录，然后再重新登录一次以生成有效 Cookie",
 				"按下 F12 打开开发者工具 > Application/应用 > Cookies",
 				"找到 phoenix_cookie，复制整个字符串或者仅提取 accessToken 的值",
 				"粘贴到下方的凭证框中即可"

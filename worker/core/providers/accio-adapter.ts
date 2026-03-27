@@ -78,12 +78,6 @@ export class AccioAdapter implements ProviderAdapter {
 		isSubscription: true,
 		credentialGuide: {
 			placeholder: "accessToken=... or full phoenix_cookie string",
-			filePath: "Browser DevTools → Application → Cookies → phoenix_cookie",
-			command: [
-				"1. Open Accio desktop app and let it log in",
-				"2. In browser, visit accio.com → F12 → Application → Cookies",
-				"3. Find phoenix_cookie, extract the refreshToken value",
-			],
 		},
 	};
 

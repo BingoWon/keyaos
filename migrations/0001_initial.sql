@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS api_keys (
     key_hint TEXT NOT NULL,
     is_enabled INTEGER DEFAULT 1,
     expires_at INTEGER,
-    quota_limit REAL,
+    quota_limit REAL, 
     quota_used REAL NOT NULL DEFAULT 0,
     allowed_models TEXT,
     allowed_ips TEXT,

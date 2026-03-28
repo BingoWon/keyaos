@@ -1,5 +1,5 @@
 {
-	"$schema": "https://biomejs.dev/schemas/2.4.3/schema.json",
+	"$schema": "https://biomejs.dev/schemas/2.4.7/schema.json",
 	"files": {
 		"includes": [
 			"src/**",
@@ -78,7 +78,8 @@
 						"useAriaPropsSupportedByRole": "off"
 					},
 					"style": {
-						"noNonNullAssertion": "off"
+						"noNonNullAssertion": "off",
+						"noDescendingSpecificity": "off"
 					},
 					"complexity": {
 						"noImportantStyles": "off"

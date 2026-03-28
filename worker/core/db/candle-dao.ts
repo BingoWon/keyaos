@@ -28,6 +28,7 @@ export class CandleDao {
 				 JOIN model_catalog mc
 				   ON mc.provider_id = u.provider_id AND mc.model_id = u.model_id AND mc.is_active = 1
 				 WHERE u.created_at >= ? AND u.created_at < ? AND u.status = 'ok'
+				   AND u.consumer_id != u.credential_owner_id
 				 ORDER BY u.created_at ASC`,
 			)
 			.bind(windowStart, now)

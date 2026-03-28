@@ -25,7 +25,7 @@ werewolfRouter.post("/sessions", async (c) => {
 		model_used?: string;
 	}>();
 	if (!body.id || !body.player_count) {
-		throw new ApiError(400, "id and player_count are required");
+		throw new ApiError("id and player_count are required", 400);
 	}
 	const now = Date.now();
 	const dao = new WerewolfSessionsDao(c.env.DB);
@@ -62,7 +62,7 @@ werewolfRouter.patch("/sessions/:id", async (c) => {
 	}>();
 	const dao = new WerewolfSessionsDao(c.env.DB);
 	const ok = await dao.update(id, ownerId, body);
-	if (!ok) throw new ApiError(404, "Session not found");
+	if (!ok) throw new ApiError("Session not found", 404);
 	return c.json({ data: { id } });
 });
 
@@ -88,7 +88,7 @@ werewolfRouter.post("/characters", async (c) => {
 		avatar_seed?: string;
 	}>();
 	if (!body.id || !body.display_name) {
-		throw new ApiError(400, "id and display_name are required");
+		throw new ApiError("id and display_name are required", 400);
 	}
 	const now = Date.now();
 	const dao = new WerewolfCharactersDao(c.env.DB);
@@ -123,7 +123,7 @@ werewolfRouter.patch("/characters/:id", async (c) => {
 	}>();
 	const dao = new WerewolfCharactersDao(c.env.DB);
 	const ok = await dao.update(id, ownerId, body);
-	if (!ok) throw new ApiError(404, "Character not found");
+	if (!ok) throw new ApiError("Character not found", 404);
 	return c.json({ data: { id } });
 });
 
@@ -132,7 +132,7 @@ werewolfRouter.delete("/characters/:id", async (c) => {
 	const id = c.req.param("id");
 	const dao = new WerewolfCharactersDao(c.env.DB);
 	const ok = await dao.softDelete(id, ownerId);
-	if (!ok) throw new ApiError(404, "Character not found");
+	if (!ok) throw new ApiError("Character not found", 404);
 	return c.json({ data: { id } });
 });
 

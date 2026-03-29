@@ -7,6 +7,7 @@ export interface PlatformOverview {
 	totalRequests: number;
 	activeCredentials: number;
 	registeredUsers: number;
+	activeUsers: number;
 }
 
 export interface UserRow {
@@ -34,12 +35,15 @@ const QUERYABLE_TABLES: Record<string, string> = {
 
 export class AdminDao {
 	private wallet: WalletDao;
-	constructor(private db: D1Database) {
+	constructor(
+		private db: D1Database,
+		private clerkSecretKey?: string,
+	) {
 		this.wallet = new WalletDao(db);
 	}
 
 	async getOverview(): Promise<PlatformOverview> {
-		const [revenue, logsAgg, creds, users] = await Promise.all([
+		const [revenue, logsAgg, creds, wallets, clerkCount] = await Promise.all([
 			this.db
 				.prepare(
 					"SELECT COALESCE(SUM(credits), 0) AS total FROM payments WHERE status = 'completed'",
@@ -61,7 +65,10 @@ export class AdminDao {
 			this.db
 				.prepare("SELECT COUNT(*) AS cnt FROM wallets")
 				.first<{ cnt: number }>(),
+			this.fetchClerkUserCount(),
 		]);
+
+		const activeUsers = wallets?.cnt ?? 0;
 
 		return {
 			totalRevenue: revenue?.total ?? 0,
@@ -69,8 +76,23 @@ export class AdminDao {
 			totalServiceFees: logsAgg?.fees ?? 0,
 			totalRequests: logsAgg?.cnt ?? 0,
 			activeCredentials: creds?.cnt ?? 0,
-			registeredUsers: users?.cnt ?? 0,
+			registeredUsers: clerkCount ?? activeUsers,
+			activeUsers,
 		};
+	}
+
+	private async fetchClerkUserCount(): Promise<number | null> {
+		if (!this.clerkSecretKey) return null;
+		try {
+			const res = await fetch("https://api.clerk.com/v1/users/count", {
+				headers: { Authorization: `Bearer ${this.clerkSecretKey}` },
+			});
+			if (!res.ok) return null;
+			const data = (await res.json()) as { total_count: number };
+			return data.total_count;
+		} catch {
+			return null;
+		}
 	}
 
 	async getUsers(): Promise<UserRow[]> {
@@ -157,26 +179,37 @@ export class AdminDao {
 	}
 
 	/**
-	 * Aggregated candle activity for admin overview charts.
-	 * Filters to 'model:input' to avoid triple-counting across dimensions
-	 * while leveraging idx_candles_dimension_time for efficient range scan.
+	 * Aggregated activity for admin overview charts.
+	 * Queries the logs table directly so we can filter by self-use mode:
+	 *   'all'      — all successful requests (default)
+	 *   'non-self' — only requests where consumer ≠ credential owner
+	 *   'self'     — only requests where consumer = credential owner
 	 */
 	async getActivity(
 		hours: number,
+		selfFilter: "all" | "non-self" | "self" = "all",
 	): Promise<
 		{ time: number; volume: number; tokens: number; records: number }[]
 	> {
 		const since = Date.now() - hours * 60 * 60 * 1000;
 		const bucketMs = hours <= 24 ? 3600000 : 3600000 * 6;
+
+		const selfClause =
+			selfFilter === "non-self"
+				? "AND consumer_id != credential_owner_id"
+				: selfFilter === "self"
+					? "AND consumer_id = credential_owner_id"
+					: "";
+
 		const res = await this.db
 			.prepare(
 				`SELECT
-					(interval_start / ? * ?) AS bucket,
-					COALESCE(SUM(volume), 0) AS volume,
-					COALESCE(SUM(total_tokens), 0) AS tokens,
-					COUNT(*) AS records
-				 FROM price_candles
-				 WHERE dimension = 'model:input' AND interval_start >= ?
+					(created_at / ? * ?) AS bucket,
+					COUNT(*) AS volume,
+					COALESCE(SUM(input_tokens + output_tokens), 0) AS tokens
+				 FROM logs
+				 WHERE status = 'ok' AND created_at >= ?
+				 ${selfClause}
 				 GROUP BY bucket
 				 ORDER BY bucket ASC`,
 			)
@@ -185,14 +218,13 @@ export class AdminDao {
 				bucket: number;
 				volume: number;
 				tokens: number;
-				records: number;
 			}>();
 
 		return (res.results || []).map((r) => ({
 			time: r.bucket,
 			volume: r.volume,
 			tokens: r.tokens,
-			records: r.records,
+			records: r.volume,
 		}));
 	}
 

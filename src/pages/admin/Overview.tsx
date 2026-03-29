@@ -6,6 +6,7 @@ import {
 	ServerStackIcon,
 	TableCellsIcon,
 	UserGroupIcon,
+	UserIcon,
 } from "@heroicons/react/24/outline";
 import {
 	AreaSeries,
@@ -192,6 +193,7 @@ interface PlatformOverview {
 	totalRequests: number;
 	activeCredentials: number;
 	registeredUsers: number;
+	activeUsers: number;
 }
 
 function SyncButton({ label, endpoint }: { label: string; endpoint: string }) {
@@ -250,8 +252,9 @@ export function Overview() {
 		"/api/admin/overview",
 	);
 	const [activityRange, setActivityRange] = useState(24);
+	const [selfFilter, setSelfFilter] = useState<"all" | "non-self" | "self">("all");
 	const { data: activity } = useFetch<ActivityPoint[]>(
-		`/api/admin/activity?hours=${activityRange}`,
+		`/api/admin/activity?hours=${activityRange}&self=${selfFilter}`,
 	);
 
 	const activityData = useMemo(() => activity ?? [], [activity]);
@@ -288,6 +291,11 @@ export function Overview() {
 					value: data.registeredUsers.toString(),
 					icon: UserGroupIcon,
 				},
+				{
+					name: t("admin.active_users"),
+					value: data.activeUsers.toString(),
+					icon: UserIcon,
+				},
 			]
 		: [];
 
@@ -312,8 +320,8 @@ export function Overview() {
 			</div>
 
 			{loading ? (
-				<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-					{Array.from({ length: 6 }).map((_, i) => (
+				<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
+					{Array.from({ length: 7 }).map((_, i) => (
 						<div
 							// biome-ignore lint/suspicious/noArrayIndexKey: static skeleton
 							key={i}
@@ -325,7 +333,7 @@ export function Overview() {
 					))}
 				</dl>
 			) : (
-				<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+				<dl className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
 					{cards.map((c) => (
 						<div
 							key={c.name}
@@ -348,21 +356,39 @@ export function Overview() {
 					<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
 						{t("admin.activity")}
 					</h4>
-					<div className="inline-flex rounded-lg border border-gray-200 dark:border-white/10 overflow-hidden">
-						{RANGE_OPTIONS.map((opt) => (
-							<button
-								key={opt.hours}
-								type="button"
-								onClick={() => setActivityRange(opt.hours)}
-								className={`px-3 py-1 text-xs font-medium transition-colors ${
-									activityRange === opt.hours
-										? "bg-brand-500 text-white"
-										: "bg-white text-gray-600 hover:bg-gray-50 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10"
-								}`}
-							>
-								{opt.label}
-							</button>
-						))}
+					<div className="flex items-center gap-3">
+						<div className="inline-flex rounded-lg border border-gray-200 dark:border-white/10 overflow-hidden">
+							{(["all", "non-self", "self"] as const).map((opt) => (
+								<button
+									key={opt}
+									type="button"
+									onClick={() => setSelfFilter(opt)}
+									className={`px-3 py-1 text-xs font-medium transition-colors ${
+										selfFilter === opt
+											? "bg-brand-500 text-white"
+											: "bg-white text-gray-600 hover:bg-gray-50 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10"
+									}`}
+								>
+									{t(`admin.filter_${opt}`)}
+								</button>
+							))}
+						</div>
+						<div className="inline-flex rounded-lg border border-gray-200 dark:border-white/10 overflow-hidden">
+							{RANGE_OPTIONS.map((opt) => (
+								<button
+									key={opt.hours}
+									type="button"
+									onClick={() => setActivityRange(opt.hours)}
+									className={`px-3 py-1 text-xs font-medium transition-colors ${
+										activityRange === opt.hours
+											? "bg-brand-500 text-white"
+											: "bg-white text-gray-600 hover:bg-gray-50 dark:bg-white/5 dark:text-gray-400 dark:hover:bg-white/10"
+									}`}
+								>
+									{opt.label}
+								</button>
+							))}
+						</div>
 					</div>
 				</div>
 

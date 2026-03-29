@@ -288,12 +288,12 @@ export function Overview() {
 				},
 				{
 					name: t("admin.registered_users"),
-					value: data.registeredUsers.toString(),
+					value: (data.registeredUsers ?? 0).toString(),
 					icon: UserGroupIcon,
 				},
 				{
 					name: t("admin.active_users"),
-					value: data.activeUsers.toString(),
+					value: (data.activeUsers ?? 0).toString(),
 					icon: UserIcon,
 				},
 			]

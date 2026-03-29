@@ -9,9 +9,9 @@ import {
 	UserIcon,
 } from "@heroicons/react/24/outline";
 import {
-	AreaSeries,
 	ColorType,
 	CrosshairMode,
+	HistogramSeries,
 	createChart,
 	type IChartApi,
 	type ISeriesApi,
@@ -58,7 +58,7 @@ function ActivityAreaChart({
 }) {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const chartRef = useRef<IChartApi | null>(null);
-	const seriesRef = useRef<ISeriesApi<"Area"> | null>(null);
+	const seriesRef = useRef<ISeriesApi<"Histogram"> | null>(null);
 	const [hoverValue, setHoverValue] = useState<number | null>(null);
 
 	const total = useMemo(
@@ -97,11 +97,8 @@ function ActivityAreaChart({
 			},
 		});
 
-		const series = chart.addSeries(AreaSeries, {
-			lineColor: color,
-			topColor: `${color}30`,
-			bottomColor: `${color}05`,
-			lineWidth: 2,
+		const series = chart.addSeries(HistogramSeries, {
+			color,
 			priceFormat: {
 				type: "custom" as const,
 				formatter: fmtCompact,
@@ -157,27 +154,14 @@ function ActivityAreaChart({
 	}, [color]);
 
 	useEffect(() => {
-		console.log("[chart-debug]", label, {
-			hasSeriesRef: !!seriesRef.current,
-			hasChartRef: !!chartRef.current,
-			pointsLength: points.length,
-			firstPoint: points[0],
-			lastPoint: points[points.length - 1],
-		});
 		if (!seriesRef.current || points.length === 0) return;
 		const data = points.map((p) => ({
 			time: utcToLocal(p.time) as Time,
 			value: accessor(p),
 		}));
-		console.log("[chart-debug]", label, "setData sample:", data.slice(0, 3));
-		try {
-			seriesRef.current.setData(data);
-			chartRef.current?.timeScale().fitContent();
-			console.log("[chart-debug]", label, "setData OK");
-		} catch (err) {
-			console.error("[chart-debug]", label, "setData FAILED:", err);
-		}
-	}, [points, accessor, label]);
+		seriesRef.current.setData(data);
+		chartRef.current?.timeScale().fitContent();
+	}, [points, accessor]);
 
 	return (
 		<div className="rounded-xl border border-gray-200 bg-white dark:border-white/10 dark:bg-white/5">

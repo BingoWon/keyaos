@@ -192,7 +192,9 @@ export class AdminDao {
 		{ time: number; volume: number; tokens: number; records: number }[]
 	> {
 		const since = Date.now() - hours * 60 * 60 * 1000;
-		const bucketMs = hours <= 24 ? 3600000 : 3600000 * 6;
+		// 24h → 5 min, 3d → 30 min, 7d → 2 hr
+		const bucketMs =
+			hours <= 24 ? 300_000 : hours <= 72 ? 1_800_000 : 7_200_000;
 
 		const selfClause =
 			selfFilter === "non-self"

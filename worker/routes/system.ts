@@ -40,7 +40,7 @@ systemRouter.get("/pool/stats", async (c) => {
 	});
 });
 
-systemRouter.get("/providers", edgeCache(), async (c) => {
+systemRouter.get("/providers", edgeCache(300), async (c) => {
 	const includeHidden = c.req.query("all") === "1";
 	const source = includeHidden ? getAllProviders() : getVisibleProviders();
 	const providers = source.map((p) => ({

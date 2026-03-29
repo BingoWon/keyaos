@@ -267,7 +267,6 @@ export default {
 					})()
 				: (async () => {
 						await candleDao.aggregate(Date.now() - 60_000);
-						await candleDao.generateQuotedCandles();
 						await sweepAutoTopUp(env.DB, env.STRIPE_SECRET_KEY);
 					})(),
 		);

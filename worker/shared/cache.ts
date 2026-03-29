@@ -12,7 +12,7 @@ import type { AppEnv } from "./types";
  * On custom domains the Cache API is functional; on *.workers.dev it no-ops
  * silently (cache.match returns undefined, cache.put is ignored).
  */
-export const edgeCache = (ttl = 30) =>
+export const edgeCache = (ttl = 60) =>
 	createMiddleware<AppEnv>(async (c, next) => {
 		const cache = caches.default;
 		const key = new Request(c.req.url, { method: "GET" });
@@ -39,3 +39,29 @@ export const edgeCache = (ttl = 30) =>
 			c.executionCtx.waitUntil(cache.put(key, cached));
 		}
 	});
+
+/**
+ * Purge edge-cached public endpoints after admin-triggered sync.
+ * Only affects the current colo — other edge nodes expire via TTL.
+ */
+const PUBLIC_PATHS = [
+	"/api/models",
+	"/api/providers",
+	"/api/providers?all=1",
+	"/api/catalog",
+	"/api/sparklines/model:input",
+	"/api/sparklines/model:output",
+	"/api/sparklines/provider",
+	"/api/sparklines/provider?sample=900000",
+	"/v1/models",
+];
+
+export async function purgePublicCaches(origin: string): Promise<number> {
+	const cache = caches.default;
+	let purged = 0;
+	for (const path of PUBLIC_PATHS) {
+		const deleted = await cache.delete(new Request(`${origin}${path}`));
+		if (deleted) purged++;
+	}
+	return purged;
+}

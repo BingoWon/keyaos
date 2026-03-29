@@ -5,6 +5,7 @@ import {
 	syncAutoCredits,
 	syncFromRemote,
 } from "../../core/sync/sync-service";
+import { purgePublicCaches } from "../../shared/cache";
 import { briefHint, decrypt, mask } from "../../shared/crypto";
 import { BadRequestError } from "../../shared/errors";
 import type { AppEnv } from "../../shared/types";
@@ -169,15 +170,18 @@ admin.post("/sync-models", async (c) => {
 	}
 
 	await syncAutoCredits(c.env.DB, c.env.ENCRYPTION_KEY, rate);
-	return c.json({ message: "Models synced", elapsed: Date.now() - start });
+	const origin = new URL(c.req.url).origin;
+	const purged = await purgePublicCaches(origin);
+	return c.json({ message: "Models synced", purged, elapsed: Date.now() - start });
 });
 
 admin.post("/sync-candles", async (c) => {
 	const dao = new CandleDao(c.env.DB);
 	const start = Date.now();
 	await dao.aggregate(Date.now() - 60_000);
-	await dao.generateQuotedCandles();
-	return c.json({ message: "Candles aggregated", elapsed: Date.now() - start });
+	const origin = new URL(c.req.url).origin;
+	const purged = await purgePublicCaches(origin);
+	return c.json({ message: "Candles aggregated", purged, elapsed: Date.now() - start });
 });
 
 export default admin;

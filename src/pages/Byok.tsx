@@ -160,8 +160,8 @@ export function Byok() {
 					isEnabled: true,
 					priceMultiplier: providers.find((p) => p.id === defaultProvider)
 						?.isSubscription
-						? "0.5"
-						: "0.8",
+						? "0.1"
+						: "0.5",
 				});
 				setShowPassword(false);
 				setPriceMultiplierTouched(false);
@@ -297,7 +297,7 @@ export function Byok() {
 								secret: "",
 								quota: "",
 								isEnabled: true,
-								priceMultiplier: isSub ? "0.5" : "0.8",
+								priceMultiplier: isSub ? "0.1" : "0.5",
 							});
 							setPriceMultiplierTouched(false);
 							setShowPassword(false);
@@ -349,7 +349,7 @@ export function Byok() {
 										...d,
 										provider_id: newId,
 										...(!priceMultiplierTouched && {
-											priceMultiplier: isSub ? "0.5" : "0.8",
+											priceMultiplier: isSub ? "0.1" : "0.5",
 										}),
 									}));
 								}}

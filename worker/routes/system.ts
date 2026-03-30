@@ -121,7 +121,7 @@ systemRouter.get("/sparklines/:dimension", edgeCache(600), async (c) => {
 	const sampleParam = Number(c.req.query("sample"));
 	const sampleMs =
 		sampleParam > 0
-			? Math.max(60_000, Math.min(sampleParam, 3_600_000))
+			? Math.max(600_000, Math.min(sampleParam, 3_600_000))
 			: undefined;
 
 	const dao = new CandleDao(c.env.DB);

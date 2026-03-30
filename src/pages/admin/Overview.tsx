@@ -11,8 +11,8 @@ import {
 import {
 	ColorType,
 	CrosshairMode,
-	HistogramSeries,
 	createChart,
+	HistogramSeries,
 	type IChartApi,
 	type ISeriesApi,
 	type Time,
@@ -91,10 +91,7 @@ function ActivityBarChart({
 			case "all":
 				return points.reduce((s, p) => s + accessor(p), 0);
 			case "non-self":
-				return points.reduce(
-					(s, p) => s + accessor(p) - selfAccessor(p),
-					0,
-				);
+				return points.reduce((s, p) => s + accessor(p) - selfAccessor(p), 0);
 			case "self":
 				return points.reduce((s, p) => s + selfAccessor(p), 0);
 		}
@@ -223,9 +220,7 @@ function ActivityBarChart({
 		if (selfFilter === "all") {
 			// Stacked: bg = total, fg = non-self
 			fg.applyOptions({ color });
-			bg.setData(
-				points.map((p) => ({ time: toTime(p), value: accessor(p) })),
-			);
+			bg.setData(points.map((p) => ({ time: toTime(p), value: accessor(p) })));
 			fg.setData(
 				points.map((p) => ({
 					time: toTime(p),

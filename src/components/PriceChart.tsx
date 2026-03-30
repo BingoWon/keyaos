@@ -40,7 +40,7 @@ interface PriceChartProps {
 	className?: string;
 }
 
-const HOUR_OPTIONS = [2, 6, 24, 72, 168] as const;
+const HOUR_OPTIONS = [24, 72, 168] as const;
 
 const TIP_CLASS =
 	"pointer-events-none absolute top-full left-1/2 -translate-x-1/2 mt-1.5 z-20 whitespace-nowrap rounded bg-gray-900 px-1.5 py-0.5 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover/tip:opacity-100 dark:bg-gray-700";
@@ -83,7 +83,7 @@ export function PriceChart({
 	const latestOHLCRef = useRef<OHLCValues | null>(null);
 	const hasInitialFitRef = useRef(false);
 
-	const [hours, setHours] = useState<number>(6);
+	const [hours, setHours] = useState<number>(24);
 	const [subDim, setSubDim] = useState<ModelSubDimension>("input");
 	const [legend, setLegend] = useState<OHLCValues | null>(null);
 
@@ -266,11 +266,11 @@ export function PriceChart({
 				<div className="flex items-center gap-3">
 					<h4 className="text-sm font-semibold text-gray-900 dark:text-white">
 						{title ??
-						t(
-							dimension === "provider"
-								? "chart.multiplier_trend"
-								: "chart.price_trend",
-						)}
+							t(
+								dimension === "provider"
+									? "chart.multiplier_trend"
+									: "chart.price_trend",
+							)}
 					</h4>
 					{dimension === "model" && (
 						<div className="flex gap-0.5 rounded-md bg-gray-100 p-0.5 dark:bg-white/10">

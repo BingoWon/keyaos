@@ -172,7 +172,11 @@ admin.post("/sync-models", async (c) => {
 	await syncAutoCredits(c.env.DB, c.env.ENCRYPTION_KEY, rate);
 	const origin = new URL(c.req.url).origin;
 	const purged = await purgePublicCaches(origin);
-	return c.json({ message: "Models synced", purged, elapsed: Date.now() - start });
+	return c.json({
+		message: "Models synced",
+		purged,
+		elapsed: Date.now() - start,
+	});
 });
 
 admin.post("/sync-candles", async (c) => {
@@ -181,7 +185,11 @@ admin.post("/sync-candles", async (c) => {
 	await dao.aggregate(Date.now() - 60_000);
 	const origin = new URL(c.req.url).origin;
 	const purged = await purgePublicCaches(origin);
-	return c.json({ message: "Candles aggregated", purged, elapsed: Date.now() - start });
+	return c.json({
+		message: "Candles aggregated",
+		purged,
+		elapsed: Date.now() - start,
+	});
 });
 
 export default admin;

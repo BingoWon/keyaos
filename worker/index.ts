@@ -255,7 +255,7 @@ export default {
 		const rate = Number.parseFloat(env.CNY_USD_RATE || "7");
 
 		ctx.waitUntil(
-			event.cron === "*/5 * * * *"
+			event.cron === "0 * * * *"
 				? (async () => {
 						if (env.LOCAL_SYNC) {
 							await syncAllModels(env.DB, rate, env);

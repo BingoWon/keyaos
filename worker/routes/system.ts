@@ -101,7 +101,6 @@ systemRouter.get("/logs", async (c) => {
 
 /** Auto-select candle interval based on time range. */
 function resolveIntervalMs(hours: number): number {
-	if (hours <= 6) return 120_000;
 	if (hours <= 24) return 600_000;
 	if (hours <= 72) return 1_800_000;
 	return 3_600_000;

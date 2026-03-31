@@ -17,6 +17,9 @@ export type Env = {
 	ACCIO_KEY?: string;
 	/** When set, run local three-phase syncAllModels instead of fetching from keyaos.com */
 	LOCAL_SYNC?: string;
+	/** Telegram bot for payment notifications */
+	TELEGRAM_BOT_TOKEN?: string;
+	TELEGRAM_CHAT_ID?: string;
 };
 
 export type AppEnv = {

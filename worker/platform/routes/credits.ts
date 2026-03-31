@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { BadRequestError } from "../../shared/errors";
 import { log } from "../../shared/logger";
 import type { AppEnv } from "../../shared/types";
+import { notifyTelegram } from "../../shared/telegram";
 import { AutoTopUpDao } from "../billing/auto-topup-dao";
 import { GiftCardDao } from "../billing/gift-card-dao";
 import { PaymentsDao } from "../billing/payments-dao";
@@ -336,6 +337,23 @@ webhookRouter.post("/stripe", async (c) => {
 					`Failed to extract PM: ${err instanceof Error ? err.message : String(err)}`,
 				);
 			}
+		}
+
+		// Notify via Telegram
+		if (c.env.TELEGRAM_BOT_TOKEN && c.env.TELEGRAM_CHAT_ID) {
+			const amountUSD = (session.amount_total ?? 0) / 100;
+			await notifyTelegram(
+				c.env.TELEGRAM_BOT_TOKEN,
+				c.env.TELEGRAM_CHAT_ID,
+				[
+					"💰 *Keyaos Payment Received*",
+					"",
+					`Amount: *$${amountUSD.toFixed(2)}*`,
+					`Credits: *${credits.toFixed(2)}*`,
+					`User: \`${owner_id}\``,
+					`Session: \`${session.id}\``,
+				].join("\n"),
+			);
 		}
 
 		return c.json({ received: true, credited: credits });

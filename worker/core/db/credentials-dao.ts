@@ -119,6 +119,29 @@ export class CredentialsDao {
 		return res.results || [];
 	}
 
+	/**
+	 * Fallback: select enabled credentials regardless of health status.
+	 * Used as last resort when selectAvailable returns nothing —
+	 * a degraded attempt is better than a guaranteed 503.
+	 */
+	async selectFallback(
+		providerId: string,
+		ownerId?: string,
+	): Promise<DbCredential[]> {
+		const ownerClause = ownerId ? "AND owner_id = ? " : "";
+		const binds: string[] = ownerId ? [providerId, ownerId] : [providerId];
+
+		const res = await this.db
+			.prepare(
+				`SELECT * FROM upstream_credentials
+				 WHERE provider_id = ? ${ownerClause}AND is_enabled = 1
+				 ORDER BY price_multiplier ASC, COALESCE(quota, 9999999) DESC`,
+			)
+			.bind(...binds)
+			.all<DbCredential>();
+		return res.results || [];
+	}
+
 	async getAll(owner_id: string): Promise<DbCredential[]> {
 		const res = await this.db
 			.prepare("SELECT * FROM upstream_credentials WHERE owner_id = ?")

@@ -29,17 +29,19 @@ const CONFIG_URL = `${GATEWAY_BASE}/llm/config`;
 
 /**
  * Build headers for Accio gateway requests.
- * Accio's WAF returns an HTML login page (200 OK, text/html) instead of SSE
- * when it detects a non-browser User-Agent. Using the Headers API and explicitly
- * deleting User-Agent prevents the runtime (workerd/Node) from injecting its default.
+ *
+ * ⚠️  Known limitation: Cloudflare Workers (workerd) injects a `Cf-Worker`
+ * header on every outbound fetch that CANNOT be removed via Headers API.
+ * Alibaba's WAF detects this header and returns an HTML login page (200 OK,
+ * text/html) instead of SSE — identical to the Codex provider situation.
+ * This makes Accio incompatible with the CF Workers runtime.
+ * See docs/providers/accio.md for details.
  */
 function accioHeaders(): Headers {
-	const h = new Headers({
+	return new Headers({
 		"Content-Type": "application/json",
 		Accept: "text/event-stream",
 	});
-	h.delete("User-Agent");
-	return h;
 }
 
 // ─── Model Mapping ──────────────────────────────────────

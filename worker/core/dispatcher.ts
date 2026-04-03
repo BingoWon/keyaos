@@ -52,10 +52,16 @@ export async function dispatchAll(
 		const provider = getProvider(offering.provider_id);
 		if (!provider) continue;
 
-		const credentials = await credDao.selectAvailable(
+		let credentials = await credDao.selectAvailable(
 			offering.provider_id,
 			ownerId,
 		);
+
+		// Fallback: if no healthy credentials, try unhealthy ones (dead/cooldown).
+		// A degraded attempt is better than a guaranteed 503.
+		if (credentials.length === 0) {
+			credentials = await credDao.selectFallback(offering.provider_id, ownerId);
+		}
 
 		for (const credential of credentials) {
 			candidates.push({

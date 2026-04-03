@@ -167,11 +167,22 @@ async function execute(
 		if (mode === "embedding" && !provider.forwardEmbedding) continue;
 
 		if (cb.isOpen(provider.info.id, modelId)) {
-			rlog.info("gateway", "Circuit breaker open, skipping", {
-				attempt,
-				providerId: provider.info.id,
-			});
-			continue;
+			// Still skip if there are remaining candidates to try
+			if (attempt < candidates.length - 1) {
+				rlog.info("gateway", "Circuit breaker open, skipping", {
+					attempt,
+					providerId: provider.info.id,
+				});
+				continue;
+			}
+			rlog.info(
+				"gateway",
+				"Circuit breaker open but last candidate, proceeding",
+				{
+					attempt,
+					providerId: provider.info.id,
+				},
+			);
 		}
 
 		const upstreamModel = upstreamModelId ?? modelId;

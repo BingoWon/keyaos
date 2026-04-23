@@ -95,6 +95,16 @@ npx wrangler secret put ADMIN_TOKEN
 
 搞定 — D1 数据库、Cron Triggers 和表结构全部自动创建。
 
+默认是 Core 模式（单用户，用 `ADMIN_TOKEN` 登录）。如需启用 Platform 模式（多用户 Clerk 登录），在 Cloudflare → Workers → 你的项目 → Settings → Build → Variables and secrets 里添加这些**构建时**变量：
+
+| 变量 | 是否必需 | 说明 |
+|---|---|---|
+| `VITE_CLERK_PUBLISHABLE_KEY` | 必需 | 你自己的 Clerk `pk_live_...` / `pk_test_...`，域名须锁定到你的部署域名 |
+| `VITE_CRISP_WEBSITE_ID` | 可选 | 启用 Crisp 客服聊天 |
+| `VITE_GA_ID` | 可选 | 启用 Google Analytics |
+
+这些必须放在 **Build** 标签下（供 `vite build` 读取），不是 Worker 运行时 secret。
+
 ### 🔧 手动部署
 
 ```bash

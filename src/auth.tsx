@@ -21,8 +21,10 @@ import { useTranslation } from "react-i18next";
 import { Button, Input } from "./components/ui";
 import { hasCrisp } from "./lib/analytics";
 
-/** True when Clerk is configured → Platform (multi-tenant) mode */
-export const isPlatform = !!import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+/** True when a real Clerk publishable key is baked in → Platform (multi-tenant) mode */
+const clerkKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+export const isPlatform =
+	typeof clerkKey === "string" && /^pk_(live|test)_/.test(clerkKey);
 
 // ─── Unified Auth Context ───────────────────────────────
 

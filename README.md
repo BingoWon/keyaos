@@ -95,6 +95,16 @@ npx wrangler secret put ADMIN_TOKEN
 
 Done — D1 database, Cron Triggers, and schema are all provisioned automatically.
 
+You'll get Core mode (single admin, sign in with `ADMIN_TOKEN`). To enable Platform mode (multi-user Clerk auth), add these **build-time** variables in Cloudflare → Workers → your project → Settings → Build → Variables and secrets:
+
+| Variable | Required | Notes |
+|---|---|---|
+| `VITE_CLERK_PUBLISHABLE_KEY` | yes | Your own `pk_live_...` / `pk_test_...` from Clerk — must be domain-locked to your deploy origin |
+| `VITE_CRISP_WEBSITE_ID` | no | Enables Crisp support chat |
+| `VITE_GA_ID` | no | Enables Google Analytics |
+
+They must live in the **Build** tab (read by `vite build`), not the Worker runtime secrets.
+
 ### 🔧 Manual Setup
 
 ```bash

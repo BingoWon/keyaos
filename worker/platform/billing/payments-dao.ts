@@ -35,7 +35,7 @@ export class PaymentsDao {
 
 	async transition(
 		sessionId: string,
-		to: "completed" | "expired" | "canceled",
+		to: "expired" | "canceled",
 	): Promise<boolean> {
 		const res = await this.db
 			.prepare(
@@ -46,23 +46,30 @@ export class PaymentsDao {
 		return (res.meta?.changes ?? 0) > 0;
 	}
 
-	async isFinal(sessionId: string): Promise<boolean> {
-		const row = await this.db
-			.prepare(
-				"SELECT 1 FROM payments WHERE stripe_session_id = ? AND status IN ('completed', 'expired', 'canceled', 'failed')",
-			)
-			.bind(sessionId)
-			.first();
-		return !!row;
-	}
-
-	async cancelUserPending(ownerId: string): Promise<number> {
+	/**
+	 * Idempotently mark a session completed. Returns true on the first
+	 * transition (→ caller should credit the wallet), false on subsequent
+	 * calls or when no row matches. Allows upgrading from any non-completed
+	 * status so a stale `canceled` row (e.g. from a cancel_url redirect that
+	 * raced the paid webhook) doesn't silently swallow the payment.
+	 */
+	async markCompleted(sessionId: string): Promise<boolean> {
 		const res = await this.db
 			.prepare(
-				"UPDATE payments SET status = 'canceled' WHERE owner_id = ? AND status = 'pending'",
+				"UPDATE payments SET status = 'completed' WHERE stripe_session_id = ? AND status != 'completed'",
 			)
-			.bind(ownerId)
+			.bind(sessionId)
 			.run();
-		return res.meta?.changes ?? 0;
+		return (res.meta?.changes ?? 0) > 0;
+	}
+
+	async cancelSession(sessionId: string, ownerId: string): Promise<boolean> {
+		const res = await this.db
+			.prepare(
+				"UPDATE payments SET status = 'canceled' WHERE stripe_session_id = ? AND owner_id = ? AND status = 'pending'",
+			)
+			.bind(sessionId, ownerId)
+			.run();
+		return (res.meta?.changes ?? 0) > 0;
 	}
 }

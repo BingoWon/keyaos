@@ -62,7 +62,7 @@ credits.post("/checkout", async (c) => {
 		ownerId,
 		amountCents: amount,
 		successUrl: `${origin}/dashboard/credits?success=true`,
-		cancelUrl: `${origin}/dashboard/credits?canceled=true`,
+		cancelUrl: `${origin}/dashboard/credits?canceled=true&session_id={CHECKOUT_SESSION_ID}`,
 	});
 
 	await new PaymentsDao(c.env.DB).create({
@@ -152,8 +152,14 @@ credits.get("/deposits", async (c) => {
 
 // ─── POST /cancel-pending ────────────────────────────────
 credits.post("/cancel-pending", async (c) => {
-	const ownerId = c.get("owner_id");
-	const canceled = await new PaymentsDao(c.env.DB).cancelUserPending(ownerId);
+	const { sessionId } = await c.req.json<{ sessionId?: string }>();
+	if (!sessionId) {
+		throw new BadRequestError("sessionId required", "cancel_session_required");
+	}
+	const canceled = await new PaymentsDao(c.env.DB).cancelSession(
+		sessionId,
+		c.get("owner_id"),
+	);
 	return c.json({ ok: true, canceled });
 });
 
@@ -312,11 +318,7 @@ webhookRouter.post("/stripe", async (c) => {
 	if (!owner_id || !credits || credits <= 0)
 		return c.text("Invalid metadata", 400);
 
-	if (await paymentsDao.isFinal(session.id)) {
-		return c.json({ received: true, duplicate: true });
-	}
-
-	if (await paymentsDao.transition(session.id, "completed")) {
+	if (await paymentsDao.markCompleted(session.id)) {
 		await new WalletDao(c.env.DB).credit(owner_id, credits);
 
 		if (c.env.STRIPE_SECRET_KEY && session.payment_intent) {
@@ -359,5 +361,5 @@ webhookRouter.post("/stripe", async (c) => {
 		return c.json({ received: true, credited: credits });
 	}
 
-	return c.json({ received: true, skipped: true });
+	return c.json({ received: true, duplicate: true });
 });

@@ -226,13 +226,20 @@ export function Credits() {
 			setSearchParams({}, { replace: true });
 		} else if (searchParams.get("canceled") === "true") {
 			toast(t("credits.canceled"), { icon: "↩" });
+			const sessionId = searchParams.get("session_id");
 			setSearchParams({}, { replace: true });
-			getToken().then((token) =>
-				fetch("/api/credits/cancel-pending", {
-					method: "POST",
-					headers: { Authorization: `Bearer ${token}` },
-				}).then(() => refetchDeposits()),
-			);
+			if (sessionId) {
+				getToken().then((token) =>
+					fetch("/api/credits/cancel-pending", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${token}`,
+						},
+						body: JSON.stringify({ sessionId }),
+					}).then(() => refetchDeposits()),
+				);
+			}
 		}
 	}, [
 		searchParams,

@@ -353,6 +353,7 @@
 		"custom_placeholder": "Custom amount",
 		"success": "Payment successful — credits added!",
 		"canceled": "Payment canceled",
+		"checkout_disabled": "Platform is still in closed beta. Please use BYOK (Bring Your Own Key) for now.",
 		"tab_transactions": "Transactions",
 		"tab_deposits": "Deposits",
 		"no_transactions": "No transactions yet",

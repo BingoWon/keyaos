@@ -350,6 +350,7 @@
 		"custom_placeholder": "自定义金额",
 		"success": "支付成功 — 额度已到账！",
 		"canceled": "支付已取消",
+		"checkout_disabled": "平台内测中，暂时请使用 BYOK（自有密钥）功能",
 		"tab_transactions": "交易流水",
 		"tab_deposits": "充值记录",
 		"no_transactions": "暂无交易记录",

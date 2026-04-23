@@ -252,29 +252,10 @@ export function Credits() {
 	]);
 
 	const handleCheckout = useCallback(
-		async (amountCents: number) => {
-			if (amountCents < 100) return;
-			setLoading(true);
-			try {
-				const token = await getToken();
-				const res = await fetch("/api/credits/checkout", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-						Authorization: `Bearer ${token}`,
-					},
-					body: JSON.stringify({ amount: amountCents }),
-				});
-				const json = await res.json();
-				if (json.url) window.location.href = json.url;
-				else toastApiError(json, t);
-			} catch {
-				toast.error(t("common.network_error"));
-			} finally {
-				setLoading(false);
-			}
+		(_amountCents: number) => {
+			toast(t("credits.checkout_disabled"), { icon: "🔒", duration: 5000 });
 		},
-		[getToken, t],
+		[t],
 	);
 
 	const handleAutoSave = useCallback(

@@ -1,3 +1,5 @@
+
+
 <p align="center">
   <img src="public/logo.png" width="80" height="80" alt="Keyaos Logo" />
 </p>
@@ -13,7 +15,7 @@
   <img src="https://img.shields.io/badge/runtime-Cloudflare_Workers-F38020?logo=cloudflare&logoColor=white" alt="Cloudflare Workers" />
   <img src="https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white" alt="TypeScript" />
   <img src="https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=black" alt="React 19" />
-  <img src="https://img.shields.io/badge/license-MIT-yellow" alt="MIT License" />
+  <img src="https://img.shields.io/badge/license-BUSL--1.1-yellow" alt="BUSL-1.1 License" />
 </p>
 
 <p align="center">
@@ -148,7 +150,7 @@ curl https://keyaos.<you>.workers.dev/v1/messages \
   -H "Content-Type: application/json" \
   -d '{
     "model": "anthropic/claude-sonnet-4",
-    "max_tokens": 1024,
+    "max_tokens": 1024096,
     "messages": [{"role": "user", "content": "Hello"}]
   }'
 ```

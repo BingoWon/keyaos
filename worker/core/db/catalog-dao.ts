@@ -22,7 +22,18 @@ export class CatalogDao {
 			   upstream_model_id = excluded.upstream_model_id,
 			   metadata = excluded.metadata,
 			   created = excluded.created,
-			   refreshed_at = excluded.refreshed_at`,
+			   refreshed_at = excluded.refreshed_at
+			 WHERE model_catalog.name IS NOT excluded.name
+			    OR model_catalog.model_type IS NOT excluded.model_type
+			    OR model_catalog.input_price IS NOT excluded.input_price
+			    OR model_catalog.output_price IS NOT excluded.output_price
+			    OR model_catalog.context_length IS NOT excluded.context_length
+			    OR model_catalog.input_modalities IS NOT excluded.input_modalities
+			    OR model_catalog.output_modalities IS NOT excluded.output_modalities
+			    OR model_catalog.is_active IS NOT 1
+			    OR model_catalog.upstream_model_id IS NOT excluded.upstream_model_id
+			    OR model_catalog.metadata IS NOT excluded.metadata
+			    OR model_catalog.created IS NOT excluded.created`,
 		);
 
 		const batch = models.map((m) =>
